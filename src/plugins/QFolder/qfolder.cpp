@@ -1,16 +1,32 @@
 #include "qfolder.h"
 #include "ui_qfolder.h"
 #include <QCursor>
+#include <QtDebug>
+#include <QMenu>
 
 QFolder::QFolder(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::QFolder)
 {
     ui->setupUi(this);
-    name.setGeometry(0,120,150,20);
-    name.setFocusPolicy(Qt::NoFocus);
-    name.setCursor(QCursor(Qt::ArrowCursor));
     this->setWindowFlags(Qt::FramelessWindowHint);
+
+    //初始化右键菜单项
+    act_copy = new QAction(tr("复制"),this);
+    act_cut = new QAction(tr("剪切"),this);
+    act_delete = new QAction(tr("删除"),this);
+    act_download = new QAction(tr("下载"),this);
+    act_open = new QAction(tr("打开"),this);
+    act_paste = new QAction(tr("粘贴"),this);
+    act_rename = new QAction(tr("重命名"),this);
+
+
+    ui->name->setFocusPolicy(Qt::NoFocus);
+    ui->name->setCursor(QCursor(Qt::ArrowCursor));
+    ui->name->installEventFilter(this);
+
+    connect(act_rename, SIGNAL(triggered()), this, SLOT(folderRename()));
+    connect(this, SIGNAL(nameFocus()), this, SLOT(nameFocused()));
 
 }
 
@@ -24,45 +40,50 @@ void QFolder::focusInEvent(QFocusEvent* e)
     if(e == NULL)
         return;
 
-    name.setFocusPolicy(Qt::ClickFocus);
+    ui->name->setFocusPolicy(Qt::StrongFocus);
 }
 
 void QFolder::focusOutEvent(QFocusEvent* e)
 {
     if(e == NULL)
         return;
-    name.setFocusPolicy(Qt::NoFocus);
+    ui->name->setFocusPolicy(Qt::NoFocus);
 }
 
-
-/*************************************
-CLASS QFolderLine
-**************************************/
-QFolderLine::QFolderLine(QLineEdit *parent) :
-    QLineEdit(parent)
+void QFolder::contextMenuEvent(QContextMenuEvent*)
 {
-    this->setStyleSheet("QLineEdit#name{border: 0px solid;background: rgba(255,255,255,0);}QLineEdit#name:focus {border: 2px solid rgb(200, 200, 200);background:rgb(255, 255, 255);}");
-
+    QCursor cur = this->cursor();
+    QMenu* menu = new QMenu(this);
+    menu->addAction(act_rename);
+    menu->exec(cur.pos());
 }
 
-void QFolderLine::focusInEvent(QFocusEvent* e)
+void QFolder::folderRename()
 {
-    if(e == NULL)
-        return;
-
-    this->setCursor(QCursor(Qt::IBeamCursor));
+    ui->name->setFocus();
 }
 
-void QFolderLine::focusOutEvent(QFocusEvent* e)
+void QFolder::nameFocused()
+{qDebug("rename");
+    ui->name->selectAll();
+}
+
+bool QFolder::eventFilter(QObject *watched,QEvent *e)
 {
-    if(e == NULL)
-        return;
-    this->setCursor(QCursor(Qt::ArrowCursor));
+    if(watched == ui->name)
+    {
+        if(e->type() == QEvent::FocusIn)
+        {
+            ui->name->setCursor(QCursor(Qt::IBeamCursor));
+            emit nameFocus();
+        }
+        else if(e->type() == QEvent::FocusOut)
+        {
+            ui->name->setCursor(QCursor(Qt::ArrowCursor));
+        }
+    }
+    return QWidget::eventFilter(watched,e);
 }
-
-
-
-
 
 
 

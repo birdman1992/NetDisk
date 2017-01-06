@@ -51,7 +51,7 @@ border-color: rgb(170, 255, 255);
   <widget class="QLineEdit" name="name">
    <property name="geometry">
     <rect>
-     <x>140</x>
+     <x>0</x>
      <y>120</y>
      <width>151</width>
      <height>21</height>
@@ -75,6 +75,9 @@ QLineEdit#name:focus {
 border: 2px solid rgb(200, 200, 200);
 background:rgb(255, 255, 255);
 }</string>
+   </property>
+   <property name="text">
+    <string>测试</string>
    </property>
   </widget>
   <widget class="QPushButton" name="btn">
