@@ -13,8 +13,17 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwidget.cpp
+        mainwidget.cpp \
+    QFolder/qfolder.cpp \
+    filespanel.cpp
 
-HEADERS  += mainwidget.h
+HEADERS  += mainwidget.h \
+    QFolder/qfolder.h \
+    filespanel.h
 
-FORMS    += mainwidget.ui
+FORMS    += mainwidget.ui \
+    QFolder/qfolder.ui \
+    filespanel.ui
+
+RESOURCES += \
+    img.qrc
