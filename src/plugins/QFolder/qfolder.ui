@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
+    <width>150</width>
     <height>150</height>
    </rect>
   </property>
@@ -18,13 +18,13 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget#QFolder:focus{
-border-width: 20px;
-background-color: rgb(145, 218, 218);
+border:2px solid  rgb(171,214,234);
+background-color: rgb(230,243,252);
 }
 QWidget#QFolder:hover{
-border-width: 20px;
-border-color: rgb(170, 255, 255);
-}</string>
+border:2px solid rgb(217,242,253);
+}
+</string>
   </property>
   <widget class="QLabel" name="img">
    <property name="geometry">
@@ -77,25 +77,22 @@ background:rgb(255, 255, 255);
 }</string>
    </property>
    <property name="text">
-    <string>测试</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="btn">
-   <property name="geometry">
-    <rect>
-     <x>200</x>
-     <y>40</y>
-     <width>75</width>
-     <height>81</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">QPushButton#btn:hover {
-color: rgb(255, 170, 0);
-}</string>
-   </property>
-   <property name="text">
     <string/>
+   </property>
+   <property name="frame">
+    <bool>true</bool>
+   </property>
+   <property name="echoMode">
+    <enum>QLineEdit::Normal</enum>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+   <property name="dragEnabled">
+    <bool>false</bool>
+   </property>
+   <property name="clearButtonEnabled">
+    <bool>false</bool>
    </property>
   </widget>
  </widget>

@@ -3,13 +3,20 @@
 #include <QCursor>
 #include <QtDebug>
 #include <QMenu>
+#include <QPainter>
 
-QFolder::QFolder(QWidget *parent) :
+QFolder::QFolder(QWidget *parent,short _type,QString fName) :
     QWidget(parent),
     ui(new Ui::QFolder)
 {
     ui->setupUi(this);
     this->setWindowFlags(Qt::FramelessWindowHint);
+
+    //初始化属性
+    fType = _type;
+    pasteEnable = false;
+    folderName = fName;
+    ui->name->setText(folderName);
 
     //初始化右键菜单项
     act_copy = new QAction(tr("复制"),this);
@@ -20,13 +27,19 @@ QFolder::QFolder(QWidget *parent) :
     act_paste = new QAction(tr("粘贴"),this);
     act_rename = new QAction(tr("重命名"),this);
 
-
     ui->name->setFocusPolicy(Qt::NoFocus);
     ui->name->setCursor(QCursor(Qt::ArrowCursor));
     ui->name->installEventFilter(this);
 
-    connect(act_rename, SIGNAL(triggered()), this, SLOT(folderRename()));
     connect(this, SIGNAL(nameFocus()), this, SLOT(nameFocused()));
+    connect(ui->name, SIGNAL(editingFinished()), this, SLOT(editFinish()));
+    connect(act_rename, SIGNAL(triggered()), this, SLOT(folderRename()));
+    connect(act_open, SIGNAL(triggered()), this, SLOT(folderOpen()));
+    connect(act_copy, SIGNAL(triggered()), this, SLOT(folderCopy()));
+    connect(act_cut, SIGNAL(triggered()), this, SLOT(folderCut()));
+    connect(act_delete, SIGNAL(triggered()), this, SLOT(folderDelete()));
+    connect(act_paste, SIGNAL(triggered()), this, SLOT(folderPaste()));
+    connect(act_download, SIGNAL(triggered()), this, SLOT(folderDownload()));
 
 }
 
@@ -35,12 +48,23 @@ QFolder::~QFolder()
     delete ui;
 }
 
+/*****************
+EVENT
+*****************/
+void QFolder::paintEvent(QPaintEvent*)
+{
+    QStyleOption opt;
+    opt.init(this);
+    QPainter p(this);
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
+}
+
 void QFolder::focusInEvent(QFocusEvent* e)
 {
     if(e == NULL)
         return;
 
-    ui->name->setFocusPolicy(Qt::StrongFocus);
+    ui->name->setFocusPolicy(Qt::ClickFocus);
 }
 
 void QFolder::focusOutEvent(QFocusEvent* e)
@@ -54,14 +78,25 @@ void QFolder::contextMenuEvent(QContextMenuEvent*)
 {
     QCursor cur = this->cursor();
     QMenu* menu = new QMenu(this);
-    menu->addAction(act_rename);
+    QList<QAction*> acts;
+    if(pasteEnable)
+        acts<<act_open<<act_download<<act_copy<<act_cut<<act_paste<<act_delete<<act_rename;
+    else
+        acts<<act_open<<act_download<<act_copy<<act_cut<<act_delete<<act_rename;
+
+    menu->addActions(acts);
+
     menu->exec(cur.pos());
 }
 
-void QFolder::folderRename()
+void QFolder::mouseDoubleClickEvent(QMouseEvent*)
 {
-    ui->name->setFocus();
+    folderOpen();
 }
+
+/**********************
+SLOT
+**********************/
 
 void QFolder::nameFocused()
 {qDebug("rename");
@@ -75,7 +110,7 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
         if(e->type() == QEvent::FocusIn)
         {
             ui->name->setCursor(QCursor(Qt::IBeamCursor));
-            emit nameFocus();
+            ui->name->selectAll();
         }
         else if(e->type() == QEvent::FocusOut)
         {
@@ -85,7 +120,46 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
     return QWidget::eventFilter(watched,e);
 }
 
+void QFolder::editFinish()
+{
+    this->setFocus();
+}
 
+//右键菜单槽
+void QFolder::folderRename()
+{
+    ui->name->setFocus();
+}
 
+void QFolder::folderOpen()
+{
+    qDebug("open");
+}
+
+void QFolder::folderCopy()
+{
+    qDebug("copy");
+    pasteEnable = true;
+}
+
+void QFolder::folderCut()
+{
+    qDebug("cut");
+}
+
+void QFolder::folderPaste()
+{
+    qDebug("paste");
+}
+
+void QFolder::folderDelete()
+{
+    qDebug("delete");
+}
+
+void QFolder::folderDownload()
+{
+    qDebug("download");
+}
 
 
