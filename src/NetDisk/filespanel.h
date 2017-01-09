@@ -16,7 +16,7 @@ class FilesPanel : public QWidget
 public:
     explicit FilesPanel(QWidget *parent = 0);
     ~FilesPanel();
-    panelShow();
+    void panelShow(QList<QFolder*> fPanel);
 
 private:
     Ui::FilesPanel *ui;

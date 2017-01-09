@@ -66,7 +66,6 @@ void QFolder::focusInEvent(QFocusEvent* e)
 
     ui->name->setFocusPolicy(Qt::ClickFocus);
 }
-
 void QFolder::focusOutEvent(QFocusEvent* e)
 {
     if(e == NULL)
@@ -85,7 +84,9 @@ void QFolder::contextMenuEvent(QContextMenuEvent*)
         acts<<act_open<<act_download<<act_copy<<act_cut<<act_delete<<act_rename;
 
     menu->addActions(acts);
-
+    menu->insertSeparator(act_open);
+    menu->insertSeparator(act_download);
+    menu->setStyleSheet("QMenu{background-color: rgba(200, 150, 200);padding-left:20px;}");
     menu->exec(cur.pos());
 }
 

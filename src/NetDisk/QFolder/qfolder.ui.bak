@@ -24,10 +24,7 @@ background-color: rgb(230,243,252);
 QWidget#QFolder:hover{
 border:2px solid rgb(217,242,253);
 }
-QWidget#QFolder:focus:hover{
-border:2px solid  rgb(171,214,234);
-background-color: rgb(230,243,252);
-}</string>
+</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2" stretch="5,1">
    <property name="spacing">
@@ -43,7 +40,7 @@ background-color: rgb(230,243,252);
     <number>1</number>
    </property>
    <property name="bottomMargin">
-    <number>2</number>
+    <number>0</number>
    </property>
    <item>
     <layout class="QGridLayout" name="gridLayout_2" rowstretch="1,5" columnstretch="1,4,1">
@@ -163,6 +160,9 @@ background:rgb(255, 255, 255);
     </layout>
    </item>
   </layout>
+  <zorder>verticalLayoutWidget</zorder>
+  <zorder>verticalLayoutWidget_2</zorder>
+  <zorder>name</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

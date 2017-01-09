@@ -16,7 +16,6 @@ public:
     ~MainWidget();
 
 private slots:
-    void on_btn_clicked();
 
 private:
     Ui::MainWidget *ui;
