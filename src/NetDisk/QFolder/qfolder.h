@@ -27,6 +27,7 @@ private:
     QList<QFolder*> subdir;
 
     /***右键菜单***/
+    QMenu* menu;
     QAction* act_open;
     QAction* act_copy;
     QAction* act_cut;

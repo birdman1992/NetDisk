@@ -19,6 +19,7 @@ QFolder::QFolder(QWidget *parent,short _type,QString fName) :
     ui->name->setText(folderName);
 
     //初始化右键菜单项
+    menu = new QMenu(this);
     act_copy = new QAction(tr("复制"),this);
     act_cut = new QAction(tr("剪切"),this);
     act_delete = new QAction(tr("删除"),this);
@@ -26,6 +27,9 @@ QFolder::QFolder(QWidget *parent,short _type,QString fName) :
     act_open = new QAction(tr("打开"),this);
     act_paste = new QAction(tr("粘贴"),this);
     act_rename = new QAction(tr("重命名"),this);
+
+    act_copy->setShortcut(QKeySequence::Copy);
+    act_paste->setShortcut(QKeySequence::Paste);
 
     ui->name->setFocusPolicy(Qt::NoFocus);
     ui->name->setCursor(QCursor(Qt::ArrowCursor));
@@ -40,7 +44,6 @@ QFolder::QFolder(QWidget *parent,short _type,QString fName) :
     connect(act_delete, SIGNAL(triggered()), this, SLOT(folderDelete()));
     connect(act_paste, SIGNAL(triggered()), this, SLOT(folderPaste()));
     connect(act_download, SIGNAL(triggered()), this, SLOT(folderDownload()));
-
 }
 
 QFolder::~QFolder()
@@ -65,28 +68,37 @@ void QFolder::focusInEvent(QFocusEvent* e)
         return;
 
     ui->name->setFocusPolicy(Qt::ClickFocus);
+//    this->addAction(act_copy);
+    this->addAction(act_paste);
 }
+
 void QFolder::focusOutEvent(QFocusEvent* e)
 {
     if(e == NULL)
         return;
     ui->name->setFocusPolicy(Qt::NoFocus);
+//    this->removeAction(act_copy);
+    this->removeAction(act_paste);
 }
 
 void QFolder::contextMenuEvent(QContextMenuEvent*)
 {
     QCursor cur = this->cursor();
-    QMenu* menu = new QMenu(this);
+    menu->clear();
     QList<QAction*> acts;
     if(pasteEnable)
         acts<<act_open<<act_download<<act_copy<<act_cut<<act_paste<<act_delete<<act_rename;
     else
         acts<<act_open<<act_download<<act_copy<<act_cut<<act_delete<<act_rename;
 
+    act_download->setIcon(QIcon(":/imgs/item.ico"));
     menu->addActions(acts);
-    menu->insertSeparator(act_open);
     menu->insertSeparator(act_download);
-    menu->setStyleSheet("QMenu{background-color: rgba(200, 150, 200);padding-left:20px;}");
+    menu->setStyleSheet("QMenu{border:1px solid #A0A0A0;background-color:#F0F0F0;}\
+                        QMenu::item{color:#000000;padding-left:20px;}\
+                        QMenu::item:selected{background-color: #2dabf9;}\
+                        QMenu::separator{height:2px;margin-left:10px;margin-right:5px;}");
+
     menu->exec(cur.pos());
 }
 
