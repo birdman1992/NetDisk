@@ -4,6 +4,7 @@
 #include <QtDebug>
 #include <QMenu>
 #include <QPainter>
+#include <unistd.h>
 
 QFolder::QFolder(QWidget *parent,short _type,QString fName) :
     QWidget(parent),
@@ -100,6 +101,7 @@ SLOT
 
 void QFolder::nameFocused()
 {qDebug("rename");
+    usleep(1000000);
     ui->name->selectAll();
 }
 
@@ -108,8 +110,9 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
     if(watched == ui->name)
     {
         if(e->type() == QEvent::FocusIn)
-        {
+        {qDebug("select");
             ui->name->setCursor(QCursor(Qt::IBeamCursor));
+//            emit nameFocus();
             ui->name->selectAll();
         }
         else if(e->type() == QEvent::FocusOut)

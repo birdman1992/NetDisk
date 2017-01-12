@@ -68,7 +68,7 @@ void QFolder::focusInEvent(QFocusEvent* e)
         return;
 
     ui->name->setFocusPolicy(Qt::ClickFocus);
-//    this->addAction(act_copy);
+    this->addAction(act_copy);
     this->addAction(act_paste);
 }
 
@@ -77,7 +77,7 @@ void QFolder::focusOutEvent(QFocusEvent* e)
     if(e == NULL)
         return;
     ui->name->setFocusPolicy(Qt::NoFocus);
-//    this->removeAction(act_copy);
+    this->removeAction(act_copy);
     this->removeAction(act_paste);
 }
 
@@ -123,6 +123,7 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
         if(e->type() == QEvent::FocusIn)
         {
             ui->name->setCursor(QCursor(Qt::IBeamCursor));
+            ui->name->setFocus();
             ui->name->selectAll();
         }
         else if(e->type() == QEvent::FocusOut)
