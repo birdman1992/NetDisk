@@ -67,6 +67,10 @@ void QFolder::focusInEvent(QFocusEvent* e)
     if(e == NULL)
         return;
 
+    this->setStyleSheet("QWidget#QFolder:focus{\
+                        border:2px solid rgb(171,214,234);\
+                        background-color: rgb(230,243,252);\
+                        }");
     ui->name->setFocusPolicy(Qt::ClickFocus);
     this->addAction(act_copy);
     this->addAction(act_paste);
@@ -76,6 +80,10 @@ void QFolder::focusOutEvent(QFocusEvent* e)
 {
     if(e == NULL)
         return;
+
+    this->setStyleSheet("QWidget#QFolder:hover{\
+                        border:2px solid rgb(217,242,253);\
+                        }");
     ui->name->setFocusPolicy(Qt::NoFocus);
     this->removeAction(act_copy);
     this->removeAction(act_paste);
@@ -91,13 +99,13 @@ void QFolder::contextMenuEvent(QContextMenuEvent*)
     else
         acts<<act_open<<act_download<<act_copy<<act_cut<<act_delete<<act_rename;
 
-    act_download->setIcon(QIcon(":/imgs/item.ico"));
+//    act_download->setIcon(QIcon(":/imgs/item.ico"));
     menu->addActions(acts);
     menu->insertSeparator(act_download);
-    menu->setStyleSheet("QMenu{border:1px solid #A0A0A0;background-color:#F0F0F0;}\
-                        QMenu::item{color:#000000;padding-left:20px;}\
-                        QMenu::item:selected{background-color: #2dabf9;}\
-                        QMenu::separator{height:2px;margin-left:10px;margin-right:5px;}");
+//    menu->setStyleSheet("QMenu{border:1px solid #A0A0A0;background-color:#F0F0F0;}\
+//                        QMenu::item{color:#000000;padding-left:20px;}\
+//                        QMenu::item:selected{background-color: #2dabf9;}\
+//                        QMenu::separator{height:2px;margin-left:10px;margin-right:5px;}");
 
     menu->exec(cur.pos());
 }
@@ -122,13 +130,34 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
     {
         if(e->type() == QEvent::FocusIn)
         {
+
+            this->setStyleSheet("QWidget#QFolder{\
+                                border:2px solid rgb(171,214,234);\
+                                background-color: rgb(230,243,252);\
+                                }");
+            ui->name->setStyleSheet("QLineEdit#name:focus {\
+                                    border: 2px solid rgb(200, 200, 200);\
+                                    background:rgb(255, 255, 255);\
+                                    }");
             ui->name->setCursor(QCursor(Qt::IBeamCursor));
-            ui->name->setFocus();
             ui->name->selectAll();
         }
         else if(e->type() == QEvent::FocusOut)
         {
+            this->setStyleSheet("QWidget#QFolder:hover{\
+                        border:2px solid rgb(217,242,253);\
+                        }");
+            ui->name->setStyleSheet("QLineEdit#name{\
+                                    border: 0px solid;\
+                                    background: rgba(255,255,255,0);\
+                                    }");
             ui->name->setCursor(QCursor(Qt::ArrowCursor));
+            selectEnable = true;
+        }
+        else if((e->type() == QEvent::MouseButtonRelease) && selectEnable)
+        {
+            ui->name->selectAll();
+            selectEnable = false;
         }
     }
     return QWidget::eventFilter(watched,e);
@@ -137,6 +166,11 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
 void QFolder::editFinish()
 {
     this->setFocus();
+}
+
+void QFolder::rename()
+{
+    ui->name->setFocus();
 }
 
 //右键菜单槽

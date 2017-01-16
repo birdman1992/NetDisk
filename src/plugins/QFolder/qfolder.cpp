@@ -16,6 +16,7 @@ QFolder::QFolder(QWidget *parent,short _type,QString fName) :
     //初始化属性
     fType = _type;
     pasteEnable = false;
+    selectEnable = true;
     folderName = fName;
     ui->name->setText(folderName);
 
@@ -110,14 +111,19 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
     if(watched == ui->name)
     {
         if(e->type() == QEvent::FocusIn)
-        {qDebug("select");
+        {
             ui->name->setCursor(QCursor(Qt::IBeamCursor));
-//            emit nameFocus();
             ui->name->selectAll();
         }
         else if(e->type() == QEvent::FocusOut)
         {
             ui->name->setCursor(QCursor(Qt::ArrowCursor));
+            selectEnable = true;
+        }
+        else if((e->type() == QEvent::MouseButtonRelease) && selectEnable)
+        {
+            ui->name->selectAll();
+            selectEnable = false;
         }
     }
     return QWidget::eventFilter(watched,e);
@@ -131,6 +137,7 @@ void QFolder::editFinish()
 //右键菜单槽
 void QFolder::folderRename()
 {
+    selectEnable = false;
     ui->name->setFocus();
 }
 

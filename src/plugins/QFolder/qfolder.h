@@ -43,6 +43,7 @@ private:
     };
     short fType;
     bool pasteEnable;
+    bool selectEnable;
     QString folderName;
 
     void paintEvent(QPaintEvent*);

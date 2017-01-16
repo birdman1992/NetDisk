@@ -20,6 +20,7 @@ public:
     explicit QFolder(QWidget *parent = 0,short _type = 2,QString fName = "新建文件夹");
     ~QFolder();
     void setPasteEnable(bool enable);
+    void rename();
 
 private:
     Ui::QFolder *ui;
@@ -44,6 +45,7 @@ private:
     };
     short fType;
     bool pasteEnable;
+    bool selectEnable;
     QString folderName;
 
     void paintEvent(QPaintEvent*);
