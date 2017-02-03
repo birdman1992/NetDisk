@@ -21,11 +21,13 @@ public:
     ~QFolder();
     void setPasteEnable(bool enable);
     void rename();
+    void setParFolder(QFolder* par);
 
 private:
     Ui::QFolder *ui;
     /***目录结构***/
     QList<QFolder*> subdir;
+    QFolder* pardir;
 
     /***右键菜单***/
     QMenu* menu;

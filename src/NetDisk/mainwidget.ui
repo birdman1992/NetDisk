@@ -22,10 +22,10 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>140</x>
-     <y>200</y>
-     <width>811</width>
-     <height>411</height>
+     <x>150</x>
+     <y>180</y>
+     <width>761</width>
+     <height>311</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="panelLayout"/>

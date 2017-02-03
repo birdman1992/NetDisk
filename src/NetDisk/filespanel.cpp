@@ -1,7 +1,9 @@
 #include "filespanel.h"
 #include "ui_filespanel.h"
 #include "QFolder/qfolder.h"
+#include <QDebug>
 #include <QPainter>
+#include <QFileDialog>
 
 #define FOLDER_SIZE 100
 
@@ -11,6 +13,13 @@ FilesPanel::FilesPanel(QWidget *parent) :
 {
     ui->setupUi(this);
     pasteEnable = false;
+
+    curPanel.clear();
+    dirTree.clear();
+    folderPath.clear();
+    pFolder = NULL;
+    curDir = NULL;
+
     //主菜单
     menu = new QMenu(this);
     act_new = new QAction("新建文件夹");
@@ -18,6 +27,9 @@ FilesPanel::FilesPanel(QWidget *parent) :
     act_sort = new QAction("排序");
     act_upload = new QAction("上传");
     connect(act_new, SIGNAL(triggered(bool)), this, SLOT(fileNew()));
+    connect(act_refresh, SIGNAL(triggered(bool)), this, SLOT(fileRefresh()));
+    connect(act_sort, SIGNAL(triggered(bool)), this, SLOT(fileSort()));
+    connect(act_upload, SIGNAL(triggered(bool)), this, SLOT(fileUpload()));
 
     //排序子菜单
     menu_sort = new QMenu(this);
@@ -31,25 +43,32 @@ FilesPanel::~FilesPanel()
     delete ui;
 }
 
+void FilesPanel::addFolder(QFolder* parFolder)
+{
+    curDir->setParFolder(parFolder);
+}
+
 void FilesPanel::panelShow(QList<QFolder*> fPanel)
 {
     int i = 0;
     int j = 0;
     int offset_x = 20;
     int offset_y = 20;
-    int ele_wid = fPanel.at(i)->geometry().width();
-    int ele_hei = fPanel.at(i)->geometry().height();
-    int count_x = (this->geometry().x() - offset_x)/ele_wid;
+    int ele_wid = fPanel.at(i)->geometry().width() + offset_x;
+    int ele_hei = fPanel.at(i)->geometry().height() + offset_y;
+    int count_x = (this->geometry().width() - offset_x)/(ele_wid);
 
-    qDebug("w:%d h:%d",this->geometry().x(),this->geometry().y());
+    qDebug("w:%d h:%d",this->geometry().width(),this->geometry().height());
 
 
-    for(i=0; i<fPanel.count(); i)
+    for(i=0; i<fPanel.count();)
     {
 
-        fPanel.at(i)->move(offset_x + i % count_x,);
+        fPanel.at(i)->move(offset_x + (i % count_x) * ele_wid, offset_y + j * ele_hei);
         fPanel.at(i)->show();
         i++;
+        if(!(i%count_x))
+            j++;
     }
 }
 
@@ -63,7 +82,7 @@ void FilesPanel::paintEvent(QPaintEvent*)
 
 //菜单
 void FilesPanel::contextMenuEvent(QContextMenuEvent*)
-{qDebug("menu");
+{//qDebug("menu");
     QCursor cur = this->cursor();
     QMenu* smenu = new QMenu(this);
     QList<QAction*> acts;
@@ -85,5 +104,26 @@ void FilesPanel::fileNew()
     panelShow(curPanel);
     pFolder->rename();
 }
+
+void FilesPanel::fileRefresh()
+{
+    qDebug("refresh");
+}
+
+void FilesPanel::fileSort()
+{
+    qDebug("sort");
+}
+
+void FilesPanel::fileUpload()
+{
+    qDebug("upload");
+    QString upFile = QFileDialog::getOpenFileName(this, tr("上传文件"), "/");
+    if(upFile.length() == 0)
+        return;
+    qDebug()<<upFile;
+}
+
+
 
 

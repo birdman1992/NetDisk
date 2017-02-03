@@ -173,6 +173,11 @@ void QFolder::rename()
     ui->name->setFocus();
 }
 
+void QFolder::setParFolder(QFolder *par)
+{
+    pardir = par;
+}
+
 //右键菜单槽
 void QFolder::folderRename()
 {

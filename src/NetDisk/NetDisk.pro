@@ -15,11 +15,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwidget.cpp \
     QFolder/qfolder.cpp \
-    filespanel.cpp
+    filespanel.cpp \
+    qclipboard.cpp
 
 HEADERS  += mainwidget.h \
     QFolder/qfolder.h \
-    filespanel.h
+    filespanel.h \
+    qclipboard.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \
