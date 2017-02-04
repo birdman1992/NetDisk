@@ -4,6 +4,7 @@
 #include <QtDebug>
 #include <QMenu>
 #include <QPainter>
+#include "filespanel.h"
 
 QFolder::QFolder(QWidget *parent,short _type,QString fName) :
     QWidget(parent),
@@ -15,6 +16,7 @@ QFolder::QFolder(QWidget *parent,short _type,QString fName) :
     //初始化属性
     fType = _type;
     pasteEnable = false;
+    newfile = false;
     folderName = fName;
     ui->name->setText(folderName);
 
@@ -165,7 +167,15 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
 
 void QFolder::editFinish()
 {
+    folderName = ui->name->text();
+    if(newfile)
+    {
+        FilesPanel* p = (FilesPanel*)parent();
+        p->ftpClient.ftpMkdir(folderName);
+        newfile = false;
+    }
     this->setFocus();
+    qDebug()<<"rename:"<<folderName;
 }
 
 void QFolder::rename()
@@ -173,9 +183,20 @@ void QFolder::rename()
     ui->name->setFocus();
 }
 
+void QFolder::newfolder()
+{
+    newfile = true;
+    ui->name->setFocus();
+}
+
 void QFolder::setParFolder(QFolder *par)
 {
     pardir = par;
+}
+
+QString QFolder::fileName()
+{
+    return folderName;
 }
 
 //右键菜单槽
@@ -192,6 +213,9 @@ void QFolder::folderOpen()
 void QFolder::folderCopy()
 {
     qDebug("copy");
+    FilesPanel* par = (FilesPanel*)parent();
+    QString selfPath = par->getCurPath();
+    emit copy(selfPath);
     pasteEnable = true;
 }
 
@@ -208,6 +232,15 @@ void QFolder::folderPaste()
 void QFolder::folderDelete()
 {
     qDebug("delete");
+    folderName = ui->name->text();
+    if(newfile)
+    {
+        FilesPanel* p = (FilesPanel*)parent();
+        p->ftpClient.ftpRmdir(folderName);
+        newfile = false;
+    }
+    this->setFocus();
+    qDebug()<<"rename:"<<folderName;
 }
 
 void QFolder::folderDownload()

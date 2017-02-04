@@ -21,7 +21,9 @@ public:
     ~QFolder();
     void setPasteEnable(bool enable);
     void rename();
+    void newfolder();
     void setParFolder(QFolder* par);
+    QString fileName();
 
 private:
     Ui::QFolder *ui;
@@ -48,6 +50,7 @@ private:
     short fType;
     bool pasteEnable;
     bool selectEnable;
+    bool newfile;
     QString folderName;
 
     void paintEvent(QPaintEvent*);
@@ -61,6 +64,7 @@ protected:
 
 signals:
     void nameFocus();
+    void copy(QString srcPath);
 
 private slots:
     void nameFocused();

@@ -6,6 +6,7 @@
 #include <QMenu>
 #include <QAction>
 #include "QFolder/qfolder.h"
+#include "Ftp/diskftp.h"
 
 namespace Ui {
 class FilesPanel;
@@ -18,14 +19,16 @@ class FilesPanel : public QWidget
 public:
     explicit FilesPanel(QWidget *parent = 0);
     ~FilesPanel();
+    DiskFtp ftpClient;
     void panelShow(QList<QFolder*> fPanel);
     void addFolder(QFolder* parFolder);
+    QString getCurPath();
 
 private:
     Ui::FilesPanel *ui;
     QList<QFolder*> curPanel;//当前面板包含文件夹
     QList<QFolder*> dirTree;//目录树
-    QList<QFolder*> folderPath;//目录路径
+    QList<QFolder*> folderPath;//根目录到当前目录文件夹路径
     QFolder* curDir;//当前目录
     QFolder* pFolder;//文件夹指针
     bool pasteEnable;
@@ -52,6 +55,7 @@ private slots:
     void fileRefresh();
     void fileUpload();
     void fileSort();
+    void ftpGetListInfo(QUrlInfo info);
 
 };
 

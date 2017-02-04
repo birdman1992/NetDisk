@@ -31,11 +31,16 @@ FilesPanel::FilesPanel(QWidget *parent) :
     connect(act_sort, SIGNAL(triggered(bool)), this, SLOT(fileSort()));
     connect(act_upload, SIGNAL(triggered(bool)), this, SLOT(fileUpload()));
 
+    //FTP LIST槽
+    connect(&ftpClient, SIGNAL(listInfo(QUrlInfo)), this, SLOT(ftpGetListInfo(QUrlInfo)));
+
     //排序子菜单
     menu_sort = new QMenu(this);
     act_filename = new QAction("文件名");
     act_filesize = new QAction("大小");
     act_filetime = new QAction("修改时间");
+
+    ftpClient.ftpLogin("test", "123456");
 }
 
 FilesPanel::~FilesPanel()
@@ -43,11 +48,13 @@ FilesPanel::~FilesPanel()
     delete ui;
 }
 
+/***↓↓↓↓公有接口↓↓↓↓***/
 void FilesPanel::addFolder(QFolder* parFolder)
 {
     curDir->setParFolder(parFolder);
 }
 
+//显示文件夹面板
 void FilesPanel::panelShow(QList<QFolder*> fPanel)
 {
     int i = 0;
@@ -72,6 +79,24 @@ void FilesPanel::panelShow(QList<QFolder*> fPanel)
     }
 }
 
+QString FilesPanel::getCurPath()
+{
+    QString str;
+    int i = 0;
+
+    while(i<folderPath.count())
+    {
+        str += "/";
+        str += folderPath.at(i)->fileName();
+        i++;
+    }
+    str += "/";
+    qDebug()<<str;
+    return str;
+}
+/***↑↑↑↑公有接口↑↑↑↑***/
+
+//事件
 void FilesPanel::paintEvent(QPaintEvent*)
 {
     QStyleOption opt;
@@ -102,7 +127,9 @@ void FilesPanel::fileNew()
     pFolder = new QFolder(this);
     curPanel<<pFolder;
     panelShow(curPanel);
-    pFolder->rename();
+    pFolder->newfolder();
+    folderPath<<pFolder;
+//    ftpClient.ftpMkdir(getCurPath()+);
 }
 
 void FilesPanel::fileRefresh()
@@ -122,6 +149,13 @@ void FilesPanel::fileUpload()
     if(upFile.length() == 0)
         return;
     qDebug()<<upFile;
+}
+
+void FilesPanel::ftpGetListInfo(QUrlInfo info)
+{
+    pFolder = new QFolder(this,2,info.name());
+    curPanel<<pFolder;
+    panelShow(curPanel);
 }
 
 
