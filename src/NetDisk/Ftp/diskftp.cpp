@@ -1,5 +1,6 @@
 #include "diskftp.h"
 #include <QtDebug>
+#include <qfile.h>
 
 #define FTP_ADDR "192.168.0.154"
 #define FTP_PORT 21
@@ -45,7 +46,7 @@ void DiskFtp::ftpList(QString dir)
 //FTP创建目录
 void DiskFtp::ftpMkdir(QString dir)
 {
-    ftpListDIR = dir;
+//    ftpListDIR = dir;
     if(cmdState == 0)//FTP未连接，连接FTP
     {
         ftpLogin(ftpUser, ftpPasswd);
@@ -58,7 +59,7 @@ void DiskFtp::ftpMkdir(QString dir)
 
 void DiskFtp::ftpRmdir(QString dir)
 {
-    ftpListDIR = dir;
+//    ftpListDIR = dir;
     if(cmdState == 0)//FTP未连接，连接FTP
     {
         ftpLogin(ftpUser, ftpPasswd);
@@ -66,6 +67,35 @@ void DiskFtp::ftpRmdir(QString dir)
     else if(cmdState == 2)
     {
         netFtp->rmdir(_ToSpecialEncoding(dir));
+    }
+}
+
+void DiskFtp::ftpRename(QString oldDir, QString newDir)
+{
+    if(cmdState == 0)//FTP未连接，连接FTP
+    {
+        ftpLogin(ftpUser, ftpPasswd);
+    }
+    else if(cmdState == 2)
+    {
+        netFtp->rename(oldDir, newDir);
+    }
+}
+
+void DiskFtp::ftpUpload(QString localFolder, QString fileName)
+{
+    if(cmdState == 0)//FTP未连接，连接FTP
+    {
+        ftpLogin(ftpUser, ftpPasswd);
+    }
+    else if(cmdState == 2)
+    {
+        QFile* fLocal = new QFile(localFolder);
+        if(!fLocal->open(QIODevice::ReadWrite))
+        {
+            qDebug("open error");
+        }
+        netFtp->put(fLocal, fileName);
     }
 }
 
@@ -137,5 +167,14 @@ void DiskFtp::ftpCommandFinished(int, bool error)
         if(error)
             qDebug()<<"QFtp::Mkdir error";
     }
+    else if(netFtp->currentCommand() == QFtp::Rename)
+    {
+        if(error)
+            qDebug()<<"QFtp::Rename error";
+    }
+    else if(netFtp->currentCommand() == QFtp::Put)
+    {
+        if(error)
+            qDebug()<<"QFtp::Put error";
+    }
 }
-

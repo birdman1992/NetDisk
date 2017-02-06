@@ -7,6 +7,7 @@
 #include <QMouseEvent>
 #include <QString>
 #include <QList>
+#include <QDateTime>
 
 namespace Ui {
 class QFolder;
@@ -23,6 +24,7 @@ public:
     void rename();
     void newfolder();
     void setParFolder(QFolder* par);
+    void setFolderTime(QDateTime fTime);
     QString fileName();
 
 private:
@@ -47,6 +49,7 @@ private:
         DIR,
         FILE,
     };
+    QDateTime folderTime;
     short fType;
     bool pasteEnable;
     bool selectEnable;

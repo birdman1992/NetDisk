@@ -23,6 +23,8 @@ public:
     void panelShow(QList<QFolder*> fPanel);
     void panelClear();
     void panelRefresh();
+    void panelCopy(QFolder* p);
+    void panelPaste();
     bool repeatCheck(QString* fName, QFolder* pFolder);
     void addFolder(QFolder* parFolder);
     QString getCurPath();
@@ -34,6 +36,7 @@ private:
     QList<QFolder*> folderPath;//根目录到当前目录文件夹路径
     QFolder* curDir;//当前目录
     QFolder* pFolder;//文件夹指针
+    QFolder* pClipboard;//剪贴板指针
     bool pasteEnable;
 
     /***右键菜单***/

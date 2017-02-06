@@ -142,7 +142,8 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
                                     background:rgb(255, 255, 255);\
                                     }");
             ui->name->setCursor(QCursor(Qt::IBeamCursor));
-            ui->name->selectAll();
+            ui->name->setFocus();
+            selectEnable = true;
         }
         else if(e->type() == QEvent::FocusOut)
         {
@@ -167,16 +168,18 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
 
 void QFolder::editFinish()
 {
-    folderName = ui->name->text();
     FilesPanel* p = (FilesPanel*)parent();
 
     if(newfile)
     {qDebug("newfile");
+        folderName = ui->name->text();
         while(p->repeatCheck(&folderName,this));
-        QString str = p->getCurPath() + folderName;
-        str = QString::fromLatin1((str.toUtf8()));
         p->ftpClient.ftpMkdir(p->getCurPath() + folderName);
         newfile = false;
+    }
+    else if(folderName != ui->name->text())
+    {
+        p->ftpClient.ftpRename(p->getCurPath() + folderName, p->getCurPath() + ui->name->text());
     }
     p->panelRefresh();
     this->setFocus();
@@ -197,6 +200,11 @@ void QFolder::newfolder()
 void QFolder::setParFolder(QFolder *par)
 {
     pardir = par;
+}
+
+void QFolder::setFolderTime(QDateTime fTime)
+{
+    folderTime = fTime;
 }
 
 QString QFolder::fileName()

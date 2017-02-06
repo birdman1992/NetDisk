@@ -13,6 +13,8 @@ public:
     void ftpList(QString dir);
     void ftpMkdir(QString dir);
     void ftpRmdir(QString dir);
+    void ftpRename(QString oldDir, QString newDir);
+    void ftpUpload(QString localFolder,QString fileName);
 
 
 private:
