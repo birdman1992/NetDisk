@@ -37,8 +37,8 @@ void DiskFtp::ftpList(QString dir)
         ftpLogin(ftpUser, ftpPasswd);
     }
     else if(cmdState == 2)
-    {qDebug()<<"list:"<<ftpListDIR;
-        netFtp->list(_ToSpecialEncoding(ftpListDIR));
+    {
+        netFtp->list(ftpListDIR);
     }
 }
 
@@ -52,7 +52,7 @@ void DiskFtp::ftpMkdir(QString dir)
     }
     else if(cmdState == 2)
     {
-        netFtp->mkdir(_ToSpecialEncoding(dir));
+        netFtp->mkdir(dir);
     }
 }
 
@@ -65,45 +65,10 @@ void DiskFtp::ftpRmdir(QString dir)
     }
     else if(cmdState == 2)
     {
-        netFtp->rmdir(_ToSpecialEncoding(dir));
+        netFtp->rmdir(dir);
     }
 }
 
-/***FTP编码转换函数***/
-QString DiskFtp::_FromSpecialEncoding(const QString &InputStr)//未使用
-{
-#ifdef Q_OS_WIN
-    return  QString::fromLocal8Bit(InputStr.toLatin1());
-#else
-    QTextCodec *codec = QTextCodec::codecForName("gbk");
-    if (codec)
-    {
-        return codec->toUnicode(InputStr.toLatin1());
-    }
-    else
-    {
-        return QString("");
-    }
-#endif
-}
-
-
-QString DiskFtp::_ToSpecialEncoding(const QString &InputStr)//可使用
-{
-#ifdef Q_OS_WIN
-    return QString::fromLatin1(InputStr.toUtf8());
-#else
-    QTextCodec *codec= QTextCodec::codecForName("gbk");
-    if (codec)
-    {
-        return QString::fromLatin1(codec->fromUnicode(InputStr));
-    }
-    else
-    {
-        return QString("");
-    }
-#endif
-}
 
 /***FTP命令处理槽函数***/
 void DiskFtp::ftpCommandFinished(int, bool error)
@@ -114,6 +79,10 @@ void DiskFtp::ftpCommandFinished(int, bool error)
     {
         if(error)
             qDebug()<<"QFtp::ConnectToHost error";
+        else
+        {
+
+        }
     }
     else if(netFtp->currentCommand() == QFtp::Login)
     {
@@ -127,9 +96,9 @@ void DiskFtp::ftpCommandFinished(int, bool error)
     }
     else if(netFtp->currentCommand() == QFtp::List)
     {
-        if(error)
+        if(!error)
         {
-            qDebug()<<"QFtp::List error";
+//            qDebug()<<"LIST";
         }
     }
     else if(netFtp->currentCommand() == QFtp::Mkdir)

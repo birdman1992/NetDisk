@@ -21,15 +21,12 @@ public:
     ~FilesPanel();
     DiskFtp ftpClient;
     void panelShow(QList<QFolder*> fPanel);
-    void panelClear();
-    void panelRefresh();
-    bool repeatCheck(QString* fName, QFolder* pFolder);
     void addFolder(QFolder* parFolder);
     QString getCurPath();
 
 private:
     Ui::FilesPanel *ui;
-    QList<QFolder*> curPanel;//当前面板包含的文件夹
+    QList<QFolder*> curPanel;//当前面板包含文件夹
     QList<QFolder*> dirTree;//目录树
     QList<QFolder*> folderPath;//根目录到当前目录文件夹路径
     QFolder* curDir;//当前目录
