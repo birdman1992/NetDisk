@@ -168,12 +168,17 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
 void QFolder::editFinish()
 {
     folderName = ui->name->text();
+    FilesPanel* p = (FilesPanel*)parent();
+
     if(newfile)
-    {
-        FilesPanel* p = (FilesPanel*)parent();
-        p->ftpClient.ftpMkdir(folderName);
+    {qDebug("newfile");
+        while(p->repeatCheck(&folderName,this));
+        QString str = p->getCurPath() + folderName;
+        str = QString::fromLatin1((str.toUtf8()));
+        p->ftpClient.ftpMkdir(p->getCurPath() + folderName);
         newfile = false;
     }
+    p->panelRefresh();
     this->setFocus();
     qDebug()<<"rename:"<<folderName;
 }
@@ -231,16 +236,12 @@ void QFolder::folderPaste()
 
 void QFolder::folderDelete()
 {
-    qDebug("delete");
-    folderName = ui->name->text();
-    if(newfile)
-    {
-        FilesPanel* p = (FilesPanel*)parent();
-        p->ftpClient.ftpRmdir(folderName);
-        newfile = false;
-    }
-    this->setFocus();
-    qDebug()<<"rename:"<<folderName;
+    FilesPanel* p = (FilesPanel*)parent();
+    QString delFile = p->getCurPath() + ui->name->text();
+    qDebug()<<"delete:"<<delFile;
+    p->ftpClient.ftpRmdir(delFile);
+    p->panelClear();
+    p->ftpClient.ftpList(p->getCurPath());
 }
 
 void QFolder::folderDownload()

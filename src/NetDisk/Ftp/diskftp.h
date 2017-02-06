@@ -21,6 +21,8 @@ private:
     QString ftpUser;
     QString ftpPasswd;
     QString ftpListDIR;
+    QString _FromSpecialEncoding(const QString &InputStr);
+    QString _ToSpecialEncoding(const QString &InputStr);
 
 signals:
     void listInfo(QUrlInfo);

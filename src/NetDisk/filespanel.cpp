@@ -69,7 +69,7 @@ void FilesPanel::panelShow(QList<QFolder*> fPanel)
 
 
     for(i=0; i<fPanel.count();)
-    {
+    {qDebug("1");
 
         fPanel.at(i)->move(offset_x + (i % count_x) * ele_wid, offset_y + j * ele_hei);
         fPanel.at(i)->show();
@@ -77,6 +77,35 @@ void FilesPanel::panelShow(QList<QFolder*> fPanel)
         if(!(i%count_x))
             j++;
     }
+}
+
+void FilesPanel::panelClear()
+{
+    while(!curPanel.isEmpty())
+        delete curPanel.takeFirst();
+}
+
+void FilesPanel::panelRefresh()
+{
+    qDebug("refresh");
+    panelClear();
+    ftpClient.ftpList(getCurPath());
+}
+
+bool FilesPanel::repeatCheck(QString *fName, QFolder* pFolder)
+{
+    int i;
+
+    for(i=0; i<curPanel.count(); i++)
+    {
+        if((*fName == curPanel.at(i)->fileName()) && (curPanel.at(i) != pFolder))
+        {qDebug("repeat");
+            *fName += "（复件）";
+            return true;
+        }
+    }
+
+    return false;
 }
 
 QString FilesPanel::getCurPath()
@@ -128,13 +157,13 @@ void FilesPanel::fileNew()
     curPanel<<pFolder;
     panelShow(curPanel);
     pFolder->newfolder();
-    folderPath<<pFolder;
+//    folderPath<<pFolder;
 //    ftpClient.ftpMkdir(getCurPath()+);
 }
 
 void FilesPanel::fileRefresh()
 {
-    qDebug("refresh");
+    panelRefresh();
 }
 
 void FilesPanel::fileSort()
@@ -152,8 +181,9 @@ void FilesPanel::fileUpload()
 }
 
 void FilesPanel::ftpGetListInfo(QUrlInfo info)
-{
-    pFolder = new QFolder(this,2,info.name());
+{qDebug("list info");
+    QString str = QString::fromUtf8(info.name().toLatin1());
+    pFolder = new QFolder(this,2,str);
     curPanel<<pFolder;
     panelShow(curPanel);
 }
