@@ -17,16 +17,19 @@ SOURCES += main.cpp\
         mainwidget.cpp \
     QFolder/qfolder.cpp \
     filespanel.cpp \
-    Ftp/diskftp.cpp
+    Ftp/diskftp.cpp \
+    pathview.cpp
 
 HEADERS  += mainwidget.h \
     QFolder/qfolder.h \
     filespanel.h \
-    Ftp/diskftp.h
+    Ftp/diskftp.h \
+    pathview.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \
-    filespanel.ui
+    filespanel.ui \
+    pathview.ui
 
 RESOURCES += \
     img.qrc

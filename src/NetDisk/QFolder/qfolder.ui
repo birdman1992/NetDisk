@@ -16,6 +16,9 @@
   <property name="windowTitle">
    <string>QFolder</string>
   </property>
+  <property name="whatsThis">
+   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;12312312&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+  </property>
   <property name="styleSheet">
    <string notr="true">QWidget#QFolder:focus{
 border:2px solid  rgb(171,214,234);

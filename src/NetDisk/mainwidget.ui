@@ -30,6 +30,16 @@
    </property>
    <layout class="QVBoxLayout" name="panelLayout"/>
   </widget>
+  <widget class="QColumnView" name="diskPath">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>130</y>
+     <width>461</width>
+     <height>41</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

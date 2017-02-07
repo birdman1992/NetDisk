@@ -65,6 +65,7 @@ private slots:
     void fileSort();
 
     void ftpGetListInfo(QUrlInfo info);
+    void ftpListShow();
     void ftpCdFinishi();
 };
 

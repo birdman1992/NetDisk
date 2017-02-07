@@ -30,6 +30,7 @@ private:
 signals:
     void listInfo(QUrlInfo);
     void cmdCd();
+    void cmdList();
     void needRefresh();
 
 public slots:

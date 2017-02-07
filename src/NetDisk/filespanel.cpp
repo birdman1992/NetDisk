@@ -64,6 +64,10 @@ void FilesPanel::panelShow(QList<QFolder*> fPanel)
     int j = 0;
     int offset_x = 20;
     int offset_y = 20;
+
+    if(fPanel.isEmpty())
+        return;
+
     int ele_wid = fPanel.at(i)->geometry().width() + offset_x;
     int ele_hei = fPanel.at(i)->geometry().height() + offset_y;
     int count_x = (this->geometry().width() - offset_x)/(ele_wid);
@@ -94,6 +98,7 @@ void FilesPanel::panelClear()
 void FilesPanel::panelRefresh()
 {
     qDebug("refresh");
+    connect(&ftpClient, SIGNAL(cmdList()), this, SLOT(ftpListShow()));
     panelClear();
     ftpClient.ftpList(getCurPath());
 }
@@ -213,8 +218,13 @@ void FilesPanel::ftpGetListInfo(QUrlInfo info)
 {qDebug("list info");
     QString str = QString::fromUtf8(info.name().toLatin1());
     pFolder = new QFolder(this,2,str);
-     info.lastModified();
+    pFolder->setFolderTime(info.lastModified());
     curPanel<<pFolder;
+}
+
+void FilesPanel::ftpListShow()
+{
+    disconnect(&ftpClient, SIGNAL(cmdList()), this, SLOT(ftpListShow()));
     panelShow(curPanel);
 }
 

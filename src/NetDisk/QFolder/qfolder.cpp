@@ -4,6 +4,8 @@
 #include <QtDebug>
 #include <QMenu>
 #include <QPainter>
+#include <QToolTip>
+#include <QTableWidget>
 #include "filespanel.h"
 
 QFolder::QFolder(QWidget *parent,short _type,QString fName) :
@@ -19,6 +21,9 @@ QFolder::QFolder(QWidget *parent,short _type,QString fName) :
     newfile = false;
     folderName = fName;
     ui->name->setText(folderName);
+    textwid = this->geometry().width()/8;
+    ui->name->setText(folderNameCut(ui->name->text(),12));
+//    this->setToolTip("sda");
 
     //初始化右键菜单项
     menu = new QMenu(this);
@@ -37,7 +42,6 @@ QFolder::QFolder(QWidget *parent,short _type,QString fName) :
     ui->name->setCursor(QCursor(Qt::ArrowCursor));
     ui->name->installEventFilter(this);
 
-    connect(this, SIGNAL(nameFocus()), this, SLOT(nameFocused()));
     connect(ui->name, SIGNAL(editingFinished()), this, SLOT(editFinish()));
     connect(act_rename, SIGNAL(triggered()), this, SLOT(folderRename()));
     connect(act_open, SIGNAL(triggered()), this, SLOT(folderOpen()));
@@ -117,12 +121,35 @@ void QFolder::mouseDoubleClickEvent(QMouseEvent*)
     folderOpen();
 }
 
+bool QFolder::event(QEvent *event)
+{
+    if(event->type() == QEvent::ToolTip)
+    {
+        QToolTip::showText(this->cursor().pos(),QString("名称:%1\n修改日期:%2")
+                 .arg(folderName).arg(folderTime.toString("yyyy-MM-dd \nhh:mm:ss dddd")));
+    }
+    return QWidget::event(event);
+}
+
+QString QFolder::folderNameCut(QString strIn, int cutLength)
+{
+    if(strIn.toLocal8Bit().length() > cutLength)
+        while(strIn.toLocal8Bit().length() > cutLength)
+            strIn = strIn.left(strIn.length()-1);
+    else
+        return strIn;
+
+    strIn += "...";
+    qDebug()<<"Folder name cut:"<<strIn;
+    return strIn;
+}
+
 /**********************
 SLOT
 **********************/
 
 void QFolder::nameFocused()
-{qDebug("rename");
+{
     ui->name->selectAll();
 }
 
@@ -132,7 +159,6 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
     {
         if(e->type() == QEvent::FocusIn)
         {
-
             this->setStyleSheet("QWidget#QFolder{\
                                 border:2px solid rgb(171,214,234);\
                                 background-color: rgb(230,243,252);\
@@ -142,7 +168,7 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
                                     background:rgb(255, 255, 255);\
                                     }");
             ui->name->setCursor(QCursor(Qt::IBeamCursor));
-            ui->name->selectAll();
+//            ui->name->selectAll();
             selectEnable = true;
         }
         else if(e->type() == QEvent::FocusOut)
@@ -159,6 +185,7 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
         }
         else if((e->type() == QEvent::MouseButtonRelease) && selectEnable)
         {qDebug("select");
+            ui->name->setText(folderName);
             ui->name->selectAll();
             selectEnable = false;
         }
@@ -171,29 +198,30 @@ void QFolder::editFinish()
     FilesPanel* p = (FilesPanel*)parent();
 
     if(newfile)
-    {qDebug("newfile");
-        folderName = ui->name->text();qDebug()<<p->getCurPath();
+    {
+        folderName = ui->name->text();qDebug()<<"newfile"<<folderName;
         while(p->repeatCheck(&folderName,this));
         p->ftpClient.ftpMkdir(p->getCurPath() + folderName);
+//        ui->name->setText(folderNameCut(ui->name->text(),12));
         newfile = false;
     }
     else if(folderName != ui->name->text())
     {
         p->ftpClient.ftpRename(p->getCurPath() + folderName, p->getCurPath() + ui->name->text());
+        qDebug()<<"rename:"<<folderName;
+        folderName = ui->name->text();
+        ui->name->setText(folderNameCut(ui->name->text(),12));
     }
+    else
+        ui->name->setText(folderNameCut(ui->name->text(),12));
     this->setFocus();
-    qDebug()<<"rename:"<<folderName;
-}
-
-void QFolder::rename()
-{
-    ui->name->setFocus();
 }
 
 void QFolder::newfolder()
 {
     newfile = true;
     ui->name->setFocus();
+    ui->name->selectAll();
 }
 
 void QFolder::setParFolder(QFolder *par)
@@ -214,7 +242,9 @@ QString QFolder::fileName()
 //右键菜单槽
 void QFolder::folderRename()
 {
-    ui->name->setFocus();
+    ui->name->setFocus();qDebug()<<"sdadw"<<folderName;
+    ui->name->setText(folderName);
+    ui->name->selectAll();
 }
 
 void QFolder::folderOpen()
@@ -246,11 +276,9 @@ void QFolder::folderPaste()
 void QFolder::folderDelete()
 {
     FilesPanel* p = (FilesPanel*)parent();
-    QString delFile = p->getCurPath() + ui->name->text()+"/";
+    QString delFile = p->getCurPath() + folderName+"/";
     qDebug()<<"delete:"<<delFile;
     p->ftpClient.ftpRmdir(delFile);
-//    p->panelClear();
-//    p->ftpClient.ftpList(p->getCurPath());
 }
 
 void QFolder::folderDownload()

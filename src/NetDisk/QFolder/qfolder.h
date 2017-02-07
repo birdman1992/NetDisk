@@ -55,12 +55,16 @@ private:
     bool selectEnable;
     bool newfile;
     QString folderName;
+    int textwid;
 
     void paintEvent(QPaintEvent*);
     void focusInEvent(QFocusEvent*);
     void focusOutEvent(QFocusEvent*);
     void contextMenuEvent(QContextMenuEvent *);
     void mouseDoubleClickEvent(QMouseEvent*);
+    bool event(QEvent *event);
+
+    QString folderNameCut(QString strIn, int cutLength);
 
 protected:
     ushort t;
