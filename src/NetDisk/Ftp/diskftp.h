@@ -15,6 +15,7 @@ public:
     void ftpRmdir(QString dir);
     void ftpRename(QString oldDir, QString newDir);
     void ftpUpload(QString localFolder,QString fileName);
+    void ftpCd(QString dir);
 
 
 private:
@@ -28,6 +29,9 @@ private:
 
 signals:
     void listInfo(QUrlInfo);
+    void cmdCd();
+    void needRefresh();
+
 public slots:
 
 private slots:

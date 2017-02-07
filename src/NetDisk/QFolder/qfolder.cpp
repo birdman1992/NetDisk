@@ -142,7 +142,7 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
                                     background:rgb(255, 255, 255);\
                                     }");
             ui->name->setCursor(QCursor(Qt::IBeamCursor));
-            ui->name->setFocus();
+            ui->name->selectAll();
             selectEnable = true;
         }
         else if(e->type() == QEvent::FocusOut)
@@ -158,7 +158,7 @@ bool QFolder::eventFilter(QObject *watched,QEvent *e)
             selectEnable = true;
         }
         else if((e->type() == QEvent::MouseButtonRelease) && selectEnable)
-        {
+        {qDebug("select");
             ui->name->selectAll();
             selectEnable = false;
         }
@@ -172,7 +172,7 @@ void QFolder::editFinish()
 
     if(newfile)
     {qDebug("newfile");
-        folderName = ui->name->text();
+        folderName = ui->name->text();qDebug()<<p->getCurPath();
         while(p->repeatCheck(&folderName,this));
         p->ftpClient.ftpMkdir(p->getCurPath() + folderName);
         newfile = false;
@@ -181,7 +181,6 @@ void QFolder::editFinish()
     {
         p->ftpClient.ftpRename(p->getCurPath() + folderName, p->getCurPath() + ui->name->text());
     }
-    p->panelRefresh();
     this->setFocus();
     qDebug()<<"rename:"<<folderName;
 }
@@ -221,6 +220,8 @@ void QFolder::folderRename()
 void QFolder::folderOpen()
 {
     qDebug("open");
+    FilesPanel* par = (FilesPanel*)parent();
+    par->panelCd(folderName);
 }
 
 void QFolder::folderCopy()
@@ -245,11 +246,11 @@ void QFolder::folderPaste()
 void QFolder::folderDelete()
 {
     FilesPanel* p = (FilesPanel*)parent();
-    QString delFile = p->getCurPath() + ui->name->text();
+    QString delFile = p->getCurPath() + ui->name->text()+"/";
     qDebug()<<"delete:"<<delFile;
     p->ftpClient.ftpRmdir(delFile);
-    p->panelClear();
-    p->ftpClient.ftpList(p->getCurPath());
+//    p->panelClear();
+//    p->ftpClient.ftpList(p->getCurPath());
 }
 
 void QFolder::folderDownload()

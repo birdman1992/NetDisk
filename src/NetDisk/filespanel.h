@@ -25,6 +25,7 @@ public:
     void panelRefresh();
     void panelCopy(QFolder* p);
     void panelPaste();
+    void panelCd(QString dir);
     bool repeatCheck(QString* fName, QFolder* pFolder);
     void addFolder(QFolder* parFolder);
     QString getCurPath();
@@ -33,10 +34,11 @@ private:
     Ui::FilesPanel *ui;
     QList<QFolder*> curPanel;//当前面板包含的文件夹
     QList<QFolder*> dirTree;//目录树
-    QList<QFolder*> folderPath;//根目录到当前目录文件夹路径
+    QList<QString*> folderPath;//根目录到当前目录文件夹路径
     QFolder* curDir;//当前目录
     QFolder* pFolder;//文件夹指针
     QFolder* pClipboard;//剪贴板指针
+    QString* pCdFolder;//cd指令目录指针
     bool pasteEnable;
 
     /***右键菜单***/
@@ -61,8 +63,9 @@ private slots:
     void fileRefresh();
     void fileUpload();
     void fileSort();
-    void ftpGetListInfo(QUrlInfo info);
 
+    void ftpGetListInfo(QUrlInfo info);
+    void ftpCdFinishi();
 };
 
 #endif // FILESPANEL_H

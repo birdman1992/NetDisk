@@ -19,6 +19,7 @@ FilesPanel::FilesPanel(QWidget *parent) :
     folderPath.clear();
     pFolder = NULL;
     curDir = NULL;
+    pCdFolder = NULL;
 
     //主菜单
     menu = new QMenu(this);
@@ -31,8 +32,10 @@ FilesPanel::FilesPanel(QWidget *parent) :
     connect(act_sort, SIGNAL(triggered(bool)), this, SLOT(fileSort()));
     connect(act_upload, SIGNAL(triggered(bool)), this, SLOT(fileUpload()));
 
-    //FTP LIST槽
+    //FTP槽
     connect(&ftpClient, SIGNAL(listInfo(QUrlInfo)), this, SLOT(ftpGetListInfo(QUrlInfo)));
+    connect(&ftpClient, SIGNAL(needRefresh()), this, SLOT(fileRefresh()));
+    connect(&ftpClient, SIGNAL(cmdCd()), this, SLOT(ftpCdFinishi()));
 
     //排序子菜单
     menu_sort = new QMenu(this);
@@ -79,14 +82,13 @@ void FilesPanel::panelShow(QList<QFolder*> fPanel)
 }
 
 void FilesPanel::panelClear()
-{qDebug("%d",curPanel.count());
+{
     QFolder* f;
     while(!curPanel.isEmpty())
     {
         f = curPanel.takeFirst();
         f->deleteLater();
     }
-
 }
 
 void FilesPanel::panelRefresh()
@@ -104,6 +106,13 @@ void FilesPanel::panelCopy(QFolder *p)
 void FilesPanel::panelPaste()
 {
     qDebug("paste");
+}
+
+void FilesPanel::panelCd(QString dir)
+{
+    qDebug()<<"FTP:cd"<<dir;
+    pCdFolder = new QString(dir);
+    ftpClient.ftpCd(*pCdFolder);
 }
 
 bool FilesPanel::repeatCheck(QString *fName, QFolder* pFolder)
@@ -130,11 +139,11 @@ QString FilesPanel::getCurPath()
     while(i<folderPath.count())
     {
         str += "/";
-        str += folderPath.at(i)->fileName();
+        str += folderPath.at(i);
         i++;
     }
     str += "/";
-//    qDebug()<<str;
+    qDebug()<<"current path:"<<str;
     return str;
 }
 /***↑↑↑↑公有接口↑↑↑↑***/
@@ -196,7 +205,7 @@ void FilesPanel::fileUpload()
         return;
 
     ftpClient.ftpUpload(upFile, getCurPath() + fName);
-    panelRefresh();
+//    panelRefresh();
 //    qDebug()<<upFile<<(getCurPath() + fName);
 }
 
@@ -207,6 +216,16 @@ void FilesPanel::ftpGetListInfo(QUrlInfo info)
      info.lastModified();
     curPanel<<pFolder;
     panelShow(curPanel);
+}
+
+void FilesPanel::ftpCdFinishi()
+{
+    if(pCdFolder == NULL)
+        return;
+
+    folderPath<<pCdFolder;
+    pCdFolder = NULL;
+    panelRefresh();
 }
 
 

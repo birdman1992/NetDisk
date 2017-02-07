@@ -45,14 +45,15 @@ void DiskFtp::ftpList(QString dir)
 
 //FTP创建目录
 void DiskFtp::ftpMkdir(QString dir)
-{
+{qDebug()<<"mk";
 //    ftpListDIR = dir;
     if(cmdState == 0)//FTP未连接，连接FTP
-    {
+    {qDebug()<<"2";
         ftpLogin(ftpUser, ftpPasswd);
     }
     else if(cmdState == 2)
     {
+        qDebug()<<"mkdir"<<dir;
         netFtp->mkdir(_ToSpecialEncoding(dir));
     }
 }
@@ -78,7 +79,7 @@ void DiskFtp::ftpRename(QString oldDir, QString newDir)
     }
     else if(cmdState == 2)
     {
-        netFtp->rename(oldDir, newDir);
+        netFtp->rename(_ToSpecialEncoding(oldDir), _ToSpecialEncoding(newDir));
     }
 }
 
@@ -95,7 +96,19 @@ void DiskFtp::ftpUpload(QString localFolder, QString fileName)
         {
             qDebug("open error");
         }
-        netFtp->put(fLocal, fileName);
+        netFtp->put(fLocal, _ToSpecialEncoding(fileName));
+    }
+}
+
+void DiskFtp::ftpCd(QString dir)
+{
+    if(cmdState == 0)//FTP未连接，连接FTP
+    {
+        ftpLogin(ftpUser, ftpPasswd);
+    }
+    else if(cmdState == 2)
+    {
+        netFtp->cd(_ToSpecialEncoding(dir));
     }
 }
 
@@ -140,6 +153,10 @@ void DiskFtp::ftpCommandFinished(int, bool error)
 {
     if(!netFtp)
         return;
+
+    if(error)
+        emit needRefresh();
+
     if(netFtp->currentCommand() == QFtp::ConnectToHost)
     {
         if(error)
@@ -152,7 +169,7 @@ void DiskFtp::ftpCommandFinished(int, bool error)
         else
         {
             cmdState = 2;//ftp已连接
-            netFtp->list(ftpListDIR);
+            emit needRefresh();
         }
     }
     else if(netFtp->currentCommand() == QFtp::List)
@@ -166,15 +183,31 @@ void DiskFtp::ftpCommandFinished(int, bool error)
     {
         if(error)
             qDebug()<<"QFtp::Mkdir error";
+        emit needRefresh();
     }
     else if(netFtp->currentCommand() == QFtp::Rename)
     {
         if(error)
             qDebug()<<"QFtp::Rename error";
+        emit needRefresh();
     }
     else if(netFtp->currentCommand() == QFtp::Put)
     {
         if(error)
             qDebug()<<"QFtp::Put error";
+        emit needRefresh();
+    }
+    else if(netFtp->currentCommand() == QFtp::Cd)
+    {
+        if(error)
+            qDebug()<<"QFtp::Cd error";
+        else
+            emit cmdCd();
+    }
+    else if(netFtp->currentCommand() == QFtp::Rmdir)
+    {
+        if(error)
+            qDebug()<<"QFtp::Rmdir error";
+        emit needRefresh();
     }
 }
