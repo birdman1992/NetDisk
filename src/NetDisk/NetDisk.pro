@@ -18,18 +18,22 @@ SOURCES += main.cpp\
     QFolder/qfolder.cpp \
     filespanel.cpp \
     Ftp/diskftp.cpp \
-    pathview.cpp
+    Pathview/pathview.cpp \
+    Pathview/pathbox.cpp
 
 HEADERS  += mainwidget.h \
     QFolder/qfolder.h \
     filespanel.h \
     Ftp/diskftp.h \
-    pathview.h
+    Pathview/pathview.h \
+    Pathview/pathbox.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \
     filespanel.ui \
-    pathview.ui
+    Pathview/pathview.ui
 
 RESOURCES += \
     img.qrc
+
+DISTFILES +=

@@ -116,8 +116,25 @@ void FilesPanel::panelPaste()
 void FilesPanel::panelCd(QString dir)
 {
     qDebug()<<"FTP:cd"<<dir;
+
+//    bool deletTail = false;
+
+//    for(int i=0;i <folderPath.count(); i++)
+//    {
+//        if(dir == *(folderPath.at(i)))
+//        {
+//            deletTail = true;
+//        }
+//        if(deletTail)
+//        {
+//            QString* str = folderPath.takeAt(i);
+//            delete str;
+//            continue;
+//        }
+//    }
+
     pCdFolder = new QString(dir);
-    ftpClient.ftpCd(*pCdFolder);
+    ftpClient.ftpCd(dir);
 }
 
 bool FilesPanel::repeatCheck(QString *fName, QFolder* pFolder)
@@ -162,6 +179,11 @@ void FilesPanel::paintEvent(QPaintEvent*)
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
+void FilesPanel::pathClear()
+{
+//    while()
+}
+
 //菜单
 void FilesPanel::contextMenuEvent(QContextMenuEvent*)
 {//qDebug("menu");
@@ -178,6 +200,15 @@ void FilesPanel::contextMenuEvent(QContextMenuEvent*)
     smenu->exec(cur.pos());
 }
 
+/***公有槽***/
+void FilesPanel::cmdCd(QString dir)
+{
+    panelCd(dir);
+}
+
+
+
+/***私有槽***/
 //菜单槽
 void FilesPanel::fileNew()
 {
@@ -225,6 +256,7 @@ void FilesPanel::ftpGetListInfo(QUrlInfo info)
 void FilesPanel::ftpListShow()
 {
     disconnect(&ftpClient, SIGNAL(cmdList()), this, SLOT(ftpListShow()));
+    emit pathChanged(folderPath, curPanel);
     panelShow(curPanel);
 }
 
@@ -233,7 +265,20 @@ void FilesPanel::ftpCdFinishi()
     if(pCdFolder == NULL)
         return;
 
-    folderPath<<pCdFolder;
+    while(!folderPath.isEmpty())
+    {
+        QString* str = folderPath.takeFirst();
+        delete str;
+    }
+
+    QStringList l = pCdFolder->split('/',QString::SkipEmptyParts);
+    for(int i=0; i< l.count(); i++)
+    {
+        QString* str = new QString(l.at(i));
+        qDebug()<<*str;
+        folderPath<<str;
+    }
+
     pCdFolder = NULL;
     panelRefresh();
 }

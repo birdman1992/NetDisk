@@ -30,6 +30,9 @@ public:
     void addFolder(QFolder* parFolder);
     QString getCurPath();
 
+public slots:
+    void cmdCd(QString dir);
+
 private:
     Ui::FilesPanel *ui;
     QList<QFolder*> curPanel;//当前面板包含的文件夹
@@ -57,6 +60,7 @@ private:
 
     void contextMenuEvent(QContextMenuEvent*);
     void paintEvent(QPaintEvent*);
+    void pathClear();
 
 private slots:
     void fileNew();
@@ -67,6 +71,9 @@ private slots:
     void ftpGetListInfo(QUrlInfo info);
     void ftpListShow();
     void ftpCdFinishi();
+
+signals:
+    void pathChanged(QList<QString*>, QList<QFolder*>);//当前目录路径，当前目录的文件列表
 };
 
 #endif // FILESPANEL_H

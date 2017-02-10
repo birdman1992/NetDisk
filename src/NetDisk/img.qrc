@@ -2,5 +2,16 @@
     <qresource prefix="/">
         <file>imgs/folder.png</file>
         <file>imgs/item.ico</file>
+        <file>imgs/arrow_down.png</file>
+        <file>imgs/arrow_rignt.png</file>
+        <file>imgs/down.ico</file>
+        <file>imgs/right.ico</file>
+        <file>imgs/folder_m.ico</file>
+        <file>imgs/logo.png</file>
+        <file>imgs/sidebar.ico</file>
+        <file>imgs/close.ico</file>
+        <file>imgs/max.ico</file>
+        <file>imgs/maxmin.ico</file>
+        <file>imgs/min.ico</file>
     </qresource>
 </RCC>

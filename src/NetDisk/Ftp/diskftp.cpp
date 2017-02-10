@@ -177,10 +177,10 @@ void DiskFtp::ftpCommandFinished(int, bool error)
         if(error)
         {
             qDebug()<<"QFtp::List error";
+            return;
         }
         qDebug("cmdList");
         emit cmdList();
-
     }
     else if(netFtp->currentCommand() == QFtp::Mkdir)
     {

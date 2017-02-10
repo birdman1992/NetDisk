@@ -6,12 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>391</width>
-    <height>40</height>
+    <width>520</width>
+    <height>49</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">#PathView{
+border:1px solid;
+background-color: rgb(255, 255, 255);
+}
+
+
+</string>
   </property>
  </widget>
  <resources/>

@@ -251,7 +251,7 @@ void QFolder::folderOpen()
 {
     qDebug("open");
     FilesPanel* par = (FilesPanel*)parent();
-    par->panelCd(folderName);
+    par->panelCd(par->getCurPath() + folderName);
 }
 
 void QFolder::folderCopy()
