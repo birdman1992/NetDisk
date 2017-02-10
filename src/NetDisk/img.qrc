@@ -13,5 +13,6 @@
         <file>imgs/max.ico</file>
         <file>imgs/maxmin.ico</file>
         <file>imgs/min.ico</file>
+        <file>imgs/logo1.png</file>
     </qresource>
 </RCC>

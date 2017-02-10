@@ -44,16 +44,16 @@ void MainWidget::initSilidebar()
 {
     ui->sliderbar->setIconSize(QSize(50,50));
     QListWidgetItem* item = new QListWidgetItem(QIcon(":/imgs/sidebar.ico"),"我的文件");
-    item->setSizeHint(QSize(145,75));
+    item->setSizeHint(QSize(105,75));
     ui->sliderbar->addItem(item);
     item = new QListWidgetItem(QIcon(":/imgs/sidebar.ico"),"他人共享");
-    item->setSizeHint(QSize(145,75));
+    item->setSizeHint(QSize(105,75));
     ui->sliderbar->addItem(item);
     item = new QListWidgetItem(QIcon(":/imgs/sidebar.ico"),"链接管理");
-    item->setSizeHint(QSize(145,75));
+    item->setSizeHint(QSize(105,75));
     ui->sliderbar->addItem(item);
     item = new QListWidgetItem(QIcon(":/imgs/sidebar.ico"),"文件管理");
-    item->setSizeHint(QSize(145,75));
+    item->setSizeHint(QSize(105,75));
     ui->sliderbar->addItem(item);
 }
 
