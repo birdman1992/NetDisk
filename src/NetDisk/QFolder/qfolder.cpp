@@ -22,6 +22,7 @@ QFolder::QFolder(QWidget *parent,short _type,QString fName) :
     folderName = fName;
     ui->name->setText(folderName);
     textwid = this->geometry().width()/8;
+    setImg();
     ui->name->setText(folderNameCut(ui->name->text(),12));
 //    this->setToolTip("sda");
 
@@ -144,6 +145,47 @@ QString QFolder::folderNameCut(QString strIn, int cutLength)
     return strIn;
 }
 
+void QFolder::setImg()
+{
+    QString qss;
+    switch(fType)
+    {
+        case DIR_COMMON:
+            qss = QString("#img{border-image:url(\":/imgs/60x60/普通文件夹.png\")}");qDebug("123"); break;
+        case DIR_ENSHRINE:
+            qss = QString("#img{border-image:url(\":/imgs/60x60/收藏文件夹.png\")}");break;
+        case DIR_LOCK:
+            qss = QString("#img{border-image:url(\":/imgs/60x60/锁定文件夹.png\")}");break;
+        case DIR_SHARE:
+            qss = QString("#img{border-image:url(\":/imgs/60x60/共享文件夹.png\")}");break;
+
+        case FILE_APK:
+            qss = QString("#img{border-image:url(\":/imgs/60x60/apk.png\")}");break;
+        case FILE_DOC:
+            qss = QString("#img{border-image:url(\":/imgs/60x60/doc.png\")}");break;
+        case FILE_MP3:
+            qss = QString("#img{border-image:url(\":/imgs/60x60/mp3.png\")}");break;
+        case FILE_MP4:
+            qss = QString("#img{border-image:url(\":/imgs/60x60/mp4.png\")}");break;
+        case FILE_PDF:
+            qss = QString("#img{border-image:url(\":/imgs/60x60/pdf.png\")}");break;
+        case FILE_PPT:
+            qss = QString("#img{border-image:url(\":/imgs/60x60/ppt.png\")}");break;
+        case FILE_RAR:
+            qss = QString("#img{border-image:url(\":/imgs/60x60/rar.png\")}");break;
+        case FILE_TXT:
+            qss = QString("#img{border-image:url(\":/imgs/60x60/txt.png\")}");break;
+        case FILE_XLS:
+            qss = QString("#img{border-image:url(\":/imgs/60x60/xls.png\")}");break;
+        case FILE_ZIP:
+            qss = QString("#img{border-image:url(\":/imgs/60x60/zip.png\")}");break;
+        case FILE_DEFAULT:
+            qss = QString("#img{border-image:url(\":/imgs/60x60/缺省文件格式.png\")}");break;
+        default:break;
+    }
+    ui->img->setStyleSheet(qss);
+}
+
 /**********************
 SLOT
 **********************/
@@ -232,6 +274,11 @@ void QFolder::setParFolder(QFolder *par)
 void QFolder::setFolderTime(QDateTime fTime)
 {
     folderTime = fTime;
+}
+
+short QFolder::folderType()
+{
+    return fType;
 }
 
 QString QFolder::fileName()

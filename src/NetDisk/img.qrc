@@ -8,11 +8,45 @@
         <file>imgs/right.ico</file>
         <file>imgs/folder_m.ico</file>
         <file>imgs/logo.png</file>
-        <file>imgs/sidebar.ico</file>
         <file>imgs/close.ico</file>
         <file>imgs/max.ico</file>
         <file>imgs/maxmin.ico</file>
         <file>imgs/min.ico</file>
         <file>imgs/logo1.png</file>
+        <file>imgs/slidebar/文件同步.ico</file>
+        <file>imgs/slidebar/我的文件.ico</file>
+        <file>imgs/slidebar/左侧菜单悬停.png</file>
+        <file>imgs/slidebar/链接管理.ico</file>
+        <file>imgs/slidebar/他人共享.ico</file>
+        <file>imgs/slidebar/sidebar.ico</file>
+        <file>imgs/60x60/apk.png</file>
+        <file>imgs/60x60/doc.png</file>
+        <file>imgs/60x60/mp3.png</file>
+        <file>imgs/60x60/mp4.png</file>
+        <file>imgs/60x60/pdf.png</file>
+        <file>imgs/60x60/ppt.png</file>
+        <file>imgs/60x60/rar.png</file>
+        <file>imgs/60x60/txt.png</file>
+        <file>imgs/60x60/xls.png</file>
+        <file>imgs/60x60/zip.png</file>
+        <file>imgs/60x60/共享文件夹.png</file>
+        <file>imgs/60x60/普通文件夹.png</file>
+        <file>imgs/60x60/缺省文件格式.png</file>
+        <file>imgs/60x60/收藏文件夹.png</file>
+        <file>imgs/60x60/锁定文件夹.png</file>
+        <file>imgs/function/+-共享.png</file>
+        <file>imgs/function/+-还原.png</file>
+        <file>imgs/function/+-链接分享.png</file>
+        <file>imgs/function/+-删除.png</file>
+        <file>imgs/function/+-上传.png</file>
+        <file>imgs/function/+-下载.png</file>
+        <file>imgs/function/+-新建文件夹.png</file>
+        <file>imgs/function/Arrow-left.png</file>
+        <file>imgs/function/Arrow-right.png</file>
+        <file>imgs/function/Clock.png</file>
+        <file>imgs/function/search.png</file>
+        <file>imgs/function/Share.png</file>
+        <file>imgs/function/当前位置-home.png</file>
+        <file>imgs/function/当前位置-刷新.png</file>
     </qresource>
 </RCC>

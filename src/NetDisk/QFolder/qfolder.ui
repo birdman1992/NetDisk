@@ -72,7 +72,7 @@ background-color: rgb(230,243,252);
         </sizepolicy>
        </property>
        <property name="styleSheet">
-        <string notr="true">border-image: url(:/imgs/folder.png);</string>
+        <string notr="true"/>
        </property>
        <property name="text">
         <string/>

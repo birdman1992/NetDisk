@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">#FilesPanel{border: 0px solid grey;
+    background: #FFFFFF;}</string>
+  </property>
  </widget>
  <resources/>
  <connections/>

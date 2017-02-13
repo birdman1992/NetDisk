@@ -184,6 +184,46 @@ void FilesPanel::pathClear()
 //    while()
 }
 
+short FilesPanel::folderTypeJudge(QString fName, bool isDir)
+{
+    if(isDir)
+    {
+        if(fName == "共享文件夹")
+            return QFolder::DIR_SHARE;
+        else if(fName == "私密文件")
+            return QFolder::DIR_LOCK;
+        else if(fName == "我的收藏")
+            return QFolder::DIR_ENSHRINE;
+        else
+            return QFolder::DIR_COMMON;
+    }
+    else
+    {
+        if(fName.endsWith(".apk", Qt::CaseInsensitive))
+            return QFolder::FILE_APK;
+        else if(fName.endsWith(".doc", Qt::CaseInsensitive) || fName.endsWith(".docx"))
+            return QFolder::FILE_DOC;
+        else if(fName.endsWith(".mp3", Qt::CaseInsensitive))
+            return QFolder::FILE_MP3;
+        else if(fName.endsWith(".mp4", Qt::CaseInsensitive))
+            return QFolder::FILE_MP4;
+        else if(fName.endsWith(".pdf", Qt::CaseInsensitive))
+            return QFolder::FILE_PDF;
+        else if(fName.endsWith(".ppt", Qt::CaseInsensitive))
+            return QFolder::FILE_PPT;
+        else if(fName.endsWith(".rar", Qt::CaseInsensitive))
+            return QFolder::FILE_RAR;
+        else if(fName.endsWith(".txt", Qt::CaseInsensitive))
+            return QFolder::FILE_TXT;
+        else if(fName.endsWith(".xls", Qt::CaseInsensitive) || fName.endsWith("xlsx", Qt::CaseInsensitive))
+            return QFolder::FILE_XLS;
+        else if(fName.endsWith(".zip", Qt::CaseInsensitive))
+            return QFolder::FILE_ZIP;
+        else
+            return QFolder::FILE_DEFAULT;
+    }
+}
+
 //菜单
 void FilesPanel::contextMenuEvent(QContextMenuEvent*)
 {//qDebug("menu");
@@ -246,11 +286,15 @@ void FilesPanel::fileUpload()
 }
 
 void FilesPanel::ftpGetListInfo(QUrlInfo info)
-{qDebug("list info");
+{
     QString str = QString::fromUtf8(info.name().toLatin1());
-    pFolder = new QFolder(this,2,str);
+    qDebug()<<"list info"<<folderTypeJudge(str,info.isDir());
+    pFolder = new QFolder(this,folderTypeJudge(str,info.isDir()),str);
     pFolder->setFolderTime(info.lastModified());
-    curPanel<<pFolder;
+    if(info.isDir())
+        curPanel.insert(0, pFolder);
+    else
+        curPanel<<pFolder;
 }
 
 void FilesPanel::ftpListShow()

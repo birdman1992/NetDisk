@@ -43,26 +43,25 @@ void PathView::styleInit()
                     color: rgb(0, 170, 255);\
                 }\
                 #PathView{\
-                    border:1px solid;\
+                    border:1px solid rgb(187, 187, 187);\
                     background-color: rgb(255, 255, 255);\
                 }\
                 QComboBox::drop-down {\
                     subcontrol-origin: padding;\
                     subcontrol-position: top right;\
                     width: 15px;\
-                    border-top-right-radius: 3px; /* same radius as the QComboBox */\
-                    \
+                    border-top-right-radius: 3px;\
                 }\
-                QComboBox{\color: rgb(0, 170, 255);\
-                    border: 5px; image: url(:/imgs/arrow_rignt.png);}\
+                QComboBox{color: rgb(0, 170, 255);\
+                    border: 5px; image: url(:/imgs/arrow_rignt.png);\
+                }\
                 QComboBox:on{\
-                    border: 5px; image: url(:/imgs/arrow_down.png);}"\
+                    border: 5px; image: url(:/imgs/arrow_down.png);}"
                            );
 }
 
 void PathView::pathClear()
 {
-    int i=0;
     QList<QAbstractButton*> btns = pathBtn.buttons();
     QPushButton* btn;
     PathBox* pbox;

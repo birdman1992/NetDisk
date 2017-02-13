@@ -61,6 +61,7 @@ private:
     void contextMenuEvent(QContextMenuEvent*);
     void paintEvent(QPaintEvent*);
     void pathClear();
+    short folderTypeJudge(QString fName,bool isDir);
 
 private slots:
     void fileNew();

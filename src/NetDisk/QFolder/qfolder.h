@@ -25,7 +25,28 @@ public:
     void newfolder();
     void setParFolder(QFolder* par);
     void setFolderTime(QDateTime fTime);
+    short folderType();
     QString fileName();
+
+    /***属性***/
+    enum folderType
+    {
+        DIR_COMMON,
+        DIR_SHARE,
+        DIR_ENSHRINE,
+        DIR_LOCK,
+        FILE_APK,
+        FILE_DOC,
+        FILE_MP3,
+        FILE_MP4,
+        FILE_PDF,
+        FILE_PPT,
+        FILE_RAR,
+        FILE_TXT,
+        FILE_XLS,
+        FILE_ZIP,
+        FILE_DEFAULT,
+    };
 
 private:
     Ui::QFolder *ui;
@@ -43,12 +64,6 @@ private:
     QAction* act_download;
     QAction* act_rename;
 
-    /***属性***/
-    enum folderType
-    {
-        DIR,
-        FILE,
-    };
     QDateTime folderTime;
     short fType;
     bool pasteEnable;
@@ -65,6 +80,7 @@ private:
     bool event(QEvent *event);
 
     QString folderNameCut(QString strIn, int cutLength);
+    void setImg();
 
 protected:
     ushort t;

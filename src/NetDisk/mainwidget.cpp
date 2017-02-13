@@ -18,10 +18,13 @@ MainWidget::MainWidget(QWidget *parent) :
 
     //路径面板
     pathView = new PathView(this);
+    pathView->setMaximumHeight(49);
+    pathView->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
     ui->pathLayout->addWidget(pathView);
 
     //文件面板
     QScrollArea* scrollFolder = new QScrollArea(this);
+    scrollFolder->setFrameShape(QFrame::NoFrame);
     scrollFolder->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     scrollFolder->setWidgetResizable(true);
     ui->panelLayout->addWidget(scrollFolder);
@@ -42,19 +45,21 @@ MainWidget::~MainWidget()
 
 void MainWidget::initSilidebar()
 {
-    ui->sliderbar->setIconSize(QSize(50,50));
-    QListWidgetItem* item = new QListWidgetItem(QIcon(":/imgs/sidebar.ico"),"我的文件");
-    item->setSizeHint(QSize(105,75));
+    ui->sliderbar->setIconSize(QSize(50,45));
+    QListWidgetItem* item = new QListWidgetItem(QIcon(":/imgs/slidebar/我的文件.ico"),"我的文件");
+    item->setSizeHint(QSize(81,74));
     ui->sliderbar->addItem(item);
-    item = new QListWidgetItem(QIcon(":/imgs/sidebar.ico"),"他人共享");
-    item->setSizeHint(QSize(105,75));
+    item = new QListWidgetItem(QIcon(":/imgs/slidebar/他人共享.ico"),"他人共享");
+    item->setSizeHint(QSize(81,74));
     ui->sliderbar->addItem(item);
-    item = new QListWidgetItem(QIcon(":/imgs/sidebar.ico"),"链接管理");
-    item->setSizeHint(QSize(105,75));
+    item = new QListWidgetItem(QIcon(":/imgs/slidebar/链接管理.ico"),"链接管理");
+    item->setSizeHint(QSize(81,74));
     ui->sliderbar->addItem(item);
-    item = new QListWidgetItem(QIcon(":/imgs/sidebar.ico"),"文件管理");
-    item->setSizeHint(QSize(105,75));
+    item = new QListWidgetItem(QIcon(":/imgs/slidebar/文件同步.ico"),"文件同步");
+    item->setSizeHint(QSize(81,74));
     ui->sliderbar->addItem(item);
+
+
 }
 
 //鼠标事件
