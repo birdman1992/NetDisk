@@ -14,8 +14,13 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">#FilesPanel{border: 0px solid grey;
-    background: #FFFFFF;}</string>
+   <string notr="true">#FilesPanel{
+background-color: rgb(244, 244, 244);
+border:1px solid rgb(234, 234, 234);
+border-left:0px;
+border-right:0px;
+border-bottom:0px;
+background: #FFFFFF;}</string>
   </property>
  </widget>
  <resources/>

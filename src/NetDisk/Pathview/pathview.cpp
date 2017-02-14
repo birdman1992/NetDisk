@@ -45,6 +45,8 @@ void PathView::styleInit()
                 #PathView{\
                     border:1px solid rgb(187, 187, 187);\
                     background-color: rgb(255, 255, 255);\
+                    border-left-width:0px;\
+                    border-right-width:0px;\
                 }\
                 QComboBox::drop-down {\
                     subcontrol-origin: padding;\
@@ -148,7 +150,7 @@ void PathView::boxClicked(QString file)
 void PathView::pathViewPaint(QList<QString*> pathIn, QList<QFolder*> fileListIn)
 {
     int x_offset = 0;
-    int _size = this->geometry().height()-2;
+    int _size = this->geometry().height()-4;
     int i;
     int j;
     QString* str;
@@ -171,7 +173,7 @@ void PathView::pathViewPaint(QList<QString*> pathIn, QList<QFolder*> fileListIn)
         pathBtn.addButton(pBtn,i);
         rct = fm.boundingRect(*str);
         pBtn->resize(rct.width()+BTN_INTERVAL,_size);
-        pBtn->move(x_offset, 1);
+        pBtn->move(x_offset, 3);
         x_offset += pBtn->width();
         pBtn->setCursor(QCursor(Qt::PointingHandCursor));
         pBtn->show();
@@ -179,7 +181,7 @@ void PathView::pathViewPaint(QList<QString*> pathIn, QList<QFolder*> fileListIn)
         pBox1 = new PathBox(this);
         pBox1->resize(_size/2, _size);
 
-        pBox1->move(x_offset, 1);
+        pBox1->move(x_offset, 3);
 
         x_offset += pBox1->width();
 

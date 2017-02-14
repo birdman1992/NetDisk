@@ -16,6 +16,9 @@ MainWidget::MainWidget(QWidget *parent) :
     //侧边栏
     initSilidebar();
 
+    //功能栏
+    initFunctionList();
+
     //路径面板
     pathView = new PathView(this);
     pathView->setMaximumHeight(49);
@@ -58,7 +61,39 @@ void MainWidget::initSilidebar()
     item = new QListWidgetItem(QIcon(":/imgs/slidebar/文件同步.ico"),"文件同步");
     item->setSizeHint(QSize(81,74));
     ui->sliderbar->addItem(item);
+}
 
+void MainWidget::initFunctionList()
+{
+    QListWidgetItem* item;
+    QSize itemSize = QSize(60,47);
+//    ui->functionList->setBatchSize();
+    ui->sliderbar->setIconSize(QSize(47,47));
+
+    item = new QListWidgetItem(QIcon(":/imgs/function/+-上传.png"),"上传");
+    item->setSizeHint(itemSize);
+    ui->functionList->addItem(item);
+    item = new QListWidgetItem(QIcon(":/imgs/function/+-新建文件夹.png"),"新建文件夹");
+    item->setSizeHint(QSize(95,47));
+    ui->functionList->addItem(item);
+    item = new QListWidgetItem(QIcon(":/imgs/function/+-共享.png"),"共享");
+    item->setSizeHint(itemSize);
+    ui->functionList->addItem(item);
+    item = new QListWidgetItem(QIcon(":/imgs/function/+-链接分享.png"),"链接分享");
+    item->setSizeHint(QSize(90,47));
+    ui->functionList->addItem(item);
+    item = new QListWidgetItem(QIcon(":/imgs/function/+-下载.png"),"下载");
+    item->setSizeHint(itemSize);
+    ui->functionList->addItem(item);
+    item = new QListWidgetItem(QIcon(":/imgs/function/+-删除.png"),"删除");
+    item->setSizeHint(itemSize);
+    ui->functionList->addItem(item);
+    item = new QListWidgetItem(QIcon(":/imgs/function/+-还原.png"),"还原");
+    item->setSizeHint(itemSize);
+    ui->functionList->addItem(item);
+
+    ui->searchFilter->addItem("  全部");
+//    ui->searchFilter->setCurrentText("全部");
 
 }
 

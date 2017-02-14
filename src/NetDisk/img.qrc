@@ -7,12 +7,10 @@
         <file>imgs/down.ico</file>
         <file>imgs/right.ico</file>
         <file>imgs/folder_m.ico</file>
-        <file>imgs/logo.png</file>
         <file>imgs/close.ico</file>
         <file>imgs/max.ico</file>
         <file>imgs/maxmin.ico</file>
         <file>imgs/min.ico</file>
-        <file>imgs/logo1.png</file>
         <file>imgs/slidebar/文件同步.ico</file>
         <file>imgs/slidebar/我的文件.ico</file>
         <file>imgs/slidebar/左侧菜单悬停.png</file>
@@ -48,5 +46,24 @@
         <file>imgs/function/Share.png</file>
         <file>imgs/function/当前位置-home.png</file>
         <file>imgs/function/当前位置-刷新.png</file>
+        <file>imgs/function/+-共享.ico</file>
+        <file>imgs/function/+-还原.ico</file>
+        <file>imgs/function/+-链接分享.ico</file>
+        <file>imgs/function/+-删除.ico</file>
+        <file>imgs/function/+-上传.ico</file>
+        <file>imgs/function/+-下载.ico</file>
+        <file>imgs/title/max_01.png</file>
+        <file>imgs/title/max_02.png</file>
+        <file>imgs/title/max_03.png</file>
+        <file>imgs/title/max-hover_01.png</file>
+        <file>imgs/title/max-hover_02.png</file>
+        <file>imgs/title/max-hover_03.png</file>
+        <file>imgs/title/背景图.png</file>
+        <file>imgs/title/右上菜单.png</file>
+        <file>imgs/title/右上消息提示.png</file>
+        <file>imgs/title/logo.png</file>
+        <file>imgs/title/logo1.png</file>
+        <file>imgs/title/传输列表.png</file>
+        <file>imgs/function/切换缩略图.png</file>
     </qresource>
 </RCC>
