@@ -48,33 +48,40 @@ MainWidget::~MainWidget()
 
 void MainWidget::initSilidebar()
 {
-    ui->sliderbar->setIconSize(QSize(50,45));
-    QListWidgetItem* item = new QListWidgetItem(QIcon(":/imgs/slidebar/我的文件.ico"),"我的文件");
-    item->setSizeHint(QSize(81,74));
+    QSize isize = QSize(81,81);
+    ui->sliderbar->setIconSize(QSize(36,36));
+    QListWidgetItem* item = new QListWidgetItem(QIcon(":/imgs/slidebar/我的文件.png"),"我的文件");
+    item->setTextAlignment(Qt::AlignHCenter);
+    item->setSizeHint(isize);
     ui->sliderbar->addItem(item);
-    item = new QListWidgetItem(QIcon(":/imgs/slidebar/他人共享.ico"),"他人共享");
-    item->setSizeHint(QSize(81,74));
+    item = new QListWidgetItem(QIcon(":/imgs/slidebar/他人共享.png"),"他人共享");
+    item->setTextAlignment(Qt::AlignHCenter);
+    item->setSizeHint(isize);
     ui->sliderbar->addItem(item);
-    item = new QListWidgetItem(QIcon(":/imgs/slidebar/链接管理.ico"),"链接管理");
-    item->setSizeHint(QSize(81,74));
+    item = new QListWidgetItem(QIcon(":/imgs/slidebar/链接管理.png"),"链接管理");
+    item->setTextAlignment(Qt::AlignHCenter);
+    item->setSizeHint(isize);
     ui->sliderbar->addItem(item);
-    item = new QListWidgetItem(QIcon(":/imgs/slidebar/文件同步.ico"),"文件同步");
-    item->setSizeHint(QSize(81,74));
+    item = new QListWidgetItem(QIcon(":/imgs/slidebar/文件同步.png"),"文件同步");
+    item->setTextAlignment(Qt::AlignJustify);
+    item->setSizeHint(isize);
     ui->sliderbar->addItem(item);
+
+    ui->sliderbar->setCurrentRow(0);
 }
 
 void MainWidget::initFunctionList()
 {
     QListWidgetItem* item;
-    QSize itemSize = QSize(60,47);
+    QSize itemSize = QSize(77,47);
 //    ui->functionList->setBatchSize();
-    ui->sliderbar->setIconSize(QSize(47,47));
+    ui->functionList->setIconSize(QSize(47,47));
 
     item = new QListWidgetItem(QIcon(":/imgs/function/+-上传.png"),"上传");
     item->setSizeHint(itemSize);
     ui->functionList->addItem(item);
     item = new QListWidgetItem(QIcon(":/imgs/function/+-新建文件夹.png"),"新建文件夹");
-    item->setSizeHint(QSize(95,47));
+    item->setSizeHint(QSize(110,47));
     ui->functionList->addItem(item);
     item = new QListWidgetItem(QIcon(":/imgs/function/+-共享.png"),"共享");
     item->setSizeHint(itemSize);
@@ -92,9 +99,12 @@ void MainWidget::initFunctionList()
     item->setSizeHint(itemSize);
     ui->functionList->addItem(item);
 
-    ui->searchFilter->addItem("  全部");
-//    ui->searchFilter->setCurrentText("全部");
+    ui->searchFilter->addItem(" 全部");
+    ui->showDelete->setText("显示已删文件");
+    ui->search->setTextMargins(5,0,0,0);
 
+    connect(ui->functionList, SIGNAL(clicked(QModelIndex)), this, SLOT(functionBtnClicked(QModelIndex)));
+    connect(ui->functionList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(founctionListClicked(QListWidgetItem*)));
 }
 
 //鼠标事件
@@ -149,4 +159,14 @@ void MainWidget::on_wMax_toggled(bool checked)
     {
         this->setWindowState(Qt::WindowNoState);
     }
+}
+
+void MainWidget::founctionListClicked(QListWidgetItem*)
+{
+    ui->functionList->setCurrentRow(-1);
+}
+
+void MainWidget::functionBtnClicked(QModelIndex index)
+{
+
 }

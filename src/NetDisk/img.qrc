@@ -46,12 +46,6 @@
         <file>imgs/function/Share.png</file>
         <file>imgs/function/当前位置-home.png</file>
         <file>imgs/function/当前位置-刷新.png</file>
-        <file>imgs/function/+-共享.ico</file>
-        <file>imgs/function/+-还原.ico</file>
-        <file>imgs/function/+-链接分享.ico</file>
-        <file>imgs/function/+-删除.ico</file>
-        <file>imgs/function/+-上传.ico</file>
-        <file>imgs/function/+-下载.ico</file>
         <file>imgs/title/max_01.png</file>
         <file>imgs/title/max_02.png</file>
         <file>imgs/title/max_03.png</file>
@@ -65,5 +59,13 @@
         <file>imgs/title/logo1.png</file>
         <file>imgs/title/传输列表.png</file>
         <file>imgs/function/切换缩略图.png</file>
+        <file>imgs/function/勾选.png</file>
+        <file>imgs/function/未勾选.png</file>
+        <file>imgs/function/向下.png</file>
+        <file>imgs/function/向右.png</file>
+        <file>imgs/slidebar/链接管理.png</file>
+        <file>imgs/slidebar/他人共享.png</file>
+        <file>imgs/slidebar/文件同步.png</file>
+        <file>imgs/slidebar/我的文件.png</file>
     </qresource>
 </RCC>

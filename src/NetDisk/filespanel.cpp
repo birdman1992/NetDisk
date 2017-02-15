@@ -20,6 +20,7 @@ FilesPanel::FilesPanel(QWidget *parent) :
     pFolder = NULL;
     curDir = NULL;
     pCdFolder = NULL;
+    showListView = false;
 
     //主菜单
     menu = new QMenu(this);
@@ -57,32 +58,49 @@ void FilesPanel::addFolder(QFolder* parFolder)
     curDir->setParFolder(parFolder);
 }
 
+//设置视图显示模式
+//showList:true 显示列表视图  false 显示平铺视图
+void FilesPanel::setViewMode(bool showList)
+{
+    showListView = showList;
+    panelRefresh();
+}
+
 //显示文件夹面板
 void FilesPanel::panelShow(QList<QFolder*> fPanel)
 {
-    int i = 0;
-    int j = 0;
-    int offset_x = 20;
-    int offset_y = 20;
-
-    if(fPanel.isEmpty())
-        return;
-
-    int ele_wid = fPanel.at(i)->geometry().width() + offset_x;
-    int ele_hei = fPanel.at(i)->geometry().height() + offset_y;
-    int count_x = (this->geometry().width() - offset_x)/(ele_wid);
-
-    qDebug("w:%d h:%d",this->geometry().width(),this->geometry().height());
-
-
-    for(i=0; i<fPanel.count();)
+    if(showListView)
     {
-        fPanel.at(i)->move(offset_x + (i % count_x) * ele_wid, offset_y + j * ele_hei);
-        fPanel.at(i)->show();
-        i++;
-        if(!(i%count_x))
-            j++;
+
     }
+    else
+    {
+        int i = 0;
+        int j = 0;
+        int offset_x = 20;
+        int offset_y = 20;
+
+        if(fPanel.isEmpty())
+            return;
+
+        int ele_wid = fPanel.at(i)->geometry().width() + offset_x;
+        int ele_hei = fPanel.at(i)->geometry().height() + offset_y;
+        int count_x = (this->geometry().width() - offset_x)/(ele_wid);
+
+        qDebug("w:%d h:%d",this->geometry().width(),this->geometry().height());
+
+
+        for(i=0; i<fPanel.count();)
+        {
+            fPanel.at(i)->move(offset_x + (i % count_x) * ele_wid, offset_y + j * ele_hei);
+            fPanel.at(i)->show();
+            i++;
+            if(!(i%count_x))
+                j++;
+        }
+        return;
+    }
+
 }
 
 void FilesPanel::panelClear()
@@ -298,7 +316,7 @@ void FilesPanel::ftpGetListInfo(QUrlInfo info)
 }
 
 void FilesPanel::ftpListShow()
-{
+{                                     
     disconnect(&ftpClient, SIGNAL(cmdList()), this, SLOT(ftpListShow()));
     emit pathChanged(folderPath, curPanel);
     panelShow(curPanel);

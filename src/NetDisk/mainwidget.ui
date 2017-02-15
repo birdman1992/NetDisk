@@ -479,12 +479,24 @@ border-image: url(:/imgs/title/max-hover_03.png);
          <enum>Qt::NoFocus</enum>
         </property>
         <property name="styleSheet">
-         <string notr="true">QListWidget{border:0px;background-color: rgb(0, 102, 153);}
+         <string notr="true">QListWidget{
+border:0px;background-color: rgb(0, 102, 153);
+}
 
-QListWidget::Item{color: rgb(255, 255, 255);}
-QListWidget::Item:hover{border-image: url(:/imgs/slidebar/左侧菜单悬停.png); }
+QListWidget::Item{padding :10px;
+image-position:right;
+color: rgb(255, 255, 255);
+}
+QListWidget::Item:hover{padding :10px;
+image-position:right;
+border-image: url(:/imgs/slidebar/左侧菜单悬停.png); 
+}
 
-QListWidget::Item:selected{background:rgb(0, 131, 196);}
+QListWidget::Item:selected{
+padding :10px;
+border-image: url(:/imgs/slidebar/左侧菜单悬停.png); 
+background:rgb(0, 131, 196);
+}
 
 </string>
         </property>
@@ -502,6 +514,12 @@ QListWidget::Item:selected{background:rgb(0, 131, 196);}
         </property>
         <property name="spacing">
          <number>0</number>
+        </property>
+        <property name="gridSize">
+         <size>
+          <width>81</width>
+          <height>74</height>
+         </size>
         </property>
         <property name="viewMode">
          <enum>QListView::IconMode</enum>
@@ -542,7 +560,7 @@ border-bottom:1px;</string>
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="8,40,5,40,15,23,450,28,17,63,135,10,16">
+         <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="8,40,5,40,15,23,430,28,15,57,105,10,10">
           <property name="spacing">
            <number>0</number>
           </property>
@@ -666,6 +684,7 @@ border-bottom:1px;</string>
 	border:1px solid rgb(187, 187, 187);
 	border-right-width: 0px;
 	image: url(:/imgs/function/当前位置-home.png);
+	background-color: rgb(255, 255, 255);
 }</string>
             </property>
             <property name="text">
@@ -692,6 +711,7 @@ border-bottom:1px;</string>
             </property>
             <property name="styleSheet">
              <string notr="true">#refresh{
+	background-color: rgb(255, 255, 255);
 	border:1px solid rgb(187, 187, 187);
 	border-left-width: 0px;
 	image: url(:/imgs/function/当前位置-刷新.png);
@@ -732,14 +752,15 @@ border-bottom:1px;</string>
             <property name="styleSheet">
              <string notr="true">#searchFilter{
 	border:1px solid rgb(187, 187, 187);
+	background-color: rgb(255, 255, 255);
 }
 #searchFilter::drop-down{
-	width: 14;
+	width: 12;
 	border-right-width: 0px;
 	border-left-width: 0px;
 }
 #searchFilter::down-arrow{
-	border-image: url(:/imgs/arrow_down.png);
+	image: url(:/imgs/function/向下.png);
 	margin-left:2;
 	margin-right:2;
 }</string>
@@ -768,10 +789,15 @@ border-bottom:1px;</string>
             </property>
             <property name="styleSheet">
              <string notr="true">#search{
+	background-color: rgb(255, 255, 255);
 	border: 1px solid rgb(187, 187, 187);
-	border-left-width: 1px;
+	border-left-width: 0px;
 	border-right-width: 0px;
+	color:gray;
 }</string>
+            </property>
+            <property name="text">
+             <string>搜索我的文件</string>
             </property>
            </widget>
           </item>
@@ -791,6 +817,7 @@ border-bottom:1px;</string>
             </property>
             <property name="styleSheet">
              <string notr="true">#searchBtn{
+	background-color: rgb(255, 255, 255);
 	border:1px solid rgb(187, 187, 187);
 	border-left-width: 0px;
 	image: url(:/imgs/function/search.png);
@@ -824,7 +851,7 @@ border-bottom:1px;</string>
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="function" stretch="1,40,2,2,1,2,2">
+        <layout class="QHBoxLayout" name="function" stretch="29,680,18,100,16,10,26">
          <property name="spacing">
           <number>0</number>
          </property>
@@ -867,8 +894,7 @@ background-color:rgb(230, 243, 252);
 }
 
 
-QListWidget::Item:selected{
-border:0px; 
+QListWidget::Item:pressed{
 background-color:rgb(251, 251, 251);
 }
 
@@ -902,18 +928,32 @@ background-color:rgb(251, 251, 251);
           </spacer>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkBox">
+          <widget class="QCheckBox" name="showDelete">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="maximumSize">
+            <size>
+             <width>92</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="styleSheet">
-            <string notr="true">font: 10pt &quot;Courier&quot;;</string>
+            <string notr="true">#showDelete::indicator:unchecked {
+	image: url(:/imgs/function/未勾选.png);
+}
+#showDelete::indicator:checked {
+	image: url(:/imgs/function/勾选.png);
+}
+#showDelete{
+font: 9pt &quot;微软雅黑&quot;;
+}</string>
            </property>
            <property name="text">
-            <string>显示已删文件</string>
+            <string/>
            </property>
           </widget>
          </item>

@@ -55,6 +55,7 @@ void PathView::styleInit()
                     border-top-right-radius: 3px;\
                 }\
                 QComboBox{color: rgb(0, 170, 255);\
+                    background-color:white;\
                     border: 5px; image: url(:/imgs/arrow_rignt.png);\
                 }\
                 QComboBox:on{\
@@ -115,7 +116,7 @@ void PathView::pathUpdate(QList<QFolder *> newPath)
 /***更新路径栏槽函数***/
 void PathView::pathChange(QList<QString*> path, QList<QFolder*> fileList)
 {qDebug("pathchange");
-    QString* str = new QString("我的网盘");
+    QString* str = new QString("我的文件");
     pathList = path;
     pathList.insert(0,str);
     pathViewPaint(pathList, fileList);
@@ -159,8 +160,9 @@ void PathView::pathViewPaint(QList<QString*> pathIn, QList<QFolder*> fileListIn)
     QFont wordFont;
     QRect rct;
 
-    wordFont.setFamily("Courier");
-    wordFont.setPixelSize(this->geometry().height()/2);
+    wordFont.setFamily("微软雅黑");
+    wordFont.setPointSize(9);
+//    wordFont.setPixelSize(this->geometry().height()/2);
     QFontMetrics fm(wordFont);
 
     pathClear();
@@ -176,6 +178,7 @@ void PathView::pathViewPaint(QList<QString*> pathIn, QList<QFolder*> fileListIn)
         pBtn->move(x_offset, 3);
         x_offset += pBtn->width();
         pBtn->setCursor(QCursor(Qt::PointingHandCursor));
+        pBtn->setStyleSheet("background-color:white");
         pBtn->show();
 
         pBox1 = new PathBox(this);

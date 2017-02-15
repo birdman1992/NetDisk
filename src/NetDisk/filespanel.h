@@ -5,6 +5,7 @@
 #include <QList>
 #include <QMenu>
 #include <QAction>
+#include <QTableWidget>
 #include "QFolder/qfolder.h"
 #include "Ftp/diskftp.h"
 
@@ -28,6 +29,7 @@ public:
     void panelCd(QString dir);
     bool repeatCheck(QString* fName, QFolder* pFolder);
     void addFolder(QFolder* parFolder);
+    void setViewMode(bool showList);
     QString getCurPath();
 
 public slots:
@@ -43,6 +45,7 @@ private:
     QFolder* pClipboard;//剪贴板指针
     QString* pCdFolder;//cd指令目录指针
     bool pasteEnable;
+    bool showListView;//true:显示列表视图    false:显示平铺视图
 
     /***右键菜单***/
     QMenu* menu;
@@ -52,7 +55,7 @@ private:
     QAction* act_refresh;
     QAction* act_paste;
 
-    //排序子菜单
+    /***排序子菜单***/
     QMenu* menu_sort;
     QAction* act_filename;
     QAction* act_filesize;
