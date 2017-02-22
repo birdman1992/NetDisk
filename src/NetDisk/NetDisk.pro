@@ -19,14 +19,20 @@ SOURCES += main.cpp\
     filespanel.cpp \
     Ftp/diskftp.cpp \
     Pathview/pathview.cpp \
-    Pathview/pathbox.cpp
+    Pathview/pathbox.cpp \
+    Http/nethttp.cpp \
+    Cjson/cJSON.c \
+    Cjson/cJSON_Utils.c
 
 HEADERS  += mainwidget.h \
     QFolder/qfolder.h \
     filespanel.h \
     Ftp/diskftp.h \
     Pathview/pathview.h \
-    Pathview/pathbox.h
+    Pathview/pathbox.h \
+    Http/nethttp.h \
+    Cjson/cJSON.h \
+    Cjson/cJSON_Utils.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \

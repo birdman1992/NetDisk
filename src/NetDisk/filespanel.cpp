@@ -22,6 +22,9 @@ FilesPanel::FilesPanel(QWidget *parent) :
     pCdFolder = NULL;
     showListView = false;
 
+    //http
+    httpClient = new NetHttp(this);
+
     //主菜单
     menu = new QMenu(this);
     act_new = new QAction("新建文件夹");
@@ -44,7 +47,9 @@ FilesPanel::FilesPanel(QWidget *parent) :
     act_filesize = new QAction("大小");
     act_filetime = new QAction("修改时间");
 
-    ftpClient.ftpLogin("test", "123456");
+//    httpClient->netLogin("admin","888888");
+    httpClient->netList(-1,1,2);
+//    ftpClient.ftpLogin("test", "123456");
 }
 
 FilesPanel::~FilesPanel()

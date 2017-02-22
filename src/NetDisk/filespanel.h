@@ -8,6 +8,7 @@
 #include <QTableWidget>
 #include "QFolder/qfolder.h"
 #include "Ftp/diskftp.h"
+#include "Http/nethttp.h"
 
 namespace Ui {
 class FilesPanel;
@@ -21,6 +22,7 @@ public:
     explicit FilesPanel(QWidget *parent = 0);
     ~FilesPanel();
     DiskFtp ftpClient;
+    NetHttp* httpClient;
     void panelShow(QList<QFolder*> fPanel);
     void panelClear();
     void panelRefresh();
