@@ -21,6 +21,10 @@ FilesPanel::FilesPanel(QWidget *parent) :
     curDir = NULL;
     pCdFolder = NULL;
     showListView = false;
+    curDirId = -1;
+    pageSize = 28;
+    pageNum = 1;
+
 
     //http
     httpClient = new NetHttp(this);
@@ -37,9 +41,12 @@ FilesPanel::FilesPanel(QWidget *parent) :
     connect(act_upload, SIGNAL(triggered(bool)), this, SLOT(fileUpload()));
 
     //FTP槽
-    connect(&ftpClient, SIGNAL(listInfo(QUrlInfo)), this, SLOT(ftpGetListInfo(QUrlInfo)));
-    connect(&ftpClient, SIGNAL(needRefresh()), this, SLOT(fileRefresh()));
-    connect(&ftpClient, SIGNAL(cmdCd()), this, SLOT(ftpCdFinishi()));
+//    connect(&ftpClient, SIGNAL(listInfo(QUrlInfo)), this, SLOT(ftpGetListInfo(QUrlInfo)));
+//    connect(&ftpClient, SIGNAL(needRefresh()), this, SLOT(fileRefresh()));
+//    connect(&ftpClient, SIGNAL(cmdCd()), this, SLOT(ftpCdFinishi()));
+
+    //HTTP槽
+    connect(httpClient, SIGNAL(listUpdate(QList<fileInfo*>)), this, SLOT(httpGetListInfo(QList<fileInfo*>)));
 
     //排序子菜单
     menu_sort = new QMenu(this);
@@ -48,7 +55,7 @@ FilesPanel::FilesPanel(QWidget *parent) :
     act_filetime = new QAction("修改时间");
 
 //    httpClient->netLogin("admin","888888");
-    httpClient->netList(-1,1,2);
+    httpClient->netList(curDirId,pageNum,pageSize);
 //    ftpClient.ftpLogin("test", "123456");
 }
 
@@ -82,8 +89,8 @@ void FilesPanel::panelShow(QList<QFolder*> fPanel)
     {
         int i = 0;
         int j = 0;
-        int offset_x = 20;
-        int offset_y = 20;
+        int offset_x = 15;
+        int offset_y = 15;
 
         if(fPanel.isEmpty())
             return;
@@ -93,7 +100,6 @@ void FilesPanel::panelShow(QList<QFolder*> fPanel)
         int count_x = (this->geometry().width() - offset_x)/(ele_wid);
 
         qDebug("w:%d h:%d",this->geometry().width(),this->geometry().height());
-
 
         for(i=0; i<fPanel.count();)
         {
@@ -136,10 +142,10 @@ void FilesPanel::panelPaste()
     qDebug("paste");
 }
 
-void FilesPanel::panelCd(QString dir)
+void FilesPanel::panelCd(int dirId)
 {
-    qDebug()<<"FTP:cd"<<dir;
-
+    qDebug()<<"FTP:cd"<<dirId;
+    httpClient->netList(dirId, pageNum, pageSize);
 //    bool deletTail = false;
 
 //    for(int i=0;i <folderPath.count(); i++)
@@ -156,8 +162,8 @@ void FilesPanel::panelCd(QString dir)
 //        }
 //    }
 
-    pCdFolder = new QString(dir);
-    ftpClient.ftpCd(dir);
+//    pCdFolder = new QString(dir);
+//    ftpClient.ftpCd(dir);
 }
 
 bool FilesPanel::repeatCheck(QString *fName, QFolder* pFolder)
@@ -266,7 +272,7 @@ void FilesPanel::contextMenuEvent(QContextMenuEvent*)
 /***公有槽***/
 void FilesPanel::cmdCd(QString dir)
 {
-    panelCd(dir);
+//    panelCd(dir);
 }
 
 
@@ -308,16 +314,23 @@ void FilesPanel::fileUpload()
 //    qDebug()<<upFile<<(getCurPath() + fName);
 }
 
-void FilesPanel::ftpGetListInfo(QUrlInfo info)
+void FilesPanel::httpGetListInfo(QList<fileInfo*> lInfo)
 {
-    QString str = QString::fromUtf8(info.name().toLatin1());
-    qDebug()<<"list info"<<folderTypeJudge(str,info.isDir());
-    pFolder = new QFolder(this,folderTypeJudge(str,info.isDir()),str);
-    pFolder->setFolderTime(info.lastModified());
-    if(info.isDir())
-        curPanel.insert(0, pFolder);
-    else
+//    if(!lInfo.isEmpty())
+    panelClear();
+    while(!lInfo.isEmpty())
+    {
+        fileInfo* info = lInfo.takeFirst();
+        pFolder = new QFolder(this, info);
         curPanel<<pFolder;
+    }
+    panelShow(curPanel);
+//    pFolder = new QFolder(this,folderTypeJudge(lInfo,0),str);
+//    pFolder->setFolderTime(info.lastModified());
+//    if(info.isDir())
+//        curPanel.insert(0, pFolder);
+//    else
+//        curPanel<<pFolder;
 }
 
 void FilesPanel::ftpListShow()

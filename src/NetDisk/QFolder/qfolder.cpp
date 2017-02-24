@@ -8,7 +8,7 @@
 #include <QTableWidget>
 #include "filespanel.h"
 
-QFolder::QFolder(QWidget *parent,short _type,QString fName) :
+QFolder::QFolder(QWidget *parent,fileInfo* info) :
     QWidget(parent),
     ui(new Ui::QFolder)
 {
@@ -16,10 +16,19 @@ QFolder::QFolder(QWidget *parent,short _type,QString fName) :
     this->setWindowFlags(Qt::FramelessWindowHint);
 
     //初始化属性
-    fType = _type;
+//    fType = _type;
+    memset(&folderInfo, 0, sizeof(fileInfo));
+    if(info)
+        memcpy(&folderInfo,info,sizeof(fileInfo));
+    else
+    {
+        folderInfo.FILE_NAME = "新建文件夹";
+    }
+
+    fType = folderTypeJudge(folderInfo.EXT);
     pasteEnable = false;
     newfile = false;
-    folderName = fName;
+    folderName = folderInfo.FILE_NAME;
     ui->name->setText(folderName);
     textwid = this->geometry().width()/8;
     setImg();
@@ -186,6 +195,46 @@ void QFolder::setImg()
     ui->img->setStyleSheet(qss);
 }
 
+short QFolder::folderTypeJudge(QString fName)
+{
+    if(fName.isEmpty())
+    {
+        if(fName == "共享文件夹")
+            return QFolder::DIR_SHARE;
+        else if(fName == "私密文件")
+            return QFolder::DIR_LOCK;
+        else if(fName == "我的收藏")
+            return QFolder::DIR_ENSHRINE;
+        else
+            return QFolder::DIR_COMMON;
+    }
+    else
+    {
+        if(fName.endsWith("apk", Qt::CaseInsensitive))
+            return QFolder::FILE_APK;
+        else if(fName.endsWith("doc", Qt::CaseInsensitive) || fName.endsWith("docx"))
+            return QFolder::FILE_DOC;
+        else if(fName.endsWith("mp3", Qt::CaseInsensitive))
+            return QFolder::FILE_MP3;
+        else if(fName.endsWith("mp4", Qt::CaseInsensitive))
+            return QFolder::FILE_MP4;
+        else if(fName.endsWith("pdf", Qt::CaseInsensitive))
+            return QFolder::FILE_PDF;
+        else if(fName.endsWith("ppt", Qt::CaseInsensitive))
+            return QFolder::FILE_PPT;
+        else if(fName.endsWith("rar", Qt::CaseInsensitive))
+            return QFolder::FILE_RAR;
+        else if(fName.endsWith("txt", Qt::CaseInsensitive))
+            return QFolder::FILE_TXT;
+        else if(fName.endsWith("xls", Qt::CaseInsensitive) || fName.endsWith("xlsx", Qt::CaseInsensitive))
+            return QFolder::FILE_XLS;
+        else if(fName.endsWith("zip", Qt::CaseInsensitive))
+            return QFolder::FILE_ZIP;
+        else
+            return QFolder::FILE_DEFAULT;
+    }
+}
+
 /**********************
 SLOT
 **********************/
@@ -298,7 +347,7 @@ void QFolder::folderOpen()
 {
     qDebug("open");
     FilesPanel* par = (FilesPanel*)parent();
-    par->panelCd(par->getCurPath() + folderName);
+    par->panelCd(folderInfo.ID);
 }
 
 void QFolder::folderCopy()

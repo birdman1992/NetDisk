@@ -8,6 +8,7 @@
 #include <QString>
 #include <QList>
 #include <QDateTime>
+#include "Http/nethttp.h"
 
 namespace Ui {
 class QFolder;
@@ -18,7 +19,7 @@ class QFolder : public QWidget
     Q_OBJECT
 
 public:
-    explicit QFolder(QWidget *parent = 0,short _type = 2,QString fName = "新建文件夹");
+    explicit QFolder(QWidget *parent = 0,fileInfo* info = NULL);
     ~QFolder();
     void setPasteEnable(bool enable);
     void rename();
@@ -70,6 +71,7 @@ private:
     bool selectEnable;
     bool newfile;
     QString folderName;
+    fileInfo folderInfo;
     int textwid;
 
     void paintEvent(QPaintEvent*);
@@ -81,6 +83,7 @@ private:
 
     QString folderNameCut(QString strIn, int cutLength);
     void setImg();
+    short folderTypeJudge(QString fName);
 
 protected:
     ushort t;

@@ -39,7 +39,6 @@ void NetHttp::netLogin(QString user, QString passwd)
 void NetHttp::netList(int pId, int cPage, int pageSize, QString name, QString fileType)
 {
     QString nUrl;
-    QByteArray pData;
     nUrl = QString(HTTP_ADDR) + "api/file/getMyFile?"+QString("fileType%1=&name=%2&pageSize=%3&cpage=%4&pid=%5")\
             .arg(fileType).arg(name).arg(pageSize).arg(cPage).arg(pId).toLocal8Bit(); ;
 //    pData =
@@ -52,7 +51,7 @@ void NetHttp::netList(int pId, int cPage, int pageSize, QString name, QString fi
 void NetHttp::replyFinished(QNetworkReply *reply)
 {
     QByteArray nRecv = reply->readAll();
-    qDebug()<<nRecv;
+    qDebug()<<"http recv:"<<nRecv;
     switch(State)
     {
         case H_LOGIN:break;
@@ -150,7 +149,8 @@ void NetHttp::fileInfoRecv(QByteArray info)
                                 if(jval.isArray())
                                 {
                                     QJsonArray jArray = jval.toArray();
-                                    for(int i=0; i<pageSize; i++)
+
+                                    for(int i=0; i<jArray.count(); i++)
                                     {
                                         subObj = jArray.at(i).toObject();
                                         fInfo = new fileInfo;

@@ -45,7 +45,7 @@ class NetHttp : public QObject
 public:
     explicit NetHttp(QObject *parent = 0);
     void netLogin(QString user, QString passwd);
-    void netList(int pId=-1, int cPage=0, int pageSize=20, QString name=QString(), QString fileType=QString());
+    void netList(int pId=-1, int cPage=1, int pageSize=20, QString name=QString(), QString fileType=QString());
 
 private:
     QNetworkAccessManager* manager;
