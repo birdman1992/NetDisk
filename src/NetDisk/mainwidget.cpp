@@ -37,8 +37,10 @@ MainWidget::MainWidget(QWidget *parent) :
 
 
     //信号槽
-    connect(diskPanel, SIGNAL(pathChanged(QList<QString*>,QList<QFolder*>)), pathView, SLOT(pathChange(QList<QString*>,QList<QFolder*>)));
-    connect(pathView, SIGNAL(cdRequest(QString)), diskPanel, SLOT(cmdCd(QString)));
+    connect(diskPanel, SIGNAL(pathChanged(QList<fileInfo*>)), pathView, SLOT(pathChange(QList<fileInfo*>)));
+    connect(diskPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
+    connect(pathView, SIGNAL(cdRequest(double)), diskPanel, SLOT(cmdCd(double)));
+    diskPanel->panelCd((fileInfo*)NULL);
 }
 
 MainWidget::~MainWidget()
@@ -166,7 +168,28 @@ void MainWidget::founctionListClicked(QListWidgetItem*)
     ui->functionList->setCurrentRow(-1);
 }
 
-void MainWidget::functionBtnClicked(QModelIndex index)
+void MainWidget::functionBtnClicked(QModelIndex)
 {
 
+}
+
+void MainWidget::historyEnabled(bool backEnable, bool aheadEnable)
+{
+    ui->back->setEnabled(backEnable);
+    ui->forward->setEnabled(aheadEnable);
+}
+
+void MainWidget::on_back_clicked()
+{
+    diskPanel->panelBack();
+}
+
+void MainWidget::on_forward_clicked()
+{
+    diskPanel->panelAhead();
+}
+
+void MainWidget::on_refresh_clicked()
+{
+    diskPanel->panelRefresh();
 }

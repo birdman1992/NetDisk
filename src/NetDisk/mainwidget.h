@@ -32,6 +32,15 @@ private slots:
     void founctionListClicked(QListWidgetItem* item);
     void functionBtnClicked(QModelIndex index);
 
+    void on_back_clicked();
+
+    void on_forward_clicked();
+
+    void on_refresh_clicked();
+
+public slots:
+    void historyEnabled(bool backEnable, bool aheadEnable);
+
 private:
     Ui::MainWidget *ui;
     FilesPanel* diskPanel;

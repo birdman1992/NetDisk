@@ -27,6 +27,7 @@ public:
     void setParFolder(QFolder* par);
     void setFolderTime(QDateTime fTime);
     short folderType();
+    fileInfo* info();
     QString fileName();
 
     /***属性***/

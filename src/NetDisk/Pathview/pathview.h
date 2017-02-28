@@ -8,6 +8,7 @@
 #include "QFolder/qfolder.h"
 #include "Pathview/pathbox.h"
 
+
 namespace Ui {
 class PathView;
 }
@@ -22,17 +23,17 @@ public:
     void pathUpdate(QList<QFolder*> newPath);
 
 public slots:
-    void pathChange(QList<QString*> path, QList<QFolder*> fileList);
+    void pathChange(QList<fileInfo*> newPath);
 
 private:
     Ui::PathView *ui;
-    QList<QString*> pathList;
+    QList<fileInfo*> pathList;
     QList<PathBox*> fileBoxList;
     QButtonGroup pathBtn;
 
     void styleInit();
     void pathClear();
-    void pathViewPaint(QList<QString*> pathIn, QList<QFolder*> fileListIn);
+    void pathViewPaint(QList<fileInfo*> fileListIn);
     void paintEvent(QPaintEvent*);
 
 private slots:
@@ -40,7 +41,7 @@ private slots:
     void boxClicked(QString file);
 
 signals:
-    void cdRequest(QString dir);
+    void cdRequest(double id);
 };
 
 #endif // PATHVIEW_H

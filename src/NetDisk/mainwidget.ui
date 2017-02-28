@@ -605,8 +605,14 @@ border-bottom:1px;</string>
             </property>
             <property name="styleSheet">
              <string notr="true">#back{
-	border-image: url(:/imgs/function/Arrow-left.png);
+	image: url(:/imgs/function/Arrow-left.png);
 	margin:6px
+}
+#back:enabled{
+	color: rgb(85, 85, 85);
+}
+#back:disabled{
+	color: rgb(25, 25, 25);
 }</string>
             </property>
             <property name="text">

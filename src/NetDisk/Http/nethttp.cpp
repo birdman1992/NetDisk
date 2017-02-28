@@ -15,9 +15,9 @@ NetHttp::NetHttp(QObject *parent) : QObject(parent)
     State = H_LOGIN;
     isLastPage = false;
     currentPageNum = 0;
-
+    QString str;
     connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
-
+    qDebug()<<QString(QString("操作成功").toUtf8().toPercentEncoding()).replace('%',QString("\\")+("x"));
 }
 
 /***登录接口***/
@@ -47,17 +47,32 @@ void NetHttp::netList(int pId, int cPage, int pageSize, QString name, QString fi
     manager->get(QNetworkRequest(QUrl(nUrl)));
 }
 
+void NetHttp::netMkdir(int pId, QString fileName)
+{
+    QString nUrl;
+//    nUrl = QString(HTTP_ADDR) + "api/file/createFolder?"+QString("pid=%1&name=%2").arg(pId).arg(QString(fileName.toUtf8().toPercentEncoding()).replace('%','\\x'));
+    nUrl = QString(HTTP_ADDR) + "api/file/createFolder";
+    QByteArray qba = QString("pid=%1&name=").arg(pId).toLocal8Bit()+fileName.toUtf8();
+    State = H_NEW;
+    QNetworkRequest request(nUrl);
+    request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
+    manager->post(request,qba);
+
+}
+
 /***接收http返回内容槽***/
 void NetHttp::replyFinished(QNetworkReply *reply)
 {
     QByteArray nRecv = reply->readAll();
-    qDebug()<<"http recv:"<<nRecv;
+//    qDebug()<<"http recv:"<<nRecv;
     switch(State)
     {
         case H_LOGIN:break;
         case H_LIST:
             fileListClear();
             fileInfoRecv(nRecv);break;
+        case H_NEW:
+            callbackNew(nRecv);break;
         default:break;
     }
 }
@@ -68,7 +83,6 @@ void NetHttp::replyFinished(QNetworkReply *reply)
 void NetHttp::fileInfoRecv(QByteArray info)
 {
     fileInfo* fInfo;
-    int pageSize;
     fInfo = new fileInfo;
     QJsonParseError jError;
     QJsonValue jval;
@@ -87,8 +101,8 @@ void NetHttp::fileInfoRecv(QByteArray info)
                 jval = obj.take("code");
                 if(jval.isString() && (jval.toString() == "200"))
                 {
-                    qDebug("---------------------\nList info:");
-                    qDebug()<<"code:"<<jval.toString()<<obj.take("msg").toString();
+//                    qDebug("---------------------\nList info:");
+//                    qDebug()<<"code:"<<jval.toString()<<obj.take("msg").toString();
                     //解析返回列表的属性
                     if(obj.contains("result"))
                     {
@@ -102,35 +116,35 @@ void NetHttp::fileInfoRecv(QByteArray info)
                             {
                                 jval = subObj.take("firstPage");
                                 isFirstPage = jval.toBool();
-                                qDebug()<<"Is first page:"<<isFirstPage;
+//                                qDebug()<<"Is first page:"<<isFirstPage;
                             }
                             //判断是否是最后一页
                             if(subObj.contains("lastPage"))
                             {
                                 jval = subObj.take("lastPage");
                                 isLastPage = jval.toBool();
-                                qDebug()<<"Is last page:"<<isLastPage;
+//                                qDebug()<<"Is last page:"<<isLastPage;
                             }
                             //解析列表行数
                             if(subObj.contains("totalRow"))
                             {
                                 jval = subObj.take("totalRow");
                                 totalRow = jval.toDouble();
-                                qDebug()<<"Total row:"<<totalRow;
+//                                qDebug()<<"Total row:"<<totalRow;
                             }
                             //解析列表页数
                             if(subObj.contains("totalPage"))
                             {
                                 jval = subObj.take("totalPage");
                                 totalPage = jval.toDouble();
-                                qDebug()<<"Total page:"<<totalPage;
+//                                qDebug()<<"Total page:"<<totalPage;
                             }
                             //解析列表大小
                             if(subObj.contains("pageSize"))
                             {
                                 jval = subObj.take("pageSize");
-                                pageSize = jval.toDouble();
-                                qDebug()<<"Page size:"<<pageSize;
+//                                int pageSize; = jval.toDouble();
+//                                qDebug()<<"Page size:"<<pageSize;
                             }
                             else return;
 
@@ -139,8 +153,8 @@ void NetHttp::fileInfoRecv(QByteArray info)
                             {
                                 jval = subObj.take("pageNumber");
                                 currentPageNum = jval.toDouble();
-                                qDebug()<<"Current pageNum:"<<currentPageNum;
-                                qDebug("\n");
+//                                qDebug()<<"Current pageNum:"<<currentPageNum;
+//                                qDebug("\n");
                             }
                             //解析列表文件信息
                             if(subObj.contains("list"))
@@ -173,7 +187,7 @@ void NetHttp::fileInfoRecv(QByteArray info)
                                         fInfo->TYPE = subObj.take("TYPE").toDouble();
                                         fInfo->FILE_SERVER = subObj.take("FILE_SERVER").toString();
                                         fInfo->FILE_NAME = subObj.take("FILE_NAME").toString();
-                                        fileInfoShow(fInfo);
+//                                        fileInfoShow(fInfo);
                                         listInfo<<fInfo;
                                     }
                                 }
@@ -230,6 +244,68 @@ void NetHttp::fileListClear()
         fileInfo* info = listInfo.takeFirst();
         delete info;
     }
+
     return;
 }
 
+void NetHttp::callbackNew(QByteArray info)
+{
+    QJsonParseError jError;
+    QJsonValue jval;
+    QJsonDocument parseDoc = QJsonDocument::fromJson(info, &jError);
+
+
+    if(jError.error == QJsonParseError::NoError)
+    {
+        if(parseDoc.isObject())
+        {
+            QJsonObject obj = parseDoc.object();
+
+            if(obj.contains("code"))
+            {
+                //解析返回的状态码
+                jval = obj.take("code");
+                if(jval.isString() && (jval.toString() == "200"))
+                {
+                    qDebug()<<"[新建目录]"<<obj.take("msg").toString();
+                }
+                else
+                {
+                    qDebug()<<"[新建目录]:"<<jval.toString()<<obj.take("msg").toString();
+                    return;
+                }
+
+            }
+        }
+    }
+    else return;
+    emit updateRequest();
+}
+
+fileInfo::fileInfo()
+{
+
+}
+
+fileInfo::fileInfo(const fileInfo &info)
+{
+    ID = info.ID;
+    MAST_ID = info.MAST_ID;
+    USER_ID = info.USER_ID;
+    PARENT_ID = info.PARENT_ID;
+    STATUS = info.STATUS;
+    VERSION = info.VERSION;
+    IS_ENCRYPED = info.IS_ENCRYPED;
+    FILE_TYPE = info.FILE_TYPE;
+    TYPE = info.TYPE;
+    SIZE = info.SIZE;
+    LAST_MOD_TIME = info.LAST_MOD_TIME;
+    ADD_TIME = info.ADD_TIME;
+    MD5 = info.MD5;
+    EXT = info.EXT;
+    FILE_SERVER = info.FILE_SERVER;
+    REAL_KEY = info.REAL_KEY;
+    REAL_NAME = info.REAL_NAME;
+    FILE_PATH = info.FILE_PATH;
+    FILE_NAME = info.FILE_NAME;
+}

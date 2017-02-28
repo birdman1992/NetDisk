@@ -17,9 +17,8 @@ QFolder::QFolder(QWidget *parent,fileInfo* info) :
 
     //初始化属性
 //    fType = _type;
-    memset(&folderInfo, 0, sizeof(fileInfo));
     if(info)
-        memcpy(&folderInfo,info,sizeof(fileInfo));
+        folderInfo = fileInfo(*info);
     else
     {
         folderInfo.FILE_NAME = "新建文件夹";
@@ -118,10 +117,7 @@ void QFolder::contextMenuEvent(QContextMenuEvent*)
 //    act_download->setIcon(QIcon(":/imgs/item.ico"));
     menu->addActions(acts);
     menu->insertSeparator(act_download);
-//    menu->setStyleSheet("QMenu{border:1px solid #A0A0A0;background-color:#F0F0F0;}\
-//                        QMenu::item{color:#000000;padding-left:20px;}\
-//                        QMenu::item:selected{background-color: #2dabf9;}\
-//                        QMenu::separator{height:2px;margin-left:10px;margin-right:5px;}");
+
 
     menu->exec(cur.pos());
 }
@@ -150,7 +146,7 @@ QString QFolder::folderNameCut(QString strIn, int cutLength)
         return strIn;
 
     strIn += "...";
-    qDebug()<<"Folder name cut:"<<strIn;
+//    qDebug()<<"Folder name cut:"<<strIn;
     return strIn;
 }
 
@@ -160,7 +156,7 @@ void QFolder::setImg()
     switch(fType)
     {
         case DIR_COMMON:
-            qss = QString("#img{border-image:url(\":/imgs/60x60/普通文件夹.png\")}");qDebug("123"); break;
+            qss = QString("#img{border-image:url(\":/imgs/60x60/普通文件夹.png\")}");break;
         case DIR_ENSHRINE:
             qss = QString("#img{border-image:url(\":/imgs/60x60/收藏文件夹.png\")}");break;
         case DIR_LOCK:
@@ -292,13 +288,14 @@ void QFolder::editFinish()
     {
         folderName = ui->name->text();qDebug()<<"newfile"<<folderName;
         while(p->repeatCheck(&folderName,this));
-        p->ftpClient.ftpMkdir(p->getCurPath() + folderName);
+        p->httpClient->netMkdir(p->getCurId(),folderName);
+//        p->ftpClient.ftpMkdir(p->getCurPath() + folderName);
 //        ui->name->setText(folderNameCut(ui->name->text(),12));
         newfile = false;
     }
     else if(folderName != ui->name->text())
     {
-        p->ftpClient.ftpRename(p->getCurPath() + folderName, p->getCurPath() + ui->name->text());
+//        p->ftpClient.ftpRename(p->getCurPath() + folderName, p->getCurPath() + ui->name->text());
         qDebug()<<"rename:"<<folderName;
         folderName = ui->name->text();
         ui->name->setText(folderNameCut(ui->name->text(),12));
@@ -330,6 +327,11 @@ short QFolder::folderType()
     return fType;
 }
 
+fileInfo *QFolder::info()
+{
+    return &folderInfo;
+}
+
 QString QFolder::fileName()
 {
     return folderName;
@@ -347,15 +349,15 @@ void QFolder::folderOpen()
 {
     qDebug("open");
     FilesPanel* par = (FilesPanel*)parent();
-    par->panelCd(folderInfo.ID);
+    par->panelCd(&folderInfo);
 }
 
 void QFolder::folderCopy()
 {
     qDebug("copy");
-    FilesPanel* par = (FilesPanel*)parent();
-    QString selfPath = par->getCurPath();
-    emit copy(selfPath);
+//    FilesPanel* par = (FilesPanel*)parent();
+//    QString selfPath = par->getCurId();
+//    emit copy(selfPath);
     pasteEnable = true;
 }
 
@@ -372,9 +374,9 @@ void QFolder::folderPaste()
 void QFolder::folderDelete()
 {
     FilesPanel* p = (FilesPanel*)parent();
-    QString delFile = p->getCurPath() + folderName+"/";
+    QString delFile = p->getCurId() + folderName+"/";
     qDebug()<<"delete:"<<delFile;
-    p->ftpClient.ftpRmdir(delFile);
+//    p->ftpClient.ftpRmdir(delFile);
 }
 
 void QFolder::folderDownload()

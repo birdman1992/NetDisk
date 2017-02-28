@@ -21,29 +21,31 @@ class FilesPanel : public QWidget
 public:
     explicit FilesPanel(QWidget *parent = 0);
     ~FilesPanel();
-    DiskFtp ftpClient;
+//    DiskFtp ftpClient;
     NetHttp* httpClient;
     void panelShow(QList<QFolder*> fPanel);
     void panelClear();
     void panelRefresh();
     void panelCopy(QFolder* p);
     void panelPaste();
-    void panelCd(int dirId);
+    void panelCd(fileInfo* dir);
+    void panelCd(double dirId);
+    void panelBack();//返回
+    void panelAhead();//前进
     bool repeatCheck(QString* fName, QFolder* pFolder);
-    void addFolder(QFolder* parFolder);
     void setViewMode(bool showList);
-    QString getCurPath();
+    int getCurId();
 
 public slots:
-    void cmdCd(QString dir);
+    void cmdCd(double id);
 
 private:
     Ui::FilesPanel *ui;
     QList<QFolder*> curPanel;//当前面板包含的文件夹
     QList<QFolder*> dirTree;//目录树
-    QList<QString*> folderPath;//根目录到当前目录文件夹路径
+    QList<fileInfo*> folderPath;//根目录到当前目录文件夹路径
     QList<int> pathId;//根目录到当前目录文件夹ID
-    QFolder* curDir;//当前目录
+    int curIndex;//当前目录
     QFolder* pFolder;//文件夹指针
     QFolder* pClipboard;//剪贴板指针
     QString* pCdFolder;//cd指令目录指针
@@ -83,7 +85,8 @@ private slots:
     void ftpCdFinishi();
 
 signals:
-    void pathChanged(QList<QString*>, QList<QFolder*>);//当前目录路径，当前目录的文件列表
+    void pathChanged(QList<fileInfo*>);//当前目录路径，当前目录的文件列表
+    void historyEnable(bool backEnable, bool aheadEnable);//使能前进、后退箭头信号
 };
 
 #endif // FILESPANEL_H

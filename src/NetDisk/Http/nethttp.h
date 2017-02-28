@@ -16,9 +16,13 @@ enum httpState
     H_DEL
 };
 
-struct fileInfo
+class fileInfo
 {
-    int ID;
+
+public:
+    fileInfo();
+    fileInfo(const fileInfo &info);
+    double ID;
     int MAST_ID;
     int USER_ID;
     int PARENT_ID;
@@ -46,6 +50,7 @@ public:
     explicit NetHttp(QObject *parent = 0);
     void netLogin(QString user, QString passwd);
     void netList(int pId=-1, int cPage=1, int pageSize=20, QString name=QString(), QString fileType=QString());
+    void netMkdir(int pId=-1, QString fileName = QString("新建文件夹"));
 
 private:
     QNetworkAccessManager* manager;
@@ -60,12 +65,15 @@ private:
     void fileInfoRecv(QByteArray info);
     void fileInfoShow(fileInfo* info);
     void fileListClear();
+    void callbackNew(QByteArray info);
 
 private slots:
     void replyFinished(QNetworkReply*);
 
 signals:
     void listUpdate(QList<fileInfo*>);
+    void updateRequest();
+
 public slots:
 };
 

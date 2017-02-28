@@ -91,19 +91,19 @@ void PathView::pathClear()
 }
 
 /***更新路径栏接口***/
-void PathView::pathUpdate(QList<QFolder *> newPath)
+void PathView::pathUpdate(QList<QFolder *>)
 {
-    QString* str;
-    int i = 0;
+//    QString* str;
+//    int i = 0;
 
-    if(newPath.isEmpty())
-        return;
+//    if(newPath.isEmpty())
+//        return;
 
-    for(i=0; i<newPath.count(); i++)
-    {
-        str = new QString(newPath.at(i)->fileName());
-        pathList<<str;
-    }
+//    for(i=0; i<newPath.count(); i++)
+//    {
+//        str = new QString(newPath.at(i)->fileName());
+//        pathList<<str;
+//    }
 
 //    pathViewPaint(pathList);
 }
@@ -114,12 +114,26 @@ void PathView::pathUpdate(QList<QFolder *> newPath)
 ******************/
 
 /***更新路径栏槽函数***/
-void PathView::pathChange(QList<QString*> path, QList<QFolder*> fileList)
+void PathView::pathChange(QList<fileInfo *> newPath)
 {qDebug("pathchange");
-    QString* str = new QString("我的文件");
-    pathList = path;
-    pathList.insert(0,str);
-    pathViewPaint(pathList, fileList);
+    fileInfo* head = new fileInfo;
+    head->FILE_NAME = "我的文件";
+    head->ID = -1;
+    qDebug("PATH");
+    qDebug()<<head->ID;
+    while(!pathList.isEmpty())
+    {
+        fileInfo* info = pathList.takeFirst();
+        delete info;
+    }
+    for(int i=0; i<newPath.count(); i++)
+    {
+        fileInfo* info = new fileInfo(*(newPath.at(i)));qDebug()<<info->ID;
+        pathList<<info;
+    }
+
+    pathList.insert(0,head);
+    pathViewPaint(pathList);
 }
 
 /*****************
@@ -129,32 +143,28 @@ void PathView::pathClicked(int index)
 {
     if(pathList.count() <= index)
         return;
+//    if(index == 0)
+//        return;
 
-    QString str = "/";
-
-    for(int i=1; i<index; i++)
-    {
-        str += *(pathList.at(i)) + "/";
-    }
-    qDebug()<<"pathClicked"<<str;
-    emit cdRequest(str);
+    qDebug()<<"pathClicked"<<pathList.at(index)->ID;
+    emit cdRequest(pathList.at(index)->ID);
 }
 
 void PathView::boxClicked(QString file)
 {
     qDebug()<<"boxClicked"<<file;
-    emit cdRequest(file);
+//    emit cdRequest(file);
 }
 
 
 
-void PathView::pathViewPaint(QList<QString*> pathIn, QList<QFolder*> fileListIn)
+void PathView::pathViewPaint(QList<fileInfo*> fileListIn)
 {
     int x_offset = 0;
-    int _size = this->geometry().height()-4;
+    int _size = 24;//this->geometry().height()-4;
     int i;
-    int j;
-    QString* str;
+//    int j;
+    QString str;
     QPushButton *pBtn;
     PathBox *pBox1;
     QFont wordFont;
@@ -167,13 +177,13 @@ void PathView::pathViewPaint(QList<QString*> pathIn, QList<QFolder*> fileListIn)
 
     pathClear();
 
-    for(i=0; i<pathIn.count(); i++)
+    for(i=0; i<fileListIn.count(); i++)
     {
-        str = pathIn.at(i);//qDebug()<<"dir"<<*str;
-        pBtn = new QPushButton(*str,this);
+        str = fileListIn.at(i)->FILE_NAME;//qDebug()<<"dir"<<*str;
+        pBtn = new QPushButton(str,this);
         pBtn->setFont(wordFont);
         pathBtn.addButton(pBtn,i);
-        rct = fm.boundingRect(*str);
+        rct = fm.boundingRect(str);
         pBtn->resize(rct.width()+BTN_INTERVAL,_size);
         pBtn->move(x_offset, 3);
         x_offset += pBtn->width();
@@ -188,15 +198,15 @@ void PathView::pathViewPaint(QList<QString*> pathIn, QList<QFolder*> fileListIn)
 
         x_offset += pBox1->width();
 
-        for(j=0; j<fileListIn.count(); j++)
-        {qDebug()<<"folder"<<fileListIn.at(j)->fileName();
-            pBox1->insertItem(j,QIcon(":/imgs/folder_m.ico"),QString(fileListIn.at(j)->fileName()));
-        }
-        connect(pBox1, SIGNAL(pathSelected(QString)), this, SLOT(boxClicked(QString)));
-        pBox1->setBoxPath(pathIn);
+//        for(j=0; j<fileListIn.count(); j++)
+//        {qDebug()<<"folder"<<fileListIn.at(j)->fileName();
+//            pBox1->insertItem(j,QIcon(":/imgs/folder_m.ico"),QString(fileListIn.at(j)->fileName()));
+//        }
+//        connect(pBox1, SIGNAL(pathSelected(QString)), this, SLOT(boxClicked(QString)));
+//        pBox1->setBoxPath(pathIn);
         pBox1->setCurrentIndex(-1);
         pBox1->view()->setFixedWidth(100);
-        pBox1->setCursor(QCursor(Qt::PointingHandCursor));
+//        pBox1->setCursor(QCursor(Qt::PointingHandCursor));
         fileBoxList<<pBox1;//qDebug()<<"boxlist size"<<fileBoxList.count();
         pBox1->show();
 //        if(fileBoxList.count()>2)
