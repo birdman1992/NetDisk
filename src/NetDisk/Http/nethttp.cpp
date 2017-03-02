@@ -7,7 +7,6 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-#define HTTP_ADDR "http://120.24.216.97:8888/"
 
 NetHttp::NetHttp(QObject *parent) : QObject(parent)
 {
@@ -15,7 +14,7 @@ NetHttp::NetHttp(QObject *parent) : QObject(parent)
     State = H_LOGIN;
     isLastPage = false;
     currentPageNum = 0;
-    QString str;
+//    QString str;
     connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
     qDebug()<<QString(QString("操作成功").toUtf8().toPercentEncoding()).replace('%',QString("\\")+("x"));
 }
@@ -27,7 +26,7 @@ void NetHttp::netLogin(QString user, QString passwd)
     QByteArray qba = QCryptographicHash::hash(passwd.toLocal8Bit(), QCryptographicHash::Md5);
 //    qDebug()<<qba.toHex();
     QString passwdMD5 =qba.toHex();
-    nUrl = QString(HTTP_ADDR) + "login/userlogin?" +QString("password=%1&username=%2").arg(passwdMD5).arg(user);
+    nUrl = QString(HTTP_ADDR) + "/login/userlogin?" +QString("password=%1&username=%2").arg(passwdMD5).arg(user);
 //    nUrl = QString("http://120.24.216.97:8888/login/userlogin?password=%1&username=%2")
 //            .arg(passwdMD5).arg(user);
     qDebug()<<"[login]:"<<nUrl;
@@ -36,10 +35,10 @@ void NetHttp::netLogin(QString user, QString passwd)
 }
 
 /***获取文件列表***/
-void NetHttp::netList(int pId, int cPage, int pageSize, QString name, QString fileType)
+void NetHttp::netList(double pId, int cPage, int pageSize, QString name, QString fileType)
 {
     QString nUrl;
-    nUrl = QString(HTTP_ADDR) + "api/file/getMyFile?"+QString("fileType%1=&name=%2&pageSize=%3&cpage=%4&pid=%5")\
+    nUrl = QString(HTTP_ADDR) + "/api/file/getMyFile?"+QString("fileType%1=&name=%2&pageSize=%3&cpage=%4&pid=%5")\
             .arg(fileType).arg(name).arg(pageSize).arg(cPage).arg(pId).toLocal8Bit(); ;
 //    pData =
     qDebug()<<"LIST"<<nUrl;
@@ -47,17 +46,31 @@ void NetHttp::netList(int pId, int cPage, int pageSize, QString name, QString fi
     manager->get(QNetworkRequest(QUrl(nUrl)));
 }
 
-void NetHttp::netMkdir(int pId, QString fileName)
+void NetHttp::netMkdir(double pId, QString fileName)
 {
     QString nUrl;
 //    nUrl = QString(HTTP_ADDR) + "api/file/createFolder?"+QString("pid=%1&name=%2").arg(pId).arg(QString(fileName.toUtf8().toPercentEncoding()).replace('%','\\x'));
-    nUrl = QString(HTTP_ADDR) + "api/file/createFolder";
+    nUrl = QString(HTTP_ADDR) + "/api/file/createFolder";
     QByteArray qba = QString("pid=%1&name=").arg(pId).toLocal8Bit()+fileName.toUtf8();
     State = H_NEW;
     QNetworkRequest request(nUrl);
     request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
     manager->post(request,qba);
 
+}
+
+void NetHttp::netUpload(QString fileName, double pId)
+{
+    fTrans = new netTrans;
+    listTask<<fTrans;
+    fTrans->netUpload(fileName, pId);
+}
+
+void NetHttp::netDownload(QString fileName, double fId)
+{
+    fTrans = new netTrans;
+    listTask<<fTrans;
+    fTrans->netDownload(fileName, fId);
 }
 
 /***接收http返回内容槽***/

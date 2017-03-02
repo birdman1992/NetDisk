@@ -32,9 +32,10 @@ public:
     void panelCd(double dirId);
     void panelBack();//返回
     void panelAhead();//前进
+    void fileDownload(QString fileName, double fileId);
     bool repeatCheck(QString* fName, QFolder* pFolder);
     void setViewMode(bool showList);
-    int getCurId();
+    double getCurId();
 
 public slots:
     void cmdCd(double id);
@@ -51,7 +52,7 @@ private:
     QString* pCdFolder;//cd指令目录指针
     bool pasteEnable;
     bool showListView;//true:显示列表视图    false:显示平铺视图
-    int curDirId;//当前目录ID
+    double curDirId;//当前目录ID
     int pageSize;//当前页大小
     int pageNum;//当前页码
 

@@ -373,15 +373,16 @@ void QFolder::folderPaste()
 
 void QFolder::folderDelete()
 {
-    FilesPanel* p = (FilesPanel*)parent();
-    QString delFile = p->getCurId() + folderName+"/";
-    qDebug()<<"delete:"<<delFile;
+//    FilesPanel* p = (FilesPanel*)parent();
+//    QString delFile = p->getCurId() + folderName+"/";
+//    qDebug()<<"delete:"<<delFile;
 //    p->ftpClient.ftpRmdir(delFile);
 }
 
 void QFolder::folderDownload()
 {
-    qDebug("download");
+    FilesPanel* p = (FilesPanel*)parent();
+    p->fileDownload(this->fileName(),this->info()->ID);
 }
 
 

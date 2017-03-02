@@ -20,8 +20,6 @@ SOURCES += main.cpp\
     Pathview/pathview.cpp \
     Pathview/pathbox.cpp \
     Http/nethttp.cpp \
-    Cjson/cJSON.c \
-    Cjson/cJSON_Utils.c \
     Http/nettrans.cpp
 
 HEADERS  += mainwidget.h \
@@ -30,8 +28,6 @@ HEADERS  += mainwidget.h \
     Pathview/pathview.h \
     Pathview/pathbox.h \
     Http/nethttp.h \
-    Cjson/cJSON.h \
-    Cjson/cJSON_Utils.h \
     Http/nettrans.h
 
 FORMS    += mainwidget.ui \

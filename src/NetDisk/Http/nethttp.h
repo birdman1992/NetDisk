@@ -5,6 +5,7 @@
 #include <qnetworkaccessmanager.h>
 #include <QDateTime>
 #include <QList>
+#include "Http/nettrans.h"
 
 enum httpState
 {
@@ -25,7 +26,7 @@ public:
     double ID;
     int MAST_ID;
     int USER_ID;
-    int PARENT_ID;
+    double PARENT_ID;
     int STATUS;
     int VERSION;
     int IS_ENCRYPED;
@@ -49,12 +50,16 @@ class NetHttp : public QObject
 public:
     explicit NetHttp(QObject *parent = 0);
     void netLogin(QString user, QString passwd);
-    void netList(int pId=-1, int cPage=1, int pageSize=20, QString name=QString(), QString fileType=QString());
-    void netMkdir(int pId=-1, QString fileName = QString("新建文件夹"));
+    void netList(double pId=-1, int cPage=1, int pageSize=20, QString name=QString(), QString fileType=QString());
+    void netMkdir(double pId=-1, QString fileName = QString("新建文件夹"));
+    void netUpload(QString fileName, double pId=-1);
+    void netDownload(QString fileName, double fId);
 
 private:
     QNetworkAccessManager* manager;
     httpState State;
+    netTrans* fTrans;//上传下载
+    QList<netTrans*>listTask;//任务队列
     bool isLastPage;
     bool isFirstPage;
     int currentPageNum;

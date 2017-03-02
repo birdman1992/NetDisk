@@ -281,7 +281,7 @@ bool FilesPanel::repeatCheck(QString *fName, QFolder* pFolder)
     return false;
 }
 
-int FilesPanel::getCurId()
+double FilesPanel::getCurId()
 {
     return curDirId;
 }
@@ -389,17 +389,20 @@ void FilesPanel::fileSort()
 
 void FilesPanel::fileUpload()
 {
-//    qDebug("upload");
-//    QString upFile = QFileDialog::getOpenFileName(this, tr("上传文件"), "./");
-//    QFileInfo info = QFileInfo(upFile);
-//    QString fName = info.fileName();
 
-//    if(upFile.length() == 0)
-//        return;
+    QString upFile = QFileDialog::getOpenFileName(this, tr("上传文件"), "./");
+    QFileInfo info = QFileInfo(upFile);
+    QString fName = info.filePath();
 
-//    ftpClient.ftpUpload(upFile, getCurPath() + fName);
-//    panelRefresh();
-//    qDebug()<<upFile<<(getCurPath() + fName);
+    if(upFile.length() == 0)
+        return;
+
+    httpClient->netUpload(fName, curDirId);
+}
+
+void FilesPanel::fileDownload(QString fileName, double fileId)
+{
+    httpClient->netDownload(fileName, fileId);
 }
 
 void FilesPanel::httpGetListInfo(QList<fileInfo*> lInfo)
