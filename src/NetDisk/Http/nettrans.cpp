@@ -13,6 +13,7 @@ netWork::netWork(QObject *parent) :
     isupload = false;
     pFile = NULL;
     manager = NULL;
+    netReply = NULL;
 
     crlf = "\r\n";
     qsrand(QDateTime::currentDateTime().toTime_t());
@@ -56,7 +57,7 @@ void netWork::netDownload(QString fileName, double fileId)
     QString nUrl;
     isupload = false;
     manager = new QNetworkAccessManager(this->parent());
-    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
+//    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
 
     pFile = new QFile(fileName, this->parent());
     if(!pFile->open(QFile::WriteOnly))
@@ -67,7 +68,10 @@ void netWork::netDownload(QString fileName, double fileId)
 
     nUrl = QString(HTTP_ADDR) + "/api/file/download?"+QString("fid=%1").arg(fileId);
     qDebug()<<"[download]:"<<nUrl<<fileName;
-    manager->get(QNetworkRequest(QUrl(nUrl)));
+    netReply = manager->get(QNetworkRequest(QUrl(nUrl)));
+    connect(netReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(replyError(QNetworkReply::NetworkError)));
+    connect(netReply, SIGNAL(readyRead()), this, SLOT(fileRecv()));
+    connect(netReply, SIGNAL(finished()), this, SLOT(fileRecvFinished()));
 }
 
 netWork::~netWork()
@@ -244,6 +248,30 @@ void netWork::replyFinished(QNetworkReply *reply)
         pFile->write(qba);
     }
     reply->deleteLater();
+}
+
+void netWork::replyError(QNetworkReply::NetworkError errorCode)
+{
+    qDebug()<<errorCode;
+    if(pFile->isOpen())
+    {
+        pFile->close();
+    }
+}
+
+void netWork::fileRecv()
+{
+    QByteArray qba = netReply->readAll();qDebug()<<"download:"<<qba.size();
+    pFile->write(qba);
+}
+
+void netWork::fileRecvFinished()
+{
+    qDebug()<<pFile->fileName()<<"download finished.";
+    if(pFile->isOpen())
+    {
+        pFile->close();
+    }
 }
 
 /****************************************************************************************************/

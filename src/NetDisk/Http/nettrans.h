@@ -24,6 +24,7 @@ public:
 
 private:
     QNetworkAccessManager* manager;
+    QNetworkReply* netReply;
     QNetworkRequest request;
     QString contentType;
     QString endBoundary;
@@ -55,6 +56,9 @@ signals:
 
 private slots:
     void replyFinished(QNetworkReply* reply);
+    void replyError(QNetworkReply::NetworkError errorCode);
+    void fileRecv();
+    void fileRecvFinished();
 };
 
 class netTrans : public QObject
