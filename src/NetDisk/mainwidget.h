@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QPoint>
 #include <QListWidgetItem>
+#include <qscrollarea.h>
+#include <QresizeEvent>
 #include "Pathview/pathview.h"
 #include "filespanel.h"
 
@@ -31,11 +33,8 @@ private slots:
     void on_wMax_toggled(bool checked);
     void founctionListClicked(QListWidgetItem* item);
     void functionBtnClicked(QModelIndex index);
-
     void on_back_clicked();
-
     void on_forward_clicked();
-
     void on_refresh_clicked();
 
 public slots:
@@ -43,6 +42,7 @@ public slots:
 
 private:
     Ui::MainWidget *ui;
+    QScrollArea* scrollFolder;
     FilesPanel* diskPanel;
     PathView* pathView;
     bool wMoveable;

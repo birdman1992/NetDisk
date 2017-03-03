@@ -2,7 +2,6 @@
 #include "ui_mainwidget.h"
 #include <QPushButton>
 #include <QLineEdit>
-#include <qscrollarea.h>
 #include "filespanel.h"
 
 MainWidget::MainWidget(QWidget *parent) :
@@ -26,19 +25,20 @@ MainWidget::MainWidget(QWidget *parent) :
     ui->pathLayout->addWidget(pathView);
 
     //文件面板
-    QScrollArea* scrollFolder = new QScrollArea(this);
+    scrollFolder = new QScrollArea(this);
     scrollFolder->setFrameShape(QFrame::NoFrame);
     scrollFolder->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    scrollFolder->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     scrollFolder->setWidgetResizable(true);
     ui->panelLayout->addWidget(scrollFolder);
 
     diskPanel = new FilesPanel(this);
     scrollFolder->setWidget(diskPanel);
 
-
     //信号槽
     connect(diskPanel, SIGNAL(pathChanged(QList<fileInfo*>)), pathView, SLOT(pathChange(QList<fileInfo*>)));
     connect(diskPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
+    connect(ui->showDelete, SIGNAL(toggled(bool)), diskPanel, SLOT(showDelete(bool)));
     connect(pathView, SIGNAL(cdRequest(double)), diskPanel, SLOT(cmdCd(double)));
     diskPanel->panelCd((fileInfo*)NULL);
 }
@@ -106,7 +106,7 @@ void MainWidget::initFunctionList()
     ui->search->setTextMargins(5,0,0,0);
 
     connect(ui->functionList, SIGNAL(clicked(QModelIndex)), this, SLOT(functionBtnClicked(QModelIndex)));
-    connect(ui->functionList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(founctionListClicked(QListWidgetItem*)));
+//    connect(ui->functionList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(founctionListClicked(QListWidgetItem*)));
 }
 
 //鼠标事件
@@ -160,17 +160,18 @@ void MainWidget::on_wMax_toggled(bool checked)
     else
     {
         this->setWindowState(Qt::WindowNoState);
+
     }
 }
 
 void MainWidget::founctionListClicked(QListWidgetItem*)
 {
-    ui->functionList->setCurrentRow(-1);
+
 }
 
-void MainWidget::functionBtnClicked(QModelIndex)
+void MainWidget::functionBtnClicked(QModelIndex index)
 {
-
+    qDebug()<<index.column();
 }
 
 void MainWidget::historyEnabled(bool backEnable, bool aheadEnable)

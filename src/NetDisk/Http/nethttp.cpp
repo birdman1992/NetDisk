@@ -16,7 +16,7 @@ NetHttp::NetHttp(QObject *parent) : QObject(parent)
     currentPageNum = 0;
 //    QString str;
     connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
-    qDebug()<<QString(QString("操作成功").toUtf8().toPercentEncoding()).replace('%',QString("\\")+("x"));
+//    netLogin("admin","888888");
 }
 
 /***登录接口***/
@@ -35,11 +35,11 @@ void NetHttp::netLogin(QString user, QString passwd)
 }
 
 /***获取文件列表***/
-void NetHttp::netList(double pId, int cPage, int pageSize, QString name, QString fileType)
+void NetHttp::netList(double pId, int cPage, int pageSize, int showdelete, QString name, QString fileType)
 {
     QString nUrl;
-    nUrl = QString(HTTP_ADDR) + "/api/file/getMyFile?"+QString("fileType%1=&name=%2&pageSize=%3&cpage=%4&pid=%5")\
-            .arg(fileType).arg(name).arg(pageSize).arg(cPage).arg(pId).toLocal8Bit(); ;
+    nUrl = QString(HTTP_ADDR) + "/api/file/getMyFile?"+QString("fileType%1=&name=%2&pageSize=%3&cpage=%4&pid=%5&showDelete=%6")\
+            .arg(fileType).arg(name).arg(pageSize).arg(cPage).arg(pId).arg(showdelete).toLocal8Bit();
 //    pData =
     qDebug()<<"LIST"<<nUrl;
     State = H_LIST;
@@ -73,14 +73,27 @@ void NetHttp::netDownload(QString fileName, double fId)
     fTrans->netDownload(fileName, fId);
 }
 
+void NetHttp::netDelete(double fId)
+{
+    QString nUrl;
+    nUrl = QString(HTTP_ADDR) + "/api/file/deleteFile?"+QString("fid=%1")\
+            .arg(fId).toLocal8Bit();
+//    pData =
+    qDebug()<<"DELETE"<<nUrl;
+    State = H_DEL;
+    manager->get(QNetworkRequest(QUrl(nUrl)));
+}
+
 /***接收http返回内容槽***/
 void NetHttp::replyFinished(QNetworkReply *reply)
 {
     QByteArray nRecv = reply->readAll();
-//    qDebug()<<"http recv:"<<nRecv;
+    qDebug()<<"http recv:"<<nRecv;
     switch(State)
     {
         case H_LOGIN:break;
+        case H_DEL:
+            emit updateRequest();break;
         case H_LIST:
             fileListClear();
             fileInfoRecv(nRecv);break;

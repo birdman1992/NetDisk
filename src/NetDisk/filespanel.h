@@ -7,7 +7,6 @@
 #include <QAction>
 #include <QTableWidget>
 #include "QFolder/qfolder.h"
-#include "Ftp/diskftp.h"
 #include "Http/nethttp.h"
 
 namespace Ui {
@@ -39,6 +38,11 @@ public:
 
 public slots:
     void cmdCd(double id);
+    void showDelete(bool show);
+    void fileNew();
+    void fileRefresh();
+    void fileUpload();
+    void fileSort();
 
 private:
     Ui::FilesPanel *ui;
@@ -52,6 +56,7 @@ private:
     QString* pCdFolder;//cd指令目录指针
     bool pasteEnable;
     bool showListView;//true:显示列表视图    false:显示平铺视图
+    int showDeleteFolder;//显示删除文件
     double curDirId;//当前目录ID
     int pageSize;//当前页大小
     int pageNum;//当前页码
@@ -72,16 +77,13 @@ private:
 
     void contextMenuEvent(QContextMenuEvent*);
     void paintEvent(QPaintEvent*);
+    void resizeEvent(QResizeEvent* size);
     void pathClear();
     short folderTypeJudge(QString fName,bool isDir);
 
 private slots:
-    void fileNew();
-    void fileRefresh();
-    void fileUpload();
-    void fileSort();
-
     void httpGetListInfo(QList<fileInfo*>);
+    void review();
     void ftpListShow();
     void ftpCdFinishi();
 

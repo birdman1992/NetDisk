@@ -50,10 +50,11 @@ class NetHttp : public QObject
 public:
     explicit NetHttp(QObject *parent = 0);
     void netLogin(QString user, QString passwd);
-    void netList(double pId=-1, int cPage=1, int pageSize=20, QString name=QString(), QString fileType=QString());
+    void netList(double pId=-1, int cPage=1, int pageSize=20, int showdelete=0, QString name=QString(), QString fileType=QString());
     void netMkdir(double pId=-1, QString fileName = QString("新建文件夹"));
     void netUpload(QString fileName, double pId=-1);
     void netDownload(QString fileName, double fId);
+    void netDelete(double fId);
 
 private:
     QNetworkAccessManager* manager;

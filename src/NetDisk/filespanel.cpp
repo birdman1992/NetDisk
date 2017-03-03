@@ -22,8 +22,9 @@ FilesPanel::FilesPanel(QWidget *parent) :
     pCdFolder = NULL;
     showListView = false;
     curDirId = -1;
-    pageSize = 28;
+    pageSize = 100;
     pageNum = 1;
+    showDeleteFolder = 0;
 
 
     //http
@@ -91,12 +92,14 @@ void FilesPanel::panelShow(QList<QFolder*> fPanel)
 
         if(fPanel.isEmpty())
             return;
-
+        qDebug("1w:%d h:%d %d",this->geometry().width(),this->geometry().height(),fPanel.count());
         int ele_wid = fPanel.at(i)->geometry().width() + offset_x;
         int ele_hei = fPanel.at(i)->geometry().height() + offset_y;
         int count_x = (this->geometry().width() - offset_x)/(ele_wid);
+        int panelSize_h = ((fPanel.count()/count_x) + (fPanel.count()%count_x != 0))*ele_hei + offset_y;
+        this->setMinimumHeight(panelSize_h);
 
-        qDebug("w:%d h:%d",this->geometry().width(),this->geometry().height());
+        qDebug("2w:%d h:%d %d",this->geometry().width(),this->geometry().height(),fPanel.count());
 
         for(i=0; i<fPanel.count();)
         {
@@ -106,7 +109,7 @@ void FilesPanel::panelShow(QList<QFolder*> fPanel)
             if(!(i%count_x))
                 j++;
         }
-//        httpClient->netList(curDirId, pageNum, pageSize);
+
         return;
     }
 
@@ -127,7 +130,7 @@ void FilesPanel::panelRefresh()
 //    qDebug("refresh");
 //    connect(&ftpClient, SIGNAL(cmdList()), this, SLOT(ftpListShow()));
 //    panelClear();
-    httpClient->netList(curDirId, pageNum, pageSize);
+    httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder);
 }
 
 void FilesPanel::panelCopy(QFolder *p)
@@ -144,7 +147,7 @@ void FilesPanel::panelCd(fileInfo* dir)
 {
     int i = 0;
     bool del = false;
-    qDebug()<<"FTP:cd";
+    qDebug()<<"HTTP:cd";
     if(dir == NULL)
     {
         while(!folderPath.isEmpty())
@@ -154,14 +157,13 @@ void FilesPanel::panelCd(fileInfo* dir)
         }
         curDirId = -1;
         curIndex = 0;
-        httpClient->netList(curDirId,pageNum,pageSize);
+        httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder);
         emit historyEnable(false, false);
         emit pathChanged(folderPath);
         return;
     }
     fileInfo* info = new fileInfo(*dir);
 
-//    qDebug()<<"FTP:cd"<<dir->info()->ID;
     for(i=0; i<folderPath.count(); i++)
     {
         if(del)
@@ -177,7 +179,7 @@ void FilesPanel::panelCd(fileInfo* dir)
         folderPath<<info;
     curDirId = dir->ID;
     curIndex = folderPath.count()-1;
-    httpClient->netList(curDirId,pageNum,pageSize);
+    httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder);
     emit historyEnable(true, false);
     emit pathChanged(folderPath);
 }
@@ -197,7 +199,7 @@ void FilesPanel::panelCd(double dirId)
             delete f;
         }
         curIndex = 0;
-        httpClient->netList(curDirId,pageNum,pageSize);
+        httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder);
         emit pathChanged(folderPath);
         emit historyEnable(false, false);
         return;
@@ -218,7 +220,7 @@ void FilesPanel::panelCd(double dirId)
 
     curDirId = folderPath.last()->ID;
     curIndex = folderPath.count()-1;
-    httpClient->netList(curDirId,pageNum,pageSize);
+    httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder);
     qDebug("pathChanged");
     emit pathChanged(folderPath);
     emit historyEnable(true, false);
@@ -230,14 +232,14 @@ void FilesPanel::panelBack()
         return;
     if(curIndex == 0)
     {
-        httpClient->netList(-1,pageNum,pageSize);
+        httpClient->netList(-1, pageNum, pageSize, showDeleteFolder);
         curDirId = -1;
         curIndex--;
     }
     else
     {
         curIndex--;
-        httpClient->netList(folderPath.at(curIndex)->ID,pageNum,pageSize);
+        httpClient->netList(folderPath.at(curIndex)->ID,pageNum,pageSize, showDeleteFolder);
         curDirId = folderPath.at(curIndex)->ID;
     }
 
@@ -256,7 +258,7 @@ void FilesPanel::panelAhead()
     if(curIndex >= (folderPath.count()-1))
         return;
     curIndex++;
-    httpClient->netList(folderPath.at(curIndex)->ID,pageNum,pageSize);
+    httpClient->netList(folderPath.at(curIndex)->ID,pageNum,pageSize, showDeleteFolder);
     curDirId = folderPath.at(curIndex)->ID;
     emit pathChanged(folderPath.mid(0,curIndex+1));
     if(curIndex >= (folderPath.count()-1))
@@ -294,6 +296,11 @@ void FilesPanel::paintEvent(QPaintEvent*)
     opt.init(this);
     QPainter p(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
+}
+
+void FilesPanel::resizeEvent(QResizeEvent*)
+{
+    review();
 }
 
 void FilesPanel::pathClear()
@@ -363,9 +370,12 @@ void FilesPanel::cmdCd(double id)
     panelCd(id);
 }
 
+void FilesPanel::showDelete(bool show)
+{
+    qDebug()<<"show delete"<<show;
+    showDeleteFolder = show;
+}
 
-
-/***私有槽***/
 //菜单槽
 void FilesPanel::fileNew()
 {
@@ -400,6 +410,7 @@ void FilesPanel::fileUpload()
     httpClient->netUpload(fName, curDirId);
 }
 
+/***私有槽***/
 void FilesPanel::fileDownload(QString fileName, double fileId)
 {
     httpClient->netDownload(fileName, fileId);
@@ -422,7 +433,12 @@ void FilesPanel::httpGetListInfo(QList<fileInfo*> lInfo)
 //    if(info.isDir())
 //        curPanel.insert(0, pFolder);
 //    else
-//        curPanel<<pFolder;
+    //        curPanel<<pFolder;
+}
+
+void FilesPanel::review()
+{
+    panelShow(curPanel);
 }
 
 void FilesPanel::ftpListShow()
