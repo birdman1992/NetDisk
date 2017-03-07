@@ -43,6 +43,7 @@ MainWidget::MainWidget(QWidget *parent) :
     //信号槽
     connect(diskPanel, SIGNAL(pathChanged(QList<fileInfo*>)), pathView, SLOT(pathChange(QList<fileInfo*>)));
     connect(diskPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
+    connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
     connect(ui->showDelete, SIGNAL(toggled(bool)), diskPanel, SLOT(showDelete(bool)));
     connect(pathView, SIGNAL(cdRequest(double)), diskPanel, SLOT(cmdCd(double)));
     diskPanel->panelCd((fileInfo*)NULL);

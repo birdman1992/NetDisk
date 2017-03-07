@@ -380,7 +380,7 @@ void QFolder::folderDelete()
 void QFolder::folderDownload()
 {
     FilesPanel* p = (FilesPanel*)parent();
-    p->fileDownload(this->fileName(),this->info()->ID);
+    p->fileDownload(folderInfo);
 }
 
 

@@ -10,8 +10,29 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QSemaphore>
+#include "Http/nethttp.h"
 #define HTTP_ADDR "http://120.24.216.97:8888"
 #define CHUNK_SIZE (4*1024*1024)
+class fileInfo;
+
+enum TaskState
+{
+    LOCK_STATE,
+    NO_STATE,
+    DOWNLOAD_STATE,
+    UPLOAD_STATE,
+    FINISHI_STATE
+};
+
+class TaskInfo
+{
+public:
+    QString fileName;
+    quint64 fileSize;
+    TaskState taskState;
+    int taskSpeed;
+    QTime finishTime;
+};
 
 class netWork : public QObject
 {
@@ -19,7 +40,9 @@ class netWork : public QObject
 public:
     explicit netWork(QObject *parent = 0);
     int netUpload(QString fileName, double pId);
-    void netDownload(QString fileName, double fileId);
+    void netDownload(fileInfo info);
+    TaskInfo taskinfo();
+    void taskStart();
     ~netWork();
 
 private:
@@ -31,9 +54,11 @@ private:
     QString boundary;
     QString crlf;
     QString b;
+    QString nUrl;
     QFile* pFile;
-    QFileInfo FileInfo;
+    QFileInfo fInfo;
     QByteArray fileMd5;
+    TaskInfo taskInfo;
 
 
     double filepId;//文件父目录ID
@@ -49,6 +74,7 @@ private:
     int bytesToLoad;
     int netState;//网络状态
     void md5Check();
+    QByteArray getMd5(QFile* f);
     int fileUpload(bool reload);
 
 signals:
@@ -67,7 +93,8 @@ class netTrans : public QObject
 public:
     explicit netTrans(QObject *parent = 0);
     int netUpload(QString fileName, double pId);
-    void netDownload(QString fileName, double fileId);
+    void netDownload(fileInfo info);
+    TaskInfo taskinfo();
     ~netTrans();
 
 private:

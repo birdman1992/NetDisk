@@ -49,6 +49,7 @@ FilesPanel::FilesPanel(QWidget *parent) :
     //HTTP槽
     connect(httpClient, SIGNAL(listUpdate(QList<fileInfo*>)), this, SLOT(httpGetListInfo(QList<fileInfo*>)));
     connect(httpClient, SIGNAL(updateRequest()), this, SLOT(fileRefresh()));
+    connect(httpClient, SIGNAL(newTask(netTrans*)), this, SIGNAL(newTask(netTrans*)));
 
     //排序子菜单
     menu_sort = new QMenu(this);
@@ -411,9 +412,9 @@ void FilesPanel::fileUpload()
 }
 
 /***私有槽***/
-void FilesPanel::fileDownload(QString fileName, double fileId)
+void FilesPanel::fileDownload(fileInfo info)
 {
-    httpClient->netDownload(fileName, fileId);
+    httpClient->netDownload(info);
 }
 
 void FilesPanel::httpGetListInfo(QList<fileInfo*> lInfo)

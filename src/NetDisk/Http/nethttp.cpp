@@ -62,15 +62,15 @@ void NetHttp::netMkdir(double pId, QString fileName)
 void NetHttp::netUpload(QString fileName, double pId)
 {
     fTrans = new netTrans;
-    listTask<<fTrans;
     fTrans->netUpload(fileName, pId);
+    emit newTask(fTrans);
 }
 
-void NetHttp::netDownload(QString fileName, double fId)
+void NetHttp::netDownload(fileInfo info)
 {
     fTrans = new netTrans;
-    listTask<<fTrans;
-    fTrans->netDownload(fileName, fId);
+    fTrans->netDownload(info);
+    emit newTask(fTrans);
 }
 
 void NetHttp::netDelete(double fId)

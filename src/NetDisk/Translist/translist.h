@@ -2,7 +2,9 @@
 #define TRANSLIST_H
 
 #include <QWidget>
+#include <QTimer>
 #include "Translist/bardelegata.h"
+#include "Http/nettrans.h"
 
 namespace Ui {
 class TransList;
@@ -18,8 +20,17 @@ public:
 
 private:
     Ui::TransList *ui;
+    QTimer tProgress;
     TransModel* transModel;
     int transNum;
+    int progress;
+    QString sizeofbytes(quint64 fsize);
+
+private slots:
+    void progressCheck();
+
+public slots:
+    void newTask(netTrans*);
 };
 
 #endif // TRANSLIST_H

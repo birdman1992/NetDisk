@@ -14,6 +14,8 @@ netWork::netWork(QObject *parent) :
     pFile = NULL;
     manager = NULL;
     netReply = NULL;
+    taskInfo.taskState = LOCK_STATE;
+    taskInfo.taskSpeed = 0;
 
     crlf = "\r\n";
     qsrand(QDateTime::currentDateTime().toTime_t());
@@ -23,6 +25,10 @@ netWork::netWork(QObject *parent) :
     endBoundary=crlf+"--"+boundary+"--"+crlf;
     boundary="--"+boundary+crlf;
 
+}
+
+netWork::~netWork()
+{
 }
 
 int netWork::netUpload(QString fileName, double pId)
@@ -43,49 +49,67 @@ int netWork::netUpload(QString fileName, double pId)
         qDebug()<<"[File upload]:"<<"file open error.";
         return -1;
     }
-    FileInfo = QFileInfo(fileName);
+    fInfo = QFileInfo(fileName);
     filepId = pId;
     isupload = true;
-    md5Check();
-    pFile->seek(0);
+    taskInfo.taskState = NO_STATE;
+    taskInfo.fileName = fInfo.fileName();
+    taskInfo.fileSize = pFile->size();
+
 
     return 0;
 }
 
-void netWork::netDownload(QString fileName, double fileId)
+void netWork::netDownload(fileInfo info)
 {
-    QString nUrl;
     isupload = false;
     manager = new QNetworkAccessManager(this->parent());
 //    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
+    fileMd5 = QByteArray::fromHex(info.MD5.toLocal8Bit());
+    taskInfo.fileName = info.FILE_NAME;
+    taskInfo.fileSize = info.SIZE;
 
-    pFile = new QFile(fileName, this->parent());
+    pFile = new QFile(info.FILE_NAME, this->parent());
     if(!pFile->open(QFile::WriteOnly))
     {
         qDebug()<<"[File upload]:"<<"file open error.";
         return;
     }
 
-    nUrl = QString(HTTP_ADDR) + "/api/file/download?"+QString("fid=%1").arg(fileId);
-    qDebug()<<"[download]:"<<nUrl<<fileName;
-    netReply = manager->get(QNetworkRequest(QUrl(nUrl)));
-    connect(netReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(replyError(QNetworkReply::NetworkError)));
-    connect(netReply, SIGNAL(readyRead()), this, SLOT(fileRecv()));
-    connect(netReply, SIGNAL(finished()), this, SLOT(fileRecvFinished()));
+    nUrl = QString(HTTP_ADDR) + "/api/file/download?"+QString("fid=%1").arg(info.ID);
+    qDebug()<<"[download]:"<<nUrl<<info.FILE_NAME<<fileMd5.toHex();
 }
 
-netWork::~netWork()
+TaskInfo netWork::taskinfo()
 {
+    return taskInfo;
+}
+
+void netWork::taskStart()
+{
+    if(isupload)
+    {
+        md5Check();
+        pFile->seek(0);
+    }
+    else
+    {
+        netReply = manager->get(QNetworkRequest(QUrl(nUrl)));
+        connect(netReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(replyError(QNetworkReply::NetworkError)));
+        connect(netReply, SIGNAL(readyRead()), this, SLOT(fileRecv()));
+        connect(netReply, SIGNAL(finished()), this, SLOT(fileRecvFinished()));
+    }
 }
 
 void netWork::md5Check()
 {
-    quint64 bytesToWrite = FileInfo.size();
+    quint64 bytesToWrite = fInfo.size();
     quint64 bytesWriten = 0;
     quint64 blockSize = 4*1024;
     QByteArray qba;
     QCryptographicHash ch(QCryptographicHash::Md5);
 
+    pFile->seek(0);
     while(bytesToWrite > 0)
     {
         qba = pFile->read(qMin(bytesToWrite, blockSize));
@@ -94,6 +118,7 @@ void netWork::md5Check()
         bytesWriten += qba.size();
         qba.resize(0);
     }
+    pFile->seek(0);
 
     fileMd5 = ch.result();
     qba = "md5=" + fileMd5.toHex();
@@ -103,6 +128,31 @@ void netWork::md5Check()
     request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
     manager->post(request, qba);
     qDebug()<<"post"<<nUrl<<qba;
+}
+
+QByteArray netWork::getMd5(QFile *f)
+{
+    quint64 bytesToWrite = fInfo.size();
+    quint64 bytesWriten = 0;
+    quint64 blockSize = 4*1024;
+    QByteArray qba;
+    QCryptographicHash ch(QCryptographicHash::Md5);
+
+    f->seek(0);
+    while(bytesToWrite > 0)
+    {
+        qba = f->read(qMin(bytesToWrite, blockSize));
+        ch.addData(qba);
+        bytesToWrite -= qba.size();
+        bytesWriten += qba.size();
+        qba.resize(0);
+    }
+
+    fileMd5 = ch.result();
+    f->seek(0);
+    qba = "md5=" + fileMd5.toHex();
+    qDebug()<<"MD5"<<ch.result().toHex();
+    return fileMd5;
 }
 
 int netWork::fileUpload(bool reload)
@@ -225,9 +275,9 @@ void netWork::replyFinished(QNetworkReply *reply)
             else if(code == "-200")//文件MD5不存在
             {
                 qDebug("file not exit upload");
-                chunks = (FileInfo.size()) / CHUNK_SIZE + ((FileInfo.size() % CHUNK_SIZE) != 0);
+                chunks = (fInfo.size()) / CHUNK_SIZE + ((fInfo.size() % CHUNK_SIZE) != 0);
                 chunk = 0;
-                bytesToLoad = FileInfo.size();
+                bytesToLoad = fInfo.size();
                 fileSize = bytesToLoad;
                 qDebug()<<"fileSize"<<fileSize;
                 netState = 1;//进入上传文件状态
@@ -291,10 +341,15 @@ int netTrans::netUpload(QString fileName, double pId)
     return 0;
 }
 
-void netTrans::netDownload(QString fileName, double fileId)
+void netTrans::netDownload(fileInfo info)
 {
-    work->netDownload(fileName, fileId);
+    work->netDownload(info);
     return;
+}
+
+TaskInfo netTrans::taskinfo()
+{
+    return work->taskinfo();
 }
 
 netTrans::~netTrans()

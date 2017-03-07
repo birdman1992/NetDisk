@@ -7,6 +7,8 @@
 #include <QList>
 #include "Http/nettrans.h"
 
+class netTrans;
+
 enum httpState
 {
     H_LOGIN,
@@ -32,7 +34,7 @@ public:
     int IS_ENCRYPED;
     int FILE_TYPE;
     int TYPE;
-    float SIZE;
+    quint64 SIZE;
     QDateTime LAST_MOD_TIME;
     QDateTime ADD_TIME;
     QString MD5;
@@ -52,8 +54,8 @@ public:
     void netLogin(QString user, QString passwd);
     void netList(double pId=-1, int cPage=1, int pageSize=20, int showdelete=0, QString name=QString(), QString fileType=QString());
     void netMkdir(double pId=-1, QString fileName = QString("新建文件夹"));
-    void netUpload(QString fileName, double pId=-1);
-    void netDownload(QString fileName, double fId);
+    void netUpload(QString fileName, double pId);
+    void netDownload(fileInfo info);
     void netDelete(double fId);
 
 private:
@@ -79,6 +81,7 @@ private slots:
 signals:
     void listUpdate(QList<fileInfo*>);
     void updateRequest();
+    void newTask(netTrans*);
 
 public slots:
 };
