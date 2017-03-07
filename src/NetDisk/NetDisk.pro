@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     Pathview/pathbox.cpp \
     Http/nethttp.cpp \
     Http/nettrans.cpp \
-    translist.cpp
+    Translist/translist.cpp \
+    Translist/bardelegata.cpp
 
 HEADERS  += mainwidget.h \
     QFolder/qfolder.h \
@@ -30,13 +31,14 @@ HEADERS  += mainwidget.h \
     Pathview/pathbox.h \
     Http/nethttp.h \
     Http/nettrans.h \
-    translist.h
+    Translist/translist.h \
+    Translist/bardelegata.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \
     filespanel.ui \
     Pathview/pathview.ui \
-    translist.ui
+    Translist/translist.ui
 
 RESOURCES += \
     img.qrc

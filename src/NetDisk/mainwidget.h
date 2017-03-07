@@ -6,6 +6,7 @@
 #include <QListWidgetItem>
 #include <qscrollarea.h>
 #include <QresizeEvent>
+#include <Translist/translist.h>
 #include "Pathview/pathview.h"
 #include "filespanel.h"
 
@@ -36,6 +37,8 @@ private slots:
     void on_back_clicked();
     void on_forward_clicked();
     void on_refresh_clicked();
+    void on_translist_toggled(bool checked);
+
 
 public slots:
     void historyEnabled(bool backEnable, bool aheadEnable);
@@ -45,6 +48,7 @@ private:
     QScrollArea* scrollFolder;
     FilesPanel* diskPanel;
     PathView* pathView;
+    TransList* transList;
     bool wMoveable;
     QPoint dragPosition;
 

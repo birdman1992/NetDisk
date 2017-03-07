@@ -368,7 +368,7 @@ border-image: url(:/imgs/title/max-hover_03.png);
            </spacer>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="4,9,1">
+           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,9,2">
             <property name="spacing">
              <number>0</number>
             </property>
@@ -386,11 +386,17 @@ border-image: url(:/imgs/title/max-hover_03.png);
              </spacer>
             </item>
             <item>
-             <widget class="QLabel" name="label">
-              <property name="maximumSize">
+             <widget class="QPushButton" name="translist">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
                <size>
-                <width>98</width>
-                <height>27</height>
+                <width>40</width>
+                <height>28</height>
                </size>
               </property>
               <property name="styleSheet">
@@ -398,6 +404,9 @@ border-image: url(:/imgs/title/max-hover_03.png);
               </property>
               <property name="text">
                <string/>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
               </property>
              </widget>
             </item>

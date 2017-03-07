@@ -2,6 +2,7 @@
 #define TRANSLIST_H
 
 #include <QWidget>
+#include "Translist/bardelegata.h"
 
 namespace Ui {
 class TransList;
@@ -17,6 +18,8 @@ public:
 
 private:
     Ui::TransList *ui;
+    TransModel* transModel;
+    int transNum;
 };
 
 #endif // TRANSLIST_H

@@ -18,6 +18,9 @@ MainWidget::MainWidget(QWidget *parent) :
     //功能栏
     initFunctionList();
 
+    //传输列表
+    transList = new TransList(this);
+
     //路径面板
     pathView = new PathView(this);
     pathView->setMaximumHeight(49);
@@ -31,6 +34,8 @@ MainWidget::MainWidget(QWidget *parent) :
     scrollFolder->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     scrollFolder->setWidgetResizable(true);
     ui->panelLayout->addWidget(scrollFolder);
+    ui->panelLayout->addWidget(transList);
+    transList->hide();
 
     diskPanel = new FilesPanel(this);
     scrollFolder->setWidget(diskPanel);
@@ -171,7 +176,28 @@ void MainWidget::founctionListClicked(QListWidgetItem*)
 
 void MainWidget::functionBtnClicked(QModelIndex index)
 {
-    qDebug()<<index.column();
+    int funcNum = index.row();
+
+    switch (funcNum)
+    {
+        case 0:
+            diskPanel->fileUpload(); break;
+        case 1:
+            diskPanel->fileNew(); break;
+        case 2:
+            qDebug("share");break;
+        case 3:
+            qDebug("link");break;
+        case 4:
+            qDebug("download");break;
+        case 5:
+            qDebug("delete");break;
+        case 6:
+            qDebug("restore");break;
+
+        default:
+            break;
+    }
 }
 
 void MainWidget::historyEnabled(bool backEnable, bool aheadEnable)
@@ -193,4 +219,18 @@ void MainWidget::on_forward_clicked()
 void MainWidget::on_refresh_clicked()
 {
     diskPanel->panelRefresh();
+}
+
+void MainWidget::on_translist_toggled(bool checked)
+{qDebug()<<"checked"<<checked;
+    if(checked)
+    {
+        scrollFolder->hide();
+        transList->show();
+    }
+    else
+    {
+        scrollFolder->show();
+        transList->hide();
+    }
 }
