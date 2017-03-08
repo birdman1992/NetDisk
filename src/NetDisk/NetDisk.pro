@@ -22,7 +22,8 @@ SOURCES += main.cpp\
     Http/nethttp.cpp \
     Http/nettrans.cpp \
     Translist/translist.cpp \
-    Translist/bardelegata.cpp
+    Translist/bardelegata.cpp \
+    netconfig.cpp
 
 HEADERS  += mainwidget.h \
     QFolder/qfolder.h \
@@ -32,7 +33,8 @@ HEADERS  += mainwidget.h \
     Http/nethttp.h \
     Http/nettrans.h \
     Translist/translist.h \
-    Translist/bardelegata.h
+    Translist/bardelegata.h \
+    netconfig.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \

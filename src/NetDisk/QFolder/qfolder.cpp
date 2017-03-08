@@ -131,8 +131,17 @@ bool QFolder::event(QEvent *event)
 {
     if(event->type() == QEvent::ToolTip)
     {
-        QToolTip::showText(this->cursor().pos(),QString("名称:%1\n修改日期:%2")
-                 .arg(folderName).arg(folderTime.toString("yyyy-MM-dd \nhh:mm:ss dddd")));
+        if(isDir)
+        {
+            QToolTip::showText(this->cursor().pos(),QString("名称:%1\n修改日期:%2")
+                     .arg(folderName).arg(folderInfo.LAST_MOD_TIME.toString("yyyy-MM-dd \nhh:mm:ss dddd")));
+        }
+        else
+        {
+            QToolTip::showText(this->cursor().pos(),QString("名称:%1\n大小:%2\n修改日期:%3")
+                     .arg(folderName).arg(sizeofbytes(folderInfo.SIZE)).arg(folderInfo.LAST_MOD_TIME.toString("yyyy-MM-dd \nhh:mm:ss dddd")));
+        }
+
     }
     return QWidget::event(event);
 }
@@ -195,6 +204,7 @@ short QFolder::folderTypeJudge(QString fName)
 {
     if(fName.isEmpty())
     {
+        isDir = true;
         if(fName == "共享文件夹")
             return QFolder::DIR_SHARE;
         else if(fName == "私密文件")
@@ -206,6 +216,7 @@ short QFolder::folderTypeJudge(QString fName)
     }
     else
     {
+        isDir = false;
         if(fName.endsWith("apk", Qt::CaseInsensitive))
             return QFolder::FILE_APK;
         else if(fName.endsWith("doc", Qt::CaseInsensitive) || fName.endsWith("docx"))
@@ -229,6 +240,21 @@ short QFolder::folderTypeJudge(QString fName)
         else
             return QFolder::FILE_DEFAULT;
     }
+}
+
+QString QFolder::sizeofbytes(quint64 fsize)
+{
+    int i = 0;
+    int num = 0;
+    QStringList l;
+    l<<"B"<<"KB"<<"MB"<<"GB";
+
+    while((num=fsize/1000) && (i<3))
+    {
+        fsize = num;
+        i++;
+    }
+    return QString::number(fsize)+l.at(i);
 }
 
 /**********************

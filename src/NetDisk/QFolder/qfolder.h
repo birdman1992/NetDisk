@@ -71,6 +71,7 @@ private:
     bool pasteEnable;
     bool selectEnable;
     bool newfile;
+    bool isDir;
     QString folderName;
     fileInfo folderInfo;
     int textwid;
@@ -85,6 +86,7 @@ private:
     QString folderNameCut(QString strIn, int cutLength);
     void setImg();
     short folderTypeJudge(QString fName);
+    QString sizeofbytes(quint64 fsize);
 
 protected:
     ushort t;

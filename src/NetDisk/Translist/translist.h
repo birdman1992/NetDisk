@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QTimer>
+#include <QList>
 #include "Translist/bardelegata.h"
 #include "Http/nettrans.h"
 
@@ -22,8 +23,11 @@ private:
     Ui::TransList *ui;
     QTimer tProgress;
     TransModel* transModel;
+    QList<netTrans*> taskList;
     int transNum;
     int progress;
+    int colIndex_state;
+    int colIndex_progress;
     QString sizeofbytes(quint64 fsize);
 
 private slots:

@@ -17,11 +17,11 @@ class fileInfo;
 
 enum TaskState
 {
-    LOCK_STATE,
     NO_STATE,
     DOWNLOAD_STATE,
     UPLOAD_STATE,
-    FINISHI_STATE
+    FINISHI_STATE,
+    ERROR_STATE
 };
 
 class TaskInfo
@@ -29,6 +29,7 @@ class TaskInfo
 public:
     QString fileName;
     quint64 fileSize;
+    quint64 curSize;
     TaskState taskState;
     int taskSpeed;
     QTime finishTime;
@@ -94,6 +95,7 @@ public:
     explicit netTrans(QObject *parent = 0);
     int netUpload(QString fileName, double pId);
     void netDownload(fileInfo info);
+    void taskStart();
     TaskInfo taskinfo();
     ~netTrans();
 

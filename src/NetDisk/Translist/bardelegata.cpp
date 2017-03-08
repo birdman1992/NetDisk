@@ -12,7 +12,7 @@ BarDelegate::BarDelegate( QObject *parent ) : QAbstractItemDelegate( parent ) { 
 
 void BarDelegate::paint( QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index ) const
 {
-    if (index.column() == 3)
+    if (index.column() == 4)
     {
         int nProgress = index.model()->data(index, Qt::DisplayRole).toInt();
         qDebug()<<nProgress;
@@ -39,6 +39,8 @@ void BarDelegate::paint( QPainter *painter, const QStyleOptionViewItem &option, 
         //绘制进度条
         QApplication::style()->drawControl(QStyle::CE_ProgressBar, &progressBarOption, painter, &progressBar);
     }
+    else
+        qDebug("<<<<<<<<<<<<<<");
 }
 
 QSize BarDelegate::sizeHint( const QStyleOptionViewItem &, const QModelIndex & ) const
