@@ -26,8 +26,10 @@ private:
     QList<netTrans*> taskList;
     int transNum;
     int progress;
+    int colIndex_speed;
     int colIndex_state;
     int colIndex_progress;
+
     QString sizeofbytes(quint64 fsize);
 
 private slots:

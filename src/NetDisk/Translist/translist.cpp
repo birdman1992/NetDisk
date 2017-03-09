@@ -14,7 +14,8 @@ TransList::TransList(QWidget *parent) :
     ui->setupUi(this);
     transNum = 1;
     progress = 1;
-    colIndex_state = 3;
+    colIndex_state = 2;
+    colIndex_speed = 3;
     colIndex_progress = 4;
     tips<<"等待"<<"下载中"<<"上传中"<<"下载完成"<<"下载失败";
     brush<<new QBrush(QColor(0, 0, 0))<<new QBrush(QColor(0, 0, 0))<<new QBrush(QColor(0, 0, 0))<<new QBrush(QColor(0, 0, 255))<<new QBrush(QColor(255, 0, 0));
@@ -30,9 +31,9 @@ TransList::TransList(QWidget *parent) :
     ui->scrollArea->setFrameShape(QFrame::NoFrame);
     ui->transview->setModel(transModel);
     ui->transview->setColumnWidth(0, 400);
-    ui->transview->setColumnWidth(1,100);
-    ui->transview->setColumnWidth(2,100);
-    ui->transview->setColumnWidth(colIndex_state,100);
+    ui->transview->setColumnWidth(1,60);
+    ui->transview->setColumnWidth(colIndex_state,60);
+    ui->transview->setColumnWidth(colIndex_speed,120);
     ui->transview->setColumnWidth(colIndex_progress, 150);
 
 
@@ -78,10 +79,11 @@ void TransList::progressCheck()
             continue;
         }
         else
-        {qDebug()<<taskList.at(i)->taskinfo().taskState;
+        {
             transModel->item(i, colIndex_state)->setForeground(*(brush.at(taskList.at(i)->taskinfo().taskState)));
             transModel->setData(transModel->index(i,colIndex_state),tips.at(taskList.at(i)->taskinfo().taskState),Qt::DisplayRole);
         }
+        transModel->setData(transModel->index(i,colIndex_speed),taskList.at(i)->getTaskSpeed(), Qt::DisplayRole);
         transModel->setData(transModel->index(i,colIndex_progress),(taskList.at(i)->taskinfo().curSize)*100/(taskList.at(i)->taskinfo().fileSize));
         i++;
     }
@@ -90,7 +92,6 @@ void TransList::progressCheck()
 void TransList::newTask(netTrans *trans)
 {
     int rows = transModel->rowCount();
-    qDebug()<<rows;
     taskList<<trans;
     if(taskList.count()<=3)
         trans->taskStart();

@@ -96,7 +96,6 @@ void netWork::taskStart()
     {
         md5Check();
         taskInfo.taskState = UPLOAD_STATE;
-        pFile->seek(0);
     }
     else
     {
@@ -114,6 +113,32 @@ void netWork::taskStart()
             connect(netReply, SIGNAL(finished()), this, SLOT(fileRecvFinished()));
         }
     }
+}
+
+QString netWork::getTaskSpeed()
+{
+    int i = 0;
+    int num = 0;
+    quint64 speed = taskInfo.taskSpeed;
+    QStringList l;
+    QString fTime;
+    l<<"B/s"<<"KB/s"<<"MB/s"<<"GB/s";
+
+    while((num=speed/1000) && (i<3))
+    {
+        speed = num;
+        i++;
+    }
+    if(taskInfo.taskSpeed)
+    {
+        taskInfo.finishTime = QTime(0,0,0).addSecs(taskInfo.fileSize / taskInfo.taskSpeed);
+        fTime = taskInfo.finishTime.toString();
+    }
+    else
+        fTime = "--:--:--";
+    qDebug()<<"finish time"<<fTime;
+    taskInfo.taskSpeed = 0;
+    return fTime+"  "+QString::number(speed)+l.at(i);
 }
 
 void netWork::md5Check()
@@ -137,7 +162,7 @@ void netWork::md5Check()
 
     fileMd5 = ch.result();
     qba = "md5=" + fileMd5.toHex();
-    qDebug()<<"MD5"<<ch.result().toHex();return;
+    qDebug()<<"MD5"<<ch.result().toHex();
     QString nUrl = QString(HTTP_ADDR) + "/api/file/getFileByMd5";
     request.setUrl(nUrl);
     request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -183,6 +208,7 @@ int netWork::fileUpload(bool reload)
     if(chunk >= chunks)
     {
         qDebug()<<"[netWork]:Upload finishi.";
+        taskInfo.taskState = FINISHI_STATE;
         return 0;
     }
 
@@ -289,6 +315,7 @@ void netWork::replyFinished(QNetworkReply *reply)
         {qDebug()<<"state:"<<netState;
             if(code == "200")//文件MD5存在
             {
+                taskInfo.taskState = FINISHI_STATE;
                 qDebug("file exit");
             }
             else if(code == "-200")//文件MD5不存在
@@ -307,6 +334,9 @@ void netWork::replyFinished(QNetworkReply *reply)
         {
             if(code == "200")//单片上传成功
             {
+                taskInfo.taskSpeed += chunksize;
+                taskInfo.curSize += chunksize;
+                taskInfo.taskSpeed += chunksize;
                 fileUpload(false);
             }
         }
@@ -334,6 +364,7 @@ void netWork::fileRecv()
 {
     QByteArray qba = netReply->readAll();qDebug()<<"download:"<<qba.size();
     taskInfo.curSize+=qba.size();
+    taskInfo.taskSpeed += qba.size();
     pFile->write(qba);
 }
 
@@ -378,6 +409,11 @@ void netTrans::netDownload(fileInfo info)
 void netTrans::taskStart()
 {
     work->taskStart();
+}
+
+QString netTrans::getTaskSpeed()
+{
+    return work->getTaskSpeed();
 }
 
 TaskInfo netTrans::taskinfo()

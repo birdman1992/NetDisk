@@ -80,6 +80,7 @@ void FilesPanel::setViewMode(bool showList)
 //显示文件夹面板
 void FilesPanel::panelShow(QList<QFolder*> fPanel)
 {
+    emit isLoading(false);
     if(showListView)
     {
 
@@ -124,13 +125,14 @@ void FilesPanel::panelClear()
         f = curPanel.takeFirst();
         f->deleteLater();
     }
+    emit isLoading(true);
 }
 
 void FilesPanel::panelRefresh()
 {
 //    qDebug("refresh");
 //    connect(&ftpClient, SIGNAL(cmdList()), this, SLOT(ftpListShow()));
-//    panelClear();
+    panelClear();
     httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder);
 }
 
@@ -149,6 +151,7 @@ void FilesPanel::panelCd(fileInfo* dir)
     int i = 0;
     bool del = false;
     qDebug()<<"HTTP:cd";
+    panelClear();
     if(dir == NULL)
     {
         while(!folderPath.isEmpty())
@@ -191,6 +194,7 @@ void FilesPanel::panelCd(double dirId)
     bool del = false;
     fileInfo* f = NULL;
     qDebug()<<"FTP:cd"<<dirId;
+    panelClear();
     if(dirId == -1)
     {
         curDirId = -1;
@@ -266,6 +270,11 @@ void FilesPanel::panelAhead()
         emit historyEnable(true, false);
     else
         emit historyEnable(true, true);
+}
+
+void FilesPanel::panelSearch(int searchType, QString name)
+{
+    httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder, name, QString::number(searchType));
 }
 
 bool FilesPanel::repeatCheck(QString *fName, QFolder* pFolder)
@@ -420,7 +429,7 @@ void FilesPanel::fileDownload(fileInfo info)
 void FilesPanel::httpGetListInfo(QList<fileInfo*> lInfo)
 {
 //    disconnect(httpClient, SIGNAL(listUpdate(QList<fileInfo*>)), this, SLOT(httpGetListInfo(QList<fileInfo*>)));
-    panelClear();
+//    panelClear();
     for(int i=0; i<lInfo.count(); i++)
     {
         fileInfo* info = lInfo.at(i);

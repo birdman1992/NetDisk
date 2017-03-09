@@ -38,7 +38,7 @@ void NetHttp::netLogin(QString user, QString passwd)
 void NetHttp::netList(double pId, int cPage, int pageSize, int showdelete, QString name, QString fileType)
 {
     QString nUrl;
-    nUrl = QString(HTTP_ADDR) + "/api/file/getMyFile?"+QString("fileType%1=&name=%2&pageSize=%3&cpage=%4&pid=%5&showDelete=%6")\
+    nUrl = QString(HTTP_ADDR) + "/api/file/getMyFile?"+QString("fileType=%1&name=%2&pageSize=%3&cpage=%4&pid=%5&showDelete=%6")\
             .arg(fileType).arg(name).arg(pageSize).arg(cPage).arg(pId).arg(showdelete).toLocal8Bit();
 //    pData =
     qDebug()<<"LIST"<<nUrl;

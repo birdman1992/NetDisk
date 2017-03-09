@@ -31,7 +31,7 @@ public:
     quint64 fileSize;
     quint64 curSize;
     TaskState taskState;
-    int taskSpeed;
+    quint64 taskSpeed;
     QTime finishTime;
 };
 
@@ -44,6 +44,7 @@ public:
     void netDownload(fileInfo info);
     TaskInfo taskinfo();
     void taskStart();
+    QString getTaskSpeed();
     ~netWork();
 
 private:
@@ -96,6 +97,7 @@ public:
     int netUpload(QString fileName, double pId);
     void netDownload(fileInfo info);
     void taskStart();
+    QString getTaskSpeed();
     TaskInfo taskinfo();
     ~netTrans();
 

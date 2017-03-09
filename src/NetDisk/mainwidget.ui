@@ -171,7 +171,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QPushButton" name="menu">
+             <widget class="QComboBox" name="menu">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -185,10 +185,17 @@
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">border-image: url(:/imgs/title/右上菜单.png);</string>
-              </property>
-              <property name="text">
-               <string/>
+               <string notr="true">QComboBox::drop-down {
+    border-left-style: solid; /* just a single line */
+    border-top-right-radius: 3px; 
+}
+QComboBox{
+	
+	border-image: url(:/imgs/title/右上菜单.png);
+    border-left-style: solid; /* just a single line */
+    border-top-right-radius: 3px; 
+}
+</string>
               </property>
              </widget>
             </item>

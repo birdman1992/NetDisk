@@ -31,6 +31,7 @@ public:
     void panelCd(double dirId);
     void panelBack();//返回
     void panelAhead();//前进
+    void panelSearch(int searchType, QString name=QString());
     void fileDownload(fileInfo info);
     bool repeatCheck(QString* fName, QFolder* pFolder);
     void setViewMode(bool showList);
@@ -91,6 +92,7 @@ signals:
     void pathChanged(QList<fileInfo*>);//当前目录路径，当前目录的文件列表
     void historyEnable(bool backEnable, bool aheadEnable);//使能前进、后退箭头信号
     void newTask(netTrans*);
+    void isLoading(bool);
 };
 
 #endif // FILESPANEL_H

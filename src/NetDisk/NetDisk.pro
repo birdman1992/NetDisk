@@ -23,7 +23,9 @@ SOURCES += main.cpp\
     Http/nettrans.cpp \
     Translist/translist.cpp \
     Translist/bardelegata.cpp \
-    netconfig.cpp
+    netconfig.cpp \
+    configpanel.cpp \
+    loading.cpp
 
 HEADERS  += mainwidget.h \
     QFolder/qfolder.h \
@@ -34,15 +36,20 @@ HEADERS  += mainwidget.h \
     Http/nettrans.h \
     Translist/translist.h \
     Translist/bardelegata.h \
-    netconfig.h
+    netconfig.h \
+    configpanel.h \
+    loading.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \
     filespanel.ui \
     Pathview/pathview.ui \
-    Translist/translist.ui
+    Translist/translist.ui \
+    configpanel.ui \
+    loading.ui
 
 RESOURCES += \
     img.qrc
 
-DISTFILES +=
+DISTFILES += \
+    imgs/Clock.png

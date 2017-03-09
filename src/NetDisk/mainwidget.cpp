@@ -12,6 +12,11 @@ MainWidget::MainWidget(QWidget *parent) :
     this->setWindowFlags(Qt::FramelessWindowHint);
     wMoveable = false;
 
+    //搜索栏
+    initSearch();
+    //系统菜单
+
+
     //侧边栏
     initSilidebar();
 
@@ -35,7 +40,11 @@ MainWidget::MainWidget(QWidget *parent) :
     scrollFolder->setWidgetResizable(true);
     ui->panelLayout->addWidget(scrollFolder);
     ui->panelLayout->addWidget(transList);
+    ui->panelLayout->addWidget(&loadingUi);
+    loadingUi.reloadStart();
     transList->hide();
+    scrollFolder->hide();
+    loadingUi.show();
 
     diskPanel = new FilesPanel(this);
     scrollFolder->setWidget(diskPanel);
@@ -44,14 +53,30 @@ MainWidget::MainWidget(QWidget *parent) :
     connect(diskPanel, SIGNAL(pathChanged(QList<fileInfo*>)), pathView, SLOT(pathChange(QList<fileInfo*>)));
     connect(diskPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
     connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
+    connect(diskPanel, SIGNAL(isLoading(bool)), this, SLOT(isLoading(bool)));
     connect(ui->showDelete, SIGNAL(toggled(bool)), diskPanel, SLOT(showDelete(bool)));
     connect(pathView, SIGNAL(cdRequest(double)), diskPanel, SLOT(cmdCd(double)));
+    connect(ui->searchFilter,  SIGNAL(currentIndexChanged(int)), this, SLOT(searchTypeChanged(int)));
+
     diskPanel->panelCd((fileInfo*)NULL);
 }
 
 MainWidget::~MainWidget()
 {
     delete ui;
+}
+
+void MainWidget::initSearch()
+{
+    QStringList l;
+    l<<"全部"<<"视频"<<"音频"<<"图片"<<"文档"<<"压缩文件"<<"其它";
+    ui->searchFilter->addItems(l);
+    ui->search->installEventFilter(this);
+}
+
+void MainWidget::initSysMenu()
+{
+    ui->menu->addItem("设置");
 }
 
 void MainWidget::initSilidebar()
@@ -107,7 +132,7 @@ void MainWidget::initFunctionList()
     item->setSizeHint(itemSize);
     ui->functionList->addItem(item);
 
-    ui->searchFilter->addItem(" 全部");
+//    ui->searchFilter->addItem(" 全部");
     ui->showDelete->setText("显示已删文件");
     ui->search->setTextMargins(5,0,0,0);
 
@@ -145,6 +170,38 @@ void MainWidget::mouseReleaseEvent(QMouseEvent*)
     {
         wMoveable = false;
     }
+}
+
+bool MainWidget::eventFilter(QObject *watched, QEvent *event)
+{
+    if(watched == ui->search)
+    {
+        if(event->type() == QEvent::FocusIn)
+        {
+            ui->search->clear();
+            ui->search->setStyleSheet("#search{\
+                                      background-color: rgb(255, 255, 255);\
+                                      border: 1px solid rgb(187, 187, 187);\
+                                      border-left-width: 0px;\
+                                      border-right-width: 0px;\
+                                      color:black;\
+                                  }");
+        }
+        else if(event->type() == QEvent::FocusOut)
+        {
+            ui->search->setText("搜索我的文件");
+            ui->search->setStyleSheet("#search{\
+                                      background-color: rgb(255, 255, 255);\
+                                      border: 1px solid rgb(187, 187, 187);\
+                                      border-left-width: 0px;\
+                                      border-right-width: 0px;\
+                                      color:gray;\
+                                  }");
+        }
+
+    }
+
+    return QWidget::eventFilter(watched,event);
 }
 
 void MainWidget::on_wMin_clicked()
@@ -226,11 +283,48 @@ void MainWidget::on_translist_toggled(bool checked)
 {qDebug()<<"checked"<<checked;
     if(checked)
     {
+        loadingUi.hide();
         scrollFolder->hide();
         transList->show();
     }
     else
     {
+        loadingUi.hide();
+        scrollFolder->show();
+        transList->hide();
+    }
+}
+
+void MainWidget::searchTypeChanged(int i)
+{
+    fType = i;
+}
+
+void MainWidget::on_searchBtn_clicked()
+{
+    QString str = ui->search->text();
+    if((str == "搜索我的文件") || str.isEmpty())
+    {
+        if(fType == 0)
+            return;
+        diskPanel->panelSearch(fType);
+    }
+    diskPanel->panelSearch(fType,str);
+}
+
+void MainWidget::isLoading(bool checked)
+{
+    if(checked)
+    {
+        loadingUi.reloadStart();
+        loadingUi.show();
+        scrollFolder->hide();
+        transList->hide();
+    }
+    else
+    {
+        loadingUi.reloadStop();
+        loadingUi.hide();
         scrollFolder->show();
         transList->hide();
     }
