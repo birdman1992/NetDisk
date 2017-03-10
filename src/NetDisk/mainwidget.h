@@ -10,6 +10,7 @@
 #include "Pathview/pathview.h"
 #include "filespanel.h"
 #include "loading.h"
+#include "login.h"
 
 namespace Ui {
 class MainWidget;
@@ -42,6 +43,10 @@ private slots:
     void searchTypeChanged(int);
     void on_searchBtn_clicked();
     void isLoading(bool);
+    void reload();
+    void netLogin();
+    void netClose();
+    void loginRst(bool);
 
 public slots:
     void historyEnabled(bool backEnable, bool aheadEnable);
@@ -49,6 +54,7 @@ public slots:
 private:
     Ui::MainWidget *ui;
     loading loadingUi;
+    login loginUi;
     QScrollArea* scrollFolder;
     FilesPanel* diskPanel;
     PathView* pathView;

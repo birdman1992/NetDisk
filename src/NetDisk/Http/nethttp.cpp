@@ -91,7 +91,8 @@ void NetHttp::replyFinished(QNetworkReply *reply)
     qDebug()<<"http recv:"<<nRecv;
     switch(State)
     {
-        case H_LOGIN:break;
+        case H_LOGIN:
+            loginRst(nRecv);break;
         case H_DEL:
             emit updateRequest();break;
         case H_LIST:
@@ -306,6 +307,34 @@ void NetHttp::callbackNew(QByteArray info)
     }
     else return;
     emit updateRequest();
+}
+
+void NetHttp::loginRst(QByteArray rst)
+{
+    QJsonParseError jError;
+    QJsonValue jval;
+    QJsonDocument parseDoc = QJsonDocument::fromJson(rst, &jError);
+
+
+    if(jError.error == QJsonParseError::NoError)
+    {
+        if(parseDoc.isObject())
+        {
+            QJsonObject obj = parseDoc.object();
+
+            if(obj.contains("code"))
+            {
+                //解析返回的状态码
+                jval = obj.take("code");
+                if(jval.isString() && (jval.toString() == "200"))
+                {
+                    emit loginStateChanged(true);
+                }
+                else
+                    emit loginStateChanged(true);
+            }
+        }
+    }
 }
 
 fileInfo::fileInfo()

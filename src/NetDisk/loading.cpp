@@ -1,5 +1,6 @@
 #include "loading.h"
 #include "ui_loading.h"
+#include <QtDebug>
 
 loading::loading(QWidget *parent) :
     QWidget(parent),
@@ -29,7 +30,8 @@ void loading::reloadStop()
 void loading::reloadTimeout()
 {
     count++;
-    if(!count%8)
+    qDebug()<<count;
+    if(!(count%8))
         emit reload();
     ui->label_2->setText(str+QString().fill('.', count%5));
 

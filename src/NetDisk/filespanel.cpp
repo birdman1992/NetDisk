@@ -94,14 +94,12 @@ void FilesPanel::panelShow(QList<QFolder*> fPanel)
 
         if(fPanel.isEmpty())
             return;
-        qDebug("1w:%d h:%d %d",this->geometry().width(),this->geometry().height(),fPanel.count());
+
         int ele_wid = fPanel.at(i)->geometry().width() + offset_x;
         int ele_hei = fPanel.at(i)->geometry().height() + offset_y;
         int count_x = (this->geometry().width() - offset_x)/(ele_wid);
         int panelSize_h = ((fPanel.count()/count_x) + (fPanel.count()%count_x != 0))*ele_hei + offset_y;
         this->setMinimumHeight(panelSize_h);
-
-        qDebug("2w:%d h:%d %d",this->geometry().width(),this->geometry().height(),fPanel.count());
 
         for(i=0; i<fPanel.count();)
         {
@@ -429,7 +427,7 @@ void FilesPanel::fileDownload(fileInfo info)
 void FilesPanel::httpGetListInfo(QList<fileInfo*> lInfo)
 {
 //    disconnect(httpClient, SIGNAL(listUpdate(QList<fileInfo*>)), this, SLOT(httpGetListInfo(QList<fileInfo*>)));
-//    panelClear();
+    panelClear();
     for(int i=0; i<lInfo.count(); i++)
     {
         fileInfo* info = lInfo.at(i);

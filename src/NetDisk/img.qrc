@@ -67,5 +67,15 @@
         <file>imgs/slidebar/他人共享.png</file>
         <file>imgs/slidebar/文件同步.png</file>
         <file>imgs/slidebar/我的文件.png</file>
+        <file>imgs/Login/close_win.png</file>
+        <file>imgs/Login/login_btn.png</file>
+        <file>imgs/Login/login_logo.png</file>
+        <file>imgs/Login/loginBG.png</file>
+        <file>imgs/Login/mini_win.png</file>
+        <file>imgs/Login/mobile.png</file>
+        <file>imgs/Login/password.png</file>
+        <file>imgs/Login/sendcode_btn.png</file>
+        <file>imgs/Login/setting.png</file>
+        <file>imgs/Login/user.png</file>
     </qresource>
 </RCC>

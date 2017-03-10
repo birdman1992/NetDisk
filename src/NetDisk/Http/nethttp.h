@@ -74,6 +74,7 @@ private:
     void fileInfoShow(fileInfo* info);
     void fileListClear();
     void callbackNew(QByteArray info);
+    void loginRst(QByteArray rst);
 
 private slots:
     void replyFinished(QNetworkReply*);
@@ -82,6 +83,7 @@ signals:
     void listUpdate(QList<fileInfo*>);
     void updateRequest();
     void newTask(netTrans*);
+    void loginStateChanged(bool);
 
 public slots:
 };

@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>login</class>
+ <widget class="QWidget" name="login">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>360</width>
+    <height>346</height>
+   </rect>
+  </property>
+  <property name="focusPolicy">
+   <enum>Qt::ClickFocus</enum>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget#login{
+border:0px;
+image: url(:/imgs/Login/loginBG.png);
+}</string>
+  </property>
+  <widget class="QLineEdit" name="username">
+   <property name="geometry">
+    <rect>
+     <x>64</x>
+     <y>68</y>
+     <width>277</width>
+     <height>45</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#username{
+	background-color: rgb(255, 255, 255);
+	border: 1px solid rgb(218, 218, 218);
+	border-left-width: 0px;
+	border-right-width: 1px;
+}</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="passwd">
+   <property name="geometry">
+    <rect>
+     <x>64</x>
+     <y>135</y>
+     <width>277</width>
+     <height>45</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#passwd{
+	background-color: rgb(255, 255, 255);
+	border: 1px solid rgb(218, 218, 218);
+	border-left-width: 0px;
+	border-right-width: 1px;
+}</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="echoMode">
+    <enum>QLineEdit::Password</enum>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="isrem">
+   <property name="geometry">
+    <rect>
+     <x>19</x>
+     <y>198</y>
+     <width>71</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QCheckBox::indicator{color: rgb(50, 169, 253);}
+QCheckBox{color: rgb(102, 102, 102)}</string>
+   </property>
+   <property name="text">
+    <string>记住密码</string>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="isauto">
+   <property name="geometry">
+    <rect>
+     <x>115</x>
+     <y>198</y>
+     <width>71</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QCheckBox::indicator{color: rgb(50, 169, 253);}
+QCheckBox{color: rgb(102, 102, 102)}</string>
+   </property>
+   <property name="text">
+    <string>自动登录</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_msglogin">
+   <property name="geometry">
+    <rect>
+     <x>264</x>
+     <y>194</y>
+     <width>81</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="cursor">
+    <cursorShape>PointingHandCursor</cursorShape>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton{border:0px;color:rgb(67,122,232)}
+QPushButton:hover{text-decoration: underline}
+
+
+
+</string>
+   </property>
+   <property name="text">
+    <string>短信快捷登录</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_login">
+   <property name="geometry">
+    <rect>
+     <x>18</x>
+     <y>238</y>
+     <width>322</width>
+     <height>44</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border-image: url(:/imgs/Login/login_btn.png);
+font: 75 13pt &quot;微软雅黑&quot;;
+color: rgb(255, 255, 255);</string>
+   </property>
+   <property name="text">
+    <string>登  录</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_fgtpasswd">
+   <property name="geometry">
+    <rect>
+     <x>14</x>
+     <y>300</y>
+     <width>71</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="cursor">
+    <cursorShape>PointingHandCursor</cursorShape>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton{border:0px;color:rgb(67,122,232)}
+QPushButton:hover{text-decoration: underline}
+</string>
+   </property>
+   <property name="text">
+    <string>忘记密码？</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_reg">
+   <property name="geometry">
+    <rect>
+     <x>313</x>
+     <y>300</y>
+     <width>31</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="cursor">
+    <cursorShape>PointingHandCursor</cursorShape>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton{border:0px;color:rgb(67,122,232)}
+QPushButton:hover{text-decoration: underline}
+</string>
+   </property>
+   <property name="text">
+    <string>注册</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>19</x>
+     <y>68</y>
+     <width>45</width>
+     <height>45</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#label{
+	background-color: rgb(255, 255, 255);
+	border: 1px solid rgb(218, 218, 218);
+	border-right-width: 0px;
+	image: url(:/imgs/Login/user.png);
+}</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>19</x>
+     <y>135</y>
+     <width>45</width>
+     <height>45</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#label_2{
+	background-color: rgb(255, 255, 255);
+	border: 1px solid rgb(218, 218, 218);
+	border-right-width: 0px;
+	image: url(:/imgs/Login/password.png);
+}</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>111</width>
+     <height>44</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">image: url(:/imgs/Login/login_logo.png);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_min">
+   <property name="geometry">
+    <rect>
+     <x>256</x>
+     <y>0</y>
+     <width>31</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border-image: url(:/imgs/Login/mini_win.png);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_set">
+   <property name="geometry">
+    <rect>
+     <x>288</x>
+     <y>0</y>
+     <width>31</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border-image: url(:/imgs/Login/setting.png);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_close">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>0</y>
+     <width>31</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border-image: url(:/imgs/Login/close_win.png);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

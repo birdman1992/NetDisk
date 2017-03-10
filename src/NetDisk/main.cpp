@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     a.setFont(font);
     netConf = new NetConfig;
     MainWidget w;
-    w.show();
+//    w.show();
 
     return a.exec();
 }

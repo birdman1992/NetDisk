@@ -10,6 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = NetDisk
 TEMPLATE = app
+RC_ICONS =app.ico
 
 #LIBS += D:\Qt\Qt5.7.1\5.7\mingw53_32\bin\Qt5Ftp.dll
 
@@ -25,7 +26,9 @@ SOURCES += main.cpp\
     Translist/bardelegata.cpp \
     netconfig.cpp \
     configpanel.cpp \
-    loading.cpp
+    loading.cpp \
+    login.cpp \
+    taesclass.cpp
 
 HEADERS  += mainwidget.h \
     QFolder/qfolder.h \
@@ -38,7 +41,9 @@ HEADERS  += mainwidget.h \
     Translist/bardelegata.h \
     netconfig.h \
     configpanel.h \
-    loading.h
+    loading.h \
+    login.h \
+    taesclass.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \
@@ -46,10 +51,10 @@ FORMS    += mainwidget.ui \
     Pathview/pathview.ui \
     Translist/translist.ui \
     configpanel.ui \
-    loading.ui
+    loading.ui \
+    login.ui
 
 RESOURCES += \
     img.qrc
 
-DISTFILES += \
-    imgs/Clock.png
+DISTFILES +=

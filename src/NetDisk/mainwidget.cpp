@@ -16,7 +16,6 @@ MainWidget::MainWidget(QWidget *parent) :
     initSearch();
     //系统菜单
 
-
     //侧边栏
     initSilidebar();
 
@@ -50,6 +49,9 @@ MainWidget::MainWidget(QWidget *parent) :
     scrollFolder->setWidget(diskPanel);
 
     //信号槽
+    connect(&loadingUi, SIGNAL(reload()), this, SLOT(reload()));
+    connect(&loginUi, SIGNAL(netLogin()), this, SLOT(netLogin()));
+    connect(diskPanel->httpClient, SIGNAL(loginStateChanged(bool)), this, SLOT(loginRst(bool)));
     connect(diskPanel, SIGNAL(pathChanged(QList<fileInfo*>)), pathView, SLOT(pathChange(QList<fileInfo*>)));
     connect(diskPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
     connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
@@ -57,8 +59,8 @@ MainWidget::MainWidget(QWidget *parent) :
     connect(ui->showDelete, SIGNAL(toggled(bool)), diskPanel, SLOT(showDelete(bool)));
     connect(pathView, SIGNAL(cdRequest(double)), diskPanel, SLOT(cmdCd(double)));
     connect(ui->searchFilter,  SIGNAL(currentIndexChanged(int)), this, SLOT(searchTypeChanged(int)));
-
-    diskPanel->panelCd((fileInfo*)NULL);
+    loginUi.show();
+//    diskPanel->panelCd((fileInfo*)NULL);
 }
 
 MainWidget::~MainWidget()
@@ -328,4 +330,27 @@ void MainWidget::isLoading(bool checked)
         scrollFolder->show();
         transList->hide();
     }
+}
+
+void MainWidget::reload()
+{qDebug("reloading");
+    diskPanel->panelRefresh();
+}
+
+void MainWidget::netLogin()
+{
+    diskPanel->httpClient->netLogin(netConf->getUsrname(), netConf->getPasswd());
+}
+
+void MainWidget::netClose()
+{qDebug()<<"close";
+    loginUi.close();
+    this->close();
+}
+
+void MainWidget::loginRst(bool isSucceed)
+{
+    if(isSucceed)
+        loginUi.close();
+    this->show();
 }
