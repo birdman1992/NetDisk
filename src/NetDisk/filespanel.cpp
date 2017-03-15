@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QPainter>
 #include <QFileDialog>
+#include <QStandardItem>
 
 #define FOLDER_SIZE 100
 
@@ -12,20 +13,40 @@ FilesPanel::FilesPanel(QWidget *parent) :
     ui(new Ui::FilesPanel)
 {
     ui->setupUi(this);
+    model = new QStandardItemModel(this);
     pasteEnable = false;
 
     curPanel.clear();
     dirTree.clear();
     folderPath.clear();
+    checkList.clear();
     pFolder = NULL;
     curDirId = 0;
     pCdFolder = NULL;
-    showListView = false;
+    showListView = true;
+    resizeEventEnable = true;
     curDirId = -1;
-    pageSize = 100;
+    pageSize = 50;
     pageNum = 1;
     showDeleteFolder = 0;
 
+
+    ui->listView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->listView->setColumnCount(5);
+    ui->listView->horizontalHeader()->setHighlightSections(false);
+
+    ui->listView->setHorizontalHeaderItem(0,new QTableWidgetItem(""));
+    ui->listView->setHorizontalHeaderItem(1,new QTableWidgetItem("文件名"));
+    ui->listView->setHorizontalHeaderItem(2,new QTableWidgetItem("大小"));
+    ui->listView->setHorizontalHeaderItem(3,new QTableWidgetItem("共享者"));
+    ui->listView->setHorizontalHeaderItem(4,new QTableWidgetItem("修改时间"));
+    ui->listView->horizontalHeaderItem(1)->setTextAlignment(Qt::ElideLeft);
+    ui->listView->horizontalHeaderItem(2)->setTextAlignment(Qt::ElideLeft);
+    ui->listView->horizontalHeaderItem(3)->setTextAlignment(Qt::ElideLeft);
+    ui->listView->horizontalHeaderItem(4)->setTextAlignment(Qt::ElideLeft);
+
+    //列表视图槽
+    connect(ui->listView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(listViewCd(QModelIndex)));
 
     //http
     httpClient = new NetHttp(this);
@@ -72,28 +93,33 @@ FilesPanel::~FilesPanel()
 //设置视图显示模式
 //showList:true 显示列表视图  false 显示平铺视图
 void FilesPanel::setViewMode(bool showList)
-{
+{qDebug()<<"list"<<showList;
     showListView = showList;
-    panelRefresh();
+    panelShow(curPanel);
 }
 
 //显示文件夹面板
 void FilesPanel::panelShow(QList<QFolder*> fPanel)
 {
-    emit isLoading(false);
     if(showListView)
-    {
-
+    {qDebug("show list");
+        showList(fPanel);
+        return;
     }
     else
-    {
+    {qDebug("show folder");
         int i = 0;
         int j = 0;
         int offset_x = 15;
         int offset_y = 15;
 
         if(fPanel.isEmpty())
+        {
+            emit isLoading(false);
             return;
+        }
+        emit isLoading(false);
+        ui->listView->hide();
 
         int ele_wid = fPanel.at(i)->geometry().width() + offset_x;
         int ele_hei = fPanel.at(i)->geometry().height() + offset_y;
@@ -118,20 +144,21 @@ void FilesPanel::panelShow(QList<QFolder*> fPanel)
 void FilesPanel::panelClear()
 {
     QFolder* f;
+    emit isLoading(true);
+
     while(!curPanel.isEmpty())
     {
         f = curPanel.takeFirst();
         f->deleteLater();
     }
-    emit isLoading(true);
 }
 
 void FilesPanel::panelRefresh()
 {
 //    qDebug("refresh");
-//    connect(&ftpClient, SIGNAL(cmdList()), this, SLOT(ftpListShow()));
-    panelClear();
+    resizeEventEnable = false;
     httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder);
+    resizeEventEnable = true;
 }
 
 void FilesPanel::panelCopy(QFolder *p)
@@ -168,7 +195,7 @@ void FilesPanel::panelCd(fileInfo* dir)
 
     for(i=0; i<folderPath.count(); i++)
     {
-        if(del)
+        if(del||(i>curIndex))
         {
             fileInfo* f = folderPath.takeAt(i);
             delete f;
@@ -191,16 +218,16 @@ void FilesPanel::panelCd(double dirId)
     int i = 0;
     bool del = false;
     fileInfo* f = NULL;
-    qDebug()<<"FTP:cd"<<dirId;
+    qDebug()<<"HTTP:cd"<<dirId;
     panelClear();
     if(dirId == -1)
     {
-        curDirId = -1;
         while(!folderPath.isEmpty())
         {
             f = folderPath.takeFirst();
             delete f;
         }
+        curDirId = -1;
         curIndex = 0;
         httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder);
         emit pathChanged(folderPath);
@@ -220,7 +247,6 @@ void FilesPanel::panelCd(double dirId)
         if(folderPath.at(i)->ID == dirId)
             del = true;
     }
-
     curDirId = folderPath.last()->ID;
     curIndex = folderPath.count()-1;
     httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder);
@@ -308,7 +334,12 @@ void FilesPanel::paintEvent(QPaintEvent*)
 
 void FilesPanel::resizeEvent(QResizeEvent*)
 {
-    review();
+    if(resizeEventEnable)
+    {
+        isResize = true;qDebug("show2>");
+        panelShow(curPanel);qDebug("show2<");
+        isResize = false;
+    }
 }
 
 void FilesPanel::pathClear()
@@ -353,6 +384,57 @@ short FilesPanel::folderTypeJudge(QString fName, bool isDir)
             return QFolder::FILE_ZIP;
         else
             return QFolder::FILE_DEFAULT;
+    }
+}
+
+void FilesPanel::showList(QList<QFolder *> fPanel)
+{
+    int i = 0;
+    int wid = 0;
+
+    wid = this->geometry().width();
+    ui->listView->setRowCount(fPanel.count());
+    ui->listView->setColumnWidth(0,wid/24);
+    ui->listView->setColumnWidth(1,wid/2+10);
+    ui->listView->setColumnWidth(2,wid/10);
+    ui->listView->setColumnWidth(3,wid/10);
+    ui->listView->setColumnWidth(4,wid/4);
+
+    if(!isResize)
+        checkListClear();
+    else
+        return;
+
+    if(fPanel.isEmpty())
+    {
+        emit isLoading(false);
+        ui->listView->show();
+        return;
+    }
+    emit isLoading(false);
+
+    for(i=0; i<fPanel.count(); i++)
+    {
+        fPanel.at(i)->hide();
+        ListRowWidgets* _row = new ListRowWidgets(fPanel.at(i)->info());
+        checkList<<_row;
+        ui->listView->setCellWidget(i,0,_row->slctBox);
+        ui->listView->setItem(i,1,_row->file);
+        ui->listView->setItem(i,2,_row->fileSize);
+        ui->listView->setItem(i,3,_row->shareName);
+        ui->listView->setItem(i,4,_row->Modifytime);
+    }
+    this->setMinimumHeight(487);
+    ui->listView->show();
+}
+
+void FilesPanel::checkListClear()
+{
+    ui->listView->clearContents();
+    while(!checkList.isEmpty())
+    {
+        ListRowWidgets* c = checkList.takeFirst();
+        delete c;
     }
 }
 
@@ -426,7 +508,7 @@ void FilesPanel::fileDownload(fileInfo info)
 
 void FilesPanel::httpGetListInfo(QList<fileInfo*> lInfo)
 {
-//    disconnect(httpClient, SIGNAL(listUpdate(QList<fileInfo*>)), this, SLOT(httpGetListInfo(QList<fileInfo*>)));
+    qDebug()<<"httpGetListInfo";
     panelClear();
     for(int i=0; i<lInfo.count(); i++)
     {
@@ -434,51 +516,17 @@ void FilesPanel::httpGetListInfo(QList<fileInfo*> lInfo)
         pFolder = new QFolder(this, info);
         curPanel<<pFolder;
     }
-    panelShow(curPanel);
+    qDebug("show1>");
+    panelShow(curPanel);qDebug("show1<");
     qDebug()<<curPanel.count();
-//    pFolder = new QFolder(this,folderTypeJudge(lInfo,0),str);
-//    pFolder->setFolderTime(info.lastModified());
-//    if(info.isDir())
-//        curPanel.insert(0, pFolder);
-//    else
-    //        curPanel<<pFolder;
 }
 
 void FilesPanel::review()
 {
-    panelShow(curPanel);
+    resizeEventEnable = true;
 }
 
-void FilesPanel::ftpListShow()
-{                                     
-//    disconnect(&ftpClient, SIGNAL(cmdList()), this, SLOT(ftpListShow()));
-//    emit pathChanged(folderPath, curPanel);
-//    panelShow(curPanel);
-}
-
-void FilesPanel::ftpCdFinishi()
+void FilesPanel::listViewCd(QModelIndex index)
 {
-//    if(pCdFolder == NULL)
-//        return;
-
-//    while(!folderPath.isEmpty())
-//    {
-//        QString* str = folderPath.takeFirst();
-//        delete str;
-//    }
-
-//    QStringList l = pCdFolder->split('/',QString::SkipEmptyParts);
-//    for(int i=0; i< l.count(); i++)
-//    {
-//        QString* str = new QString(l.at(i));
-//        qDebug()<<*str;
-//        folderPath<<str;
-//    }
-
-//    pCdFolder = NULL;
-//    panelRefresh();
+    panelCd(checkList.at(index.row())->fInfo);
 }
-
-
-
-

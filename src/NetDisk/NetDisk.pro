@@ -28,7 +28,10 @@ SOURCES += main.cpp\
     configpanel.cpp \
     loading.cpp \
     login.cpp \
-    taesclass.cpp
+    taesclass.cpp \
+    Tablewidget/selectdelegate.cpp \
+    Tablewidget/transbtn.cpp \
+    Tablewidget/listrowwidgets.cpp
 
 HEADERS  += mainwidget.h \
     QFolder/qfolder.h \
@@ -43,7 +46,10 @@ HEADERS  += mainwidget.h \
     configpanel.h \
     loading.h \
     login.h \
-    taesclass.h
+    taesclass.h \
+    Tablewidget/selectdelegate.h \
+    Tablewidget/transbtn.h \
+    Tablewidget/listrowwidgets.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \

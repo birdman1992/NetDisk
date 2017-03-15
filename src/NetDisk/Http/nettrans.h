@@ -11,7 +11,9 @@
 #include <QFileInfo>
 #include <QSemaphore>
 #include "Http/nethttp.h"
-#define HTTP_ADDR "http://120.24.216.97:8888"
+//#define HTTP_ADDR "http://120.24.216.97:8888"
+#define HTTP_ADDR "http://120.76.52.78:8800/LinkRealSkyDrive"
+
 #define CHUNK_SIZE (4*1024*1024)
 class fileInfo;
 

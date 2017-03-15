@@ -38,12 +38,15 @@ void NetHttp::netLogin(QString user, QString passwd)
 void NetHttp::netList(double pId, int cPage, int pageSize, int showdelete, QString name, QString fileType)
 {
     QString nUrl;
-    nUrl = QString(HTTP_ADDR) + "/api/file/getMyFile?"+QString("fileType=%1&name=%2&pageSize=%3&cpage=%4&pid=%5&showDelete=%6")\
-            .arg(fileType).arg(name).arg(pageSize).arg(cPage).arg(pId).arg(showdelete).toLocal8Bit();
-//    pData =
-    qDebug()<<"LIST"<<nUrl;
+    nUrl = QString(HTTP_ADDR) + "/api/file/getMyFile";//
+
+    QByteArray qba = QString("fileType=%1&pageSize=%2&cpage=%3&pid=%4&showDelete=%5&name=")\
+            .arg(fileType).arg(pageSize).arg(cPage).arg(pId).arg(showdelete).toLocal8Bit() + name.toUtf8();
+    qDebug()<<"LIST"<<nUrl<<qba;
     State = H_LIST;
-    manager->get(QNetworkRequest(QUrl(nUrl)));
+    QNetworkRequest request(nUrl);
+    request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
+    manager->post(request,qba);
 }
 
 void NetHttp::netMkdir(double pId, QString fileName)
@@ -88,7 +91,9 @@ void NetHttp::netDelete(double fId)
 void NetHttp::replyFinished(QNetworkReply *reply)
 {
     QByteArray nRecv = reply->readAll();
-    qDebug()<<"http recv:"<<nRecv;
+    qDebug()<<"http recv:"<<nRecv.size();
+    qDebug()<<nRecv;
+
     switch(State)
     {
         case H_LOGIN:

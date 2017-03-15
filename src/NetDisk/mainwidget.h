@@ -6,6 +6,8 @@
 #include <QListWidgetItem>
 #include <qscrollarea.h>
 #include <QresizeEvent>
+#include <QSystemTrayIcon>
+#include <QAction>
 #include <Translist/translist.h>
 #include "Pathview/pathview.h"
 #include "filespanel.h"
@@ -48,6 +50,8 @@ private slots:
     void netClose();
     void loginRst(bool);
 
+    void on_viewCut_toggled(bool checked);
+
 public slots:
     void historyEnabled(bool backEnable, bool aheadEnable);
 
@@ -56,13 +60,21 @@ private:
     loading loadingUi;
     login loginUi;
     QScrollArea* scrollFolder;
+    QSystemTrayIcon* sysTray;
     FilesPanel* diskPanel;
     PathView* pathView;
     TransList* transList;
     bool wMoveable;
     QPoint dragPosition;
     int fType;
+    //系统托盘菜单项
+    QAction* act_openPanel;//打开主面板
+    QAction* act_openWebsite;//打开企业网盘网站
+    QAction* act_openDownloadUrl;//打开下载目录
+//    Qaction* act_open
 
+
+    void initSysTray();
     void initSearch();
     void initSysMenu();
     void initSilidebar();

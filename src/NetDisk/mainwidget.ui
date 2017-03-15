@@ -559,6 +559,9 @@ background:rgb(0, 131, 196);
         <property name="viewMode">
          <enum>QListView::IconMode</enum>
         </property>
+        <property name="selectionRectVisible">
+         <bool>false</bool>
+        </property>
        </widget>
       </widget>
      </item>
@@ -1030,6 +1033,12 @@ font: 9pt &quot;微软雅黑&quot;;
            </property>
            <property name="text">
             <string/>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
            </property>
           </widget>
          </item>

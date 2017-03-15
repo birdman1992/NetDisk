@@ -7,7 +7,7 @@ loading::loading(QWidget *parent) :
     ui(new Ui::loading)
 {
     ui->setupUi(this);
-    str = "努力加载中，请稍候..";
+    str = "努力加载中，请稍候....";
     connect(&tReload, SIGNAL(timeout()), this, SLOT(reloadTimeout()));
 }
 
@@ -19,6 +19,7 @@ loading::~loading()
 void loading::reloadStart()
 {
     count = 0;
+    str = "努力加载中，请稍候..";
     tReload.start(1000);
 }
 
@@ -31,8 +32,8 @@ void loading::reloadTimeout()
 {
     count++;
     qDebug()<<count;
-    if(!(count%8))
-        emit reload();
+//    if(!(count%8))
+//        emit reload();
     ui->label_2->setText(str+QString().fill('.', count%5));
 
     if(count >= 40)

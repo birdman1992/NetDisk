@@ -2,6 +2,7 @@
 #include "ui_mainwidget.h"
 #include <QPushButton>
 #include <QLineEdit>
+#include <QIcon>
 #include "filespanel.h"
 
 MainWidget::MainWidget(QWidget *parent) :
@@ -11,6 +12,10 @@ MainWidget::MainWidget(QWidget *parent) :
     ui->setupUi(this);
     this->setWindowFlags(Qt::FramelessWindowHint);
     wMoveable = false;
+    fType = 0;
+
+    //系统托盘图标
+    initSysTray();
 
     //搜索栏
     initSearch();
@@ -34,13 +39,13 @@ MainWidget::MainWidget(QWidget *parent) :
     //文件面板
     scrollFolder = new QScrollArea(this);
     scrollFolder->setFrameShape(QFrame::NoFrame);
-    scrollFolder->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    scrollFolder->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     scrollFolder->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     scrollFolder->setWidgetResizable(true);
     ui->panelLayout->addWidget(scrollFolder);
     ui->panelLayout->addWidget(transList);
     ui->panelLayout->addWidget(&loadingUi);
-    loadingUi.reloadStart();
+//    loadingUi.reloadStart();
     transList->hide();
     scrollFolder->hide();
     loadingUi.show();
@@ -49,18 +54,18 @@ MainWidget::MainWidget(QWidget *parent) :
     scrollFolder->setWidget(diskPanel);
 
     //信号槽
-    connect(&loadingUi, SIGNAL(reload()), this, SLOT(reload()));
+//    connect(&loadingUi, SIGNAL(reload()), this, SLOT(reload()));
     connect(&loginUi, SIGNAL(netLogin()), this, SLOT(netLogin()));
     connect(diskPanel->httpClient, SIGNAL(loginStateChanged(bool)), this, SLOT(loginRst(bool)));
     connect(diskPanel, SIGNAL(pathChanged(QList<fileInfo*>)), pathView, SLOT(pathChange(QList<fileInfo*>)));
     connect(diskPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
     connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
-    connect(diskPanel, SIGNAL(isLoading(bool)), this, SLOT(isLoading(bool)));
+    connect(diskPanel, SIGNAL(isLoading(bool)), this, SLOT(isLoading(bool)), Qt::UniqueConnection);
     connect(ui->showDelete, SIGNAL(toggled(bool)), diskPanel, SLOT(showDelete(bool)));
     connect(pathView, SIGNAL(cdRequest(double)), diskPanel, SLOT(cmdCd(double)));
     connect(ui->searchFilter,  SIGNAL(currentIndexChanged(int)), this, SLOT(searchTypeChanged(int)));
     loginUi.show();
-//    diskPanel->panelCd((fileInfo*)NULL);
+
 }
 
 MainWidget::~MainWidget()
@@ -191,7 +196,7 @@ bool MainWidget::eventFilter(QObject *watched, QEvent *event)
         }
         else if(event->type() == QEvent::FocusOut)
         {
-            ui->search->setText("搜索我的文件");
+/*            ui->search->setText("搜索我的文件");
             ui->search->setStyleSheet("#search{\
                                       background-color: rgb(255, 255, 255);\
                                       border: 1px solid rgb(187, 187, 187);\
@@ -199,6 +204,7 @@ bool MainWidget::eventFilter(QObject *watched, QEvent *event)
                                       border-right-width: 0px;\
                                       color:gray;\
                                   }");
+*/
         }
 
     }
@@ -227,6 +233,7 @@ void MainWidget::on_wMax_toggled(bool checked)
         this->setWindowState(Qt::WindowNoState);
 
     }
+    diskPanel->review();
 }
 
 void MainWidget::founctionListClicked(QListWidgetItem*)
@@ -266,6 +273,14 @@ void MainWidget::historyEnabled(bool backEnable, bool aheadEnable)
     ui->forward->setEnabled(aheadEnable);
 }
 
+void MainWidget::initSysTray()
+{
+    sysTray = new QSystemTrayIcon(this);
+    sysTray->setIcon(QIcon(":/imgs/app.ico"));
+    sysTray->setToolTip("联瑞企业网盘");
+    sysTray->show();
+}
+
 void MainWidget::on_back_clicked()
 {
     diskPanel->panelBack();
@@ -278,6 +293,7 @@ void MainWidget::on_forward_clicked()
 
 void MainWidget::on_refresh_clicked()
 {
+//    isLoading(true);
     diskPanel->panelRefresh();
 }
 
@@ -305,17 +321,27 @@ void MainWidget::searchTypeChanged(int i)
 void MainWidget::on_searchBtn_clicked()
 {
     QString str = ui->search->text();
+
+    ui->search->setStyleSheet("#search{\
+                              background-color: rgb(255, 255, 255);\
+                              border: 1px solid rgb(187, 187, 187);\
+                              border-left-width: 0px;\
+                              border-right-width: 0px;\
+                              color:gray;\
+                          }");
     if((str == "搜索我的文件") || str.isEmpty())
     {
+        ui->search->setText("搜索我的文件");
         if(fType == 0)
             return;
         diskPanel->panelSearch(fType);
+        return;
     }
     diskPanel->panelSearch(fType,str);
 }
 
 void MainWidget::isLoading(bool checked)
-{
+{qDebug()<<"loadint"<<checked;
     if(checked)
     {
         loadingUi.reloadStart();
@@ -326,8 +352,8 @@ void MainWidget::isLoading(bool checked)
     else
     {
         loadingUi.reloadStop();
-        loadingUi.hide();
         scrollFolder->show();
+        loadingUi.hide();
         transList->hide();
     }
 }
@@ -339,7 +365,10 @@ void MainWidget::reload()
 
 void MainWidget::netLogin()
 {
-    diskPanel->httpClient->netLogin(netConf->getUsrname(), netConf->getPasswd());
+    loginUi.close();
+    this->show();
+    diskPanel->panelCd((fileInfo*)NULL);
+//    diskPanel->httpClient->netLogin(netConf->getUsrname(), netConf->getPasswd());
 }
 
 void MainWidget::netClose()
@@ -351,6 +380,17 @@ void MainWidget::netClose()
 void MainWidget::loginRst(bool isSucceed)
 {
     if(isSucceed)
+    {
         loginUi.close();
-    this->show();
+        this->show();
+    }
+}
+
+void MainWidget::on_viewCut_toggled(bool checked)
+{
+    if(checked)
+        scrollFolder->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    else
+        scrollFolder->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    diskPanel->setViewMode(checked);
 }

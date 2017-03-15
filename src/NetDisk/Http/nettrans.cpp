@@ -199,7 +199,7 @@ QByteArray netWork::getMd5(QFile *f)
     return ch.result();
 }
 
-int netWork::fileUpload(bool reload)
+int netWork::fileUpload(bool)
 {
     quint64 ret = 0;
     QString nUrl = QString(HTTP_ADDR) + "/api/file/upload";

@@ -5,9 +5,15 @@
 #include <QList>
 #include <QMenu>
 #include <QAction>
+#include <QCheckBox>
+#include <QTableView>
 #include <QTableWidget>
+#include <QStandardItemModel>
+#include <QTableWidgetItem>
 #include "QFolder/qfolder.h"
 #include "Http/nethttp.h"
+#include "Tablewidget/selectdelegate.h"
+#include "Tablewidget/listrowwidgets.h"
 
 namespace Ui {
 class FilesPanel;
@@ -36,6 +42,7 @@ public:
     bool repeatCheck(QString* fName, QFolder* pFolder);
     void setViewMode(bool showList);
     double getCurId();
+    void review();
 
 public slots:
     void cmdCd(double id);
@@ -47,16 +54,20 @@ public slots:
 
 private:
     Ui::FilesPanel *ui;
+    QStandardItemModel* model;
     QList<QFolder*> curPanel;//当前面板包含的文件夹
     QList<QFolder*> dirTree;//目录树
     QList<fileInfo*> folderPath;//根目录到当前目录文件夹路径
+    QList<ListRowWidgets*> checkList;
     QList<int> pathId;//根目录到当前目录文件夹ID
     int curIndex;//当前目录
     QFolder* pFolder;//文件夹指针
     QFolder* pClipboard;//剪贴板指针
     QString* pCdFolder;//cd指令目录指针
     bool pasteEnable;
+    bool resizeEventEnable;
     bool showListView;//true:显示列表视图    false:显示平铺视图
+    bool isResize;
     int showDeleteFolder;//显示删除文件
     double curDirId;//当前目录ID
     int pageSize;//当前页大小
@@ -81,12 +92,12 @@ private:
     void resizeEvent(QResizeEvent* size);
     void pathClear();
     short folderTypeJudge(QString fName,bool isDir);
+    void showList(QList<QFolder*> fPanel);
+    void checkListClear();
 
 private slots:
     void httpGetListInfo(QList<fileInfo*>);
-    void review();
-    void ftpListShow();
-    void ftpCdFinishi();
+    void listViewCd(QModelIndex);
 
 signals:
     void pathChanged(QList<fileInfo*>);//当前目录路径，当前目录的文件列表

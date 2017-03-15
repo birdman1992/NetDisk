@@ -77,5 +77,21 @@
         <file>imgs/Login/sendcode_btn.png</file>
         <file>imgs/Login/setting.png</file>
         <file>imgs/Login/user.png</file>
+        <file>imgs/app.ico</file>
+        <file>imgs/32x32/apk.png</file>
+        <file>imgs/32x32/doc.png</file>
+        <file>imgs/32x32/mp3.png</file>
+        <file>imgs/32x32/mp4.png</file>
+        <file>imgs/32x32/pdf.png</file>
+        <file>imgs/32x32/ppt.png</file>
+        <file>imgs/32x32/rar.png</file>
+        <file>imgs/32x32/txt.png</file>
+        <file>imgs/32x32/xls.png</file>
+        <file>imgs/32x32/zip.png</file>
+        <file>imgs/32x32/共享文件夹.png</file>
+        <file>imgs/32x32/普通文件夹.png</file>
+        <file>imgs/32x32/缺省文件格式.png</file>
+        <file>imgs/32x32/收藏文件夹.png</file>
+        <file>imgs/32x32/锁定文件夹.png</file>
     </qresource>
 </RCC>
