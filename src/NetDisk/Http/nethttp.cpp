@@ -238,6 +238,7 @@ void NetHttp::fileInfoRecv(QByteArray info)
     }
     else return;
     emit listUpdate(listInfo);
+    emit pageChanged(isFirstPage, isLastPage, currentPageNum, totalPage);
 }
 
 /***打印文件信息***/

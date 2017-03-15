@@ -84,6 +84,7 @@ signals:
     void updateRequest();
     void newTask(netTrans*);
     void loginStateChanged(bool);
+    void pageChanged(bool isFirst,bool isLast,int pageNum,int totalPageNum);
 
 public slots:
 };

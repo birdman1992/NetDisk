@@ -28,6 +28,8 @@ public:
     ~FilesPanel();
 //    DiskFtp ftpClient;
     NetHttp* httpClient;
+    int pageSize;//当前页大小
+    int pageNum;//当前页码
     void panelShow(QList<QFolder*> fPanel);
     void panelClear();
     void panelRefresh();
@@ -35,6 +37,7 @@ public:
     void panelPaste();
     void panelCd(fileInfo* dir);
     void panelCd(double dirId);
+    void panelCdPage(int page);
     void panelBack();//返回
     void panelAhead();//前进
     void panelSearch(int searchType, QString name=QString());
@@ -70,8 +73,6 @@ private:
     bool isResize;
     int showDeleteFolder;//显示删除文件
     double curDirId;//当前目录ID
-    int pageSize;//当前页大小
-    int pageNum;//当前页码
 
     /***右键菜单***/
     QMenu* menu;
@@ -104,6 +105,7 @@ signals:
     void historyEnable(bool backEnable, bool aheadEnable);//使能前进、后退箭头信号
     void newTask(netTrans*);
     void isLoading(bool);
+    void scrollValueChanged(int value);
 };
 
 #endif // FILESPANEL_H

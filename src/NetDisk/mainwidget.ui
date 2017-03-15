@@ -1058,7 +1058,11 @@ font: 9pt &quot;微软雅黑&quot;;
         </layout>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="panelLayout"/>
+        <layout class="QVBoxLayout" name="panelLayout">
+         <property name="bottomMargin">
+          <number>6</number>
+         </property>
+        </layout>
        </item>
       </layout>
      </item>

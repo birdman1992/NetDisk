@@ -9,6 +9,9 @@
 #include <QSystemTrayIcon>
 #include <QAction>
 #include <Translist/translist.h>
+#include <QLayout>
+#include <QPushButton>
+#include <QLabel>
 #include "Pathview/pathview.h"
 #include "filespanel.h"
 #include "loading.h"
@@ -49,8 +52,11 @@ private slots:
     void netLogin();
     void netClose();
     void loginRst(bool);
-
+    void scrollValueUpdate(int value);
     void on_viewCut_toggled(bool checked);
+    void nextPage(bool);
+    void aheadPage(bool);
+    void pageUpdate(bool _isFirst, bool _isLast, int _pageNum, int _totalPageNum);
 
 public slots:
     void historyEnabled(bool backEnable, bool aheadEnable);
@@ -60,6 +66,10 @@ private:
     loading loadingUi;
     login loginUi;
     QScrollArea* scrollFolder;
+    QHBoxLayout* pageLayout;
+    QPushButton* page_ahead;
+    QPushButton* page_next;
+    QLabel* page_info;
     QSystemTrayIcon* sysTray;
     FilesPanel* diskPanel;
     PathView* pathView;
@@ -75,6 +85,7 @@ private:
 
 
     void initSysTray();
+    void initPageWidgets();
     void initSearch();
     void initSysMenu();
     void initSilidebar();

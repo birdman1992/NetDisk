@@ -28,7 +28,7 @@ border-right:0px;
 border-bottom:0px;
 background: #FFFFFF;}</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="40">
    <property name="leftMargin">
     <number>0</number>
    </property>

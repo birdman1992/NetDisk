@@ -5,6 +5,7 @@
 #include <QPainter>
 #include <QFileDialog>
 #include <QStandardItem>
+#include <qscrollbar.h>
 
 #define FOLDER_SIZE 100
 
@@ -186,6 +187,7 @@ void FilesPanel::panelCd(fileInfo* dir)
         }
         curDirId = -1;
         curIndex = 0;
+        pageNum = 1;
         httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder);
         emit historyEnable(false, false);
         emit pathChanged(folderPath);
@@ -208,6 +210,7 @@ void FilesPanel::panelCd(fileInfo* dir)
         folderPath<<info;
     curDirId = dir->ID;
     curIndex = folderPath.count()-1;
+    pageNum = 1;
     httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder);
     emit historyEnable(true, false);
     emit pathChanged(folderPath);
@@ -253,6 +256,12 @@ void FilesPanel::panelCd(double dirId)
     qDebug("pathChanged");
     emit pathChanged(folderPath);
     emit historyEnable(true, false);
+}
+
+void FilesPanel::panelCdPage(int page)
+{
+    pageNum = page;
+    httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder);
 }
 
 void FilesPanel::panelBack()
@@ -518,6 +527,9 @@ void FilesPanel::httpGetListInfo(QList<fileInfo*> lInfo)
     }
     qDebug("show1>");
     panelShow(curPanel);qDebug("show1<");
+    scrollValueChanged(0);
+    if(showListView)
+        ui->listView->verticalScrollBar()->setValue(0);
     qDebug()<<curPanel.count();
 }
 
@@ -530,3 +542,5 @@ void FilesPanel::listViewCd(QModelIndex index)
 {
     panelCd(checkList.at(index.row())->fInfo);
 }
+
+

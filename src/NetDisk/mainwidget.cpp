@@ -3,6 +3,7 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QIcon>
+#include <qscrollbar.h>
 #include "filespanel.h"
 
 MainWidget::MainWidget(QWidget *parent) :
@@ -45,12 +46,15 @@ MainWidget::MainWidget(QWidget *parent) :
     ui->panelLayout->addWidget(scrollFolder);
     ui->panelLayout->addWidget(transList);
     ui->panelLayout->addWidget(&loadingUi);
+
+//    scrollFolder->verticalScrollBar()->setRange(0,100);
 //    loadingUi.reloadStart();
     transList->hide();
     scrollFolder->hide();
     loadingUi.show();
 
     diskPanel = new FilesPanel(this);
+    initPageWidgets();
     scrollFolder->setWidget(diskPanel);
 
     //信号槽
@@ -61,6 +65,7 @@ MainWidget::MainWidget(QWidget *parent) :
     connect(diskPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
     connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
     connect(diskPanel, SIGNAL(isLoading(bool)), this, SLOT(isLoading(bool)), Qt::UniqueConnection);
+    connect(diskPanel, SIGNAL(scrollValueChanged(int)), this, SLOT(scrollValueUpdate(int)));
     connect(ui->showDelete, SIGNAL(toggled(bool)), diskPanel, SLOT(showDelete(bool)));
     connect(pathView, SIGNAL(cdRequest(double)), diskPanel, SLOT(cmdCd(double)));
     connect(ui->searchFilter,  SIGNAL(currentIndexChanged(int)), this, SLOT(searchTypeChanged(int)));
@@ -71,6 +76,7 @@ MainWidget::MainWidget(QWidget *parent) :
 MainWidget::~MainWidget()
 {
     delete ui;
+    delete pageLayout;
 }
 
 void MainWidget::initSearch()
@@ -281,6 +287,32 @@ void MainWidget::initSysTray()
     sysTray->show();
 }
 
+void MainWidget::initPageWidgets()
+{
+    pageLayout = new QHBoxLayout();
+    page_ahead = new QPushButton("上一页",this);
+    page_next = new QPushButton("下一页",this);
+    page_info = new QLabel("第0页/共0页",this);
+
+    page_ahead->setStyleSheet("QPushButton{border:0px;color:rgb(67,122,232)}QPushButton:hover{text-decoration: underline}");
+    page_next->setStyleSheet("QPushButton{border:0px;color:rgb(67,122,232)}QPushButton:hover{text-decoration: underline}");
+    page_info->setAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+
+    pageLayout->addStretch(1);
+    pageLayout->addWidget(page_ahead);
+    pageLayout->addWidget(page_info);
+    pageLayout->addWidget(page_next);
+    pageLayout->addStretch(1);
+
+    ui->panelLayout->addLayout(pageLayout);
+
+    connect(diskPanel->httpClient, SIGNAL(pageChanged(bool,bool,int,int)), this, SLOT(pageUpdate(bool,bool,int,int)));
+    connect(page_ahead, SIGNAL(clicked(bool)), this, SLOT(aheadPage(bool)));
+    connect(page_next, SIGNAL(clicked(bool)), this, SLOT(nextPage(bool)));
+
+
+}
+
 void MainWidget::on_back_clicked()
 {
     diskPanel->panelBack();
@@ -386,6 +418,11 @@ void MainWidget::loginRst(bool isSucceed)
     }
 }
 
+void MainWidget::scrollValueUpdate(int value)
+{
+    scrollFolder->verticalScrollBar()->setValue(value);
+}
+
 void MainWidget::on_viewCut_toggled(bool checked)
 {
     if(checked)
@@ -394,3 +431,27 @@ void MainWidget::on_viewCut_toggled(bool checked)
         scrollFolder->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     diskPanel->setViewMode(checked);
 }
+
+void MainWidget::pageUpdate(bool _isFirst,bool _isLast,int _pageNum,int _totalPageNum)
+{
+    qDebug()<<_isFirst<<_isLast<<_pageNum<<_totalPageNum;
+    diskPanel->pageNum = _pageNum;
+    page_ahead->setEnabled(!_isFirst);
+    page_next->setEnabled(!_isLast);
+    page_info->setText(QString("第%1页/共%2页").arg(_pageNum).arg(_totalPageNum));
+}
+
+void MainWidget::aheadPage(bool)
+{
+    if(diskPanel->pageNum < 2)
+        return;
+    diskPanel->panelCdPage(diskPanel->pageNum-1);
+}
+
+void MainWidget::nextPage(bool)
+{
+    if(diskPanel->pageNum > (diskPanel->pageSize-1))
+        return;
+    diskPanel->panelCdPage(diskPanel->pageNum+1);
+}
+
