@@ -22,6 +22,10 @@ public:
     QString getUsrname();
     void setPasswd(QString wd);
     QString getPasswd();
+    void setSyncPath(QString path);
+    QString getSyncPath();
+    void setautoSync(bool autosync);
+    bool autoSyncDir();
 
     void setremPassword(bool rempasswd);
     void setautoLogin(bool autologin);
@@ -33,12 +37,14 @@ private:
     TAesClass netAes;
     QJsonDocument jdoc;
     QString downloadPath;
+    QString syncPath;
     int maxTaskNum;
     QString userName;
     QString passwd;
     QString passwdAes;
     bool remPasswd;
     bool autoLogin;
+    bool autoSync;
 
 
     void creatDir();

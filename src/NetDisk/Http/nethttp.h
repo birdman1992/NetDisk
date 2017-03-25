@@ -5,9 +5,14 @@
 #include <qnetworkaccessmanager.h>
 #include <QDateTime>
 #include <QList>
+#include <QString>
+#include <QByteArray>
 #include "Http/nettrans.h"
+#include "Http/nethttp.h"
+#include "netconfig.h"
 
 class netTrans;
+class NetHttp;
 
 enum httpState
 {
@@ -16,7 +21,77 @@ enum httpState
     H_DOWNLOAD,
     H_UPLOAD,
     H_NEW,
-    H_DEL
+    H_DEL,
+    H_SHARE,
+    H_SYNC
+};
+
+class syncLocalInfo
+{
+public:
+    QString syncPath;
+    QString fileName;
+    QString fileMd5;
+    quint64 fileSize;
+    double fileId;
+    int isDir;
+};
+
+class syncInfo
+{
+public:
+    syncInfo();
+    syncInfo(syncInfo* info);
+    QDateTime LAST_MOD_TIME;
+    int USER_ID;
+    int FILE_SERVER;
+    QString MD5;
+    QDateTime ADD_TIME;
+    QString EXT;
+    int STATUS;
+    QString FILE_NAME;
+    int VERSION;
+    QString REAL_KEY;
+    int FILE_TYPE;
+    QString FILE_CODE;
+    double ID;
+    double MASTER_ID;
+    int IS_ENCRYPED;
+    double SIZE;
+    double PARENT_ID;
+    QString FILE_PATH;
+    int TYPE;
+    QString LOCAL_PATH;
+};
+
+class syncTable: public QObject
+{
+    Q_OBJECT
+public:
+    syncTable();
+    void setLocalList(QList<syncLocalInfo*> l);
+    void setHttpClient(NetHttp* client);
+    void syncInfoInsert(QList<syncInfo*> info);
+    syncInfo* getInfoById(double Id);
+
+private:
+    QList<syncInfo*> list_all;
+    QList<syncInfo*> list_temp;
+    QList<syncInfo*> list_dir;
+    QList<syncInfo*> list_file;
+    QList<syncInfo*> list_task;
+    QList<syncLocalInfo*> list_local;
+    QStringList list_index;
+    QStringList list_local_index;
+    QStringList list_path;
+    QString cur_path;
+    NetHttp* syncClient;
+    void syncDir();
+    void syncFile();
+    void nextTask();
+    void recvListClear();
+signals:
+    void localListChanged(syncLocalInfo*);
 };
 
 class fileInfo
@@ -55,26 +130,38 @@ public:
     void netList(double pId=-1, int cPage=1, int pageSize=20, int showdelete=0, QString name=QString(), QString fileType=QString());
     void netMkdir(double pId=-1, QString fileName = QString("新建文件夹"));
     void netUpload(QString fileName, double pId);
-    void netDownload(fileInfo info);
+    void netDownload(fileInfo info, QString downloadPath = QString());
     void netDelete(double fId);
+    void netCreatShareLinks(QStringList fids);
+    void netSync(double pId, QDateTime lastSyncTime=QDateTime());
 
 private:
     QNetworkAccessManager* manager;
     httpState State;
     netTrans* fTrans;//上传下载
     QList<netTrans*>listTask;//任务队列
+    QDateTime serverTime;
+    QString token;
     bool isLastPage;
     bool isFirstPage;
+    bool needLoginSync;
     int currentPageNum;
     int totalRow;
     int totalPage;
     QList<fileInfo*> listInfo;
+    QList<syncInfo*> listSync;
 
+    QString httpDateTran(QByteArray raw);
     void fileInfoRecv(QByteArray info);
     void fileInfoShow(fileInfo* info);
     void fileListClear();
+    void syncListClear();
     void callbackNew(QByteArray info);
     void loginRst(QByteArray rst);
+    void syncInfoRecv(QByteArray info, QDateTime syncTime);
+    void syncListCreat(QJsonArray info, QDateTime syncTime);
+    QByteArray getSign(QStringList param);
+    QByteArray getPost(QStringList param);
 
 private slots:
     void replyFinished(QNetworkReply*);
@@ -85,6 +172,7 @@ signals:
     void newTask(netTrans*);
     void loginStateChanged(bool);
     void pageChanged(bool isFirst,bool isLast,int pageNum,int totalPageNum);
+    void syncUpdate(QList<syncInfo*>, QDateTime);
 
 public slots:
 };

@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     taesclass.cpp \
     Tablewidget/selectdelegate.cpp \
     Tablewidget/transbtn.cpp \
-    Tablewidget/listrowwidgets.cpp
+    Tablewidget/listrowwidgets.cpp \
+    Netsync/netsync.cpp
 
 HEADERS  += mainwidget.h \
     QFolder/qfolder.h \
@@ -49,7 +50,8 @@ HEADERS  += mainwidget.h \
     taesclass.h \
     Tablewidget/selectdelegate.h \
     Tablewidget/transbtn.h \
-    Tablewidget/listrowwidgets.h
+    Tablewidget/listrowwidgets.h \
+    Netsync/netsync.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \

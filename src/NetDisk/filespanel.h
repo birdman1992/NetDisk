@@ -14,6 +14,7 @@
 #include "Http/nethttp.h"
 #include "Tablewidget/selectdelegate.h"
 #include "Tablewidget/listrowwidgets.h"
+#include "Netsync/netsync.h"
 
 namespace Ui {
 class FilesPanel;
@@ -28,6 +29,7 @@ public:
     ~FilesPanel();
 //    DiskFtp ftpClient;
     NetHttp* httpClient;
+    NetSync* diskSync;
     int pageSize;//当前页大小
     int pageNum;//当前页码
     void panelShow(QList<QFolder*> fPanel);
@@ -41,6 +43,7 @@ public:
     void panelBack();//返回
     void panelAhead();//前进
     void panelSearch(int searchType, QString name=QString());
+    void panelShare();
     void fileDownload(fileInfo info);
     bool repeatCheck(QString* fName, QFolder* pFolder);
     void setViewMode(bool showList);

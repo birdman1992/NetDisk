@@ -4,6 +4,7 @@
 #include <QLineEdit>
 #include <QIcon>
 #include <qscrollbar.h>
+#include <qdesktopservices.h>
 #include "filespanel.h"
 
 MainWidget::MainWidget(QWidget *parent) :
@@ -14,6 +15,7 @@ MainWidget::MainWidget(QWidget *parent) :
     this->setWindowFlags(Qt::FramelessWindowHint);
     wMoveable = false;
     fType = 0;
+    isLogin = false;
 
     //系统托盘图标
     initSysTray();
@@ -30,6 +32,10 @@ MainWidget::MainWidget(QWidget *parent) :
 
     //传输列表
     transList = new TransList(this);
+
+    //网盘设置
+    diskConfig = new ConfigPanel();
+//    diskSync = new NetSync(this);
 
     //路径面板
     pathView = new PathView(this);
@@ -64,7 +70,7 @@ MainWidget::MainWidget(QWidget *parent) :
     connect(diskPanel, SIGNAL(pathChanged(QList<fileInfo*>)), pathView, SLOT(pathChange(QList<fileInfo*>)));
     connect(diskPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
     connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
-    connect(diskPanel, SIGNAL(isLoading(bool)), this, SLOT(isLoading(bool)), Qt::UniqueConnection);
+    connect(diskPanel, SIGNAL(isLoading(bool)), this, SLOT(isLoading(bool)));
     connect(diskPanel, SIGNAL(scrollValueChanged(int)), this, SLOT(scrollValueUpdate(int)));
     connect(ui->showDelete, SIGNAL(toggled(bool)), diskPanel, SLOT(showDelete(bool)));
     connect(pathView, SIGNAL(cdRequest(double)), diskPanel, SLOT(cmdCd(double)));
@@ -77,6 +83,7 @@ MainWidget::~MainWidget()
 {
     delete ui;
     delete pageLayout;
+    delete diskConfig;
 }
 
 void MainWidget::initSearch()
@@ -150,8 +157,31 @@ void MainWidget::initFunctionList()
     ui->search->setTextMargins(5,0,0,0);
 
     connect(ui->functionList, SIGNAL(clicked(QModelIndex)), this, SLOT(functionBtnClicked(QModelIndex)));
-//    connect(ui->functionList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(founctionListClicked(QListWidgetItem*)));
+    //    connect(ui->functionList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(founctionListClicked(QListWidgetItem*)));
 }
+
+void MainWidget::setSysMenu()
+{
+    if(isLogin)
+    {
+        act_logout->setEnabled(true);
+        act_openDiskSet->setEnabled(true);
+        act_openPanel->setEnabled(true);
+        act_openDownloadDir->setEnabled(true);
+        act_quit->setEnabled(true);
+        act_openWebsite->setEnabled(true);
+    }
+    else
+    {
+        act_logout->setEnabled(false);
+        act_openDiskSet->setEnabled(false);
+        act_openPanel->setEnabled(false);
+        act_openDownloadDir->setEnabled(true);
+        act_quit->setEnabled(true);
+        act_openWebsite->setEnabled(true);
+    }
+}
+
 
 //鼠标事件
 void MainWidget::mousePressEvent(QMouseEvent *event)
@@ -258,7 +288,8 @@ void MainWidget::functionBtnClicked(QModelIndex index)
         case 1:
             diskPanel->fileNew(); break;
         case 2:
-            qDebug("share");break;
+            qDebug("share");
+            diskPanel->panelShare();break;
         case 3:
             qDebug("link");break;
         case 4:
@@ -284,6 +315,33 @@ void MainWidget::initSysTray()
     sysTray = new QSystemTrayIcon(this);
     sysTray->setIcon(QIcon(":/imgs/app.ico"));
     sysTray->setToolTip("联瑞企业网盘");
+    act_openDownloadDir = new QAction("打开默认下载目录");
+    act_openPanel = new QAction("打开主面板");
+    act_openWebsite = new QAction("访问联瑞企业网盘网站");
+    act_openDiskSet = new QAction("设置");
+    act_logout = new QAction("注销");
+    act_quit = new QAction("退出");
+
+    sysTrayMenu = new QMenu(this);
+    sysTray->setContextMenu(sysTrayMenu);
+    sysTrayMenu->addAction(act_openPanel);
+    sysTrayMenu->addAction(act_openWebsite);
+    sysTrayMenu->addSeparator();
+    sysTrayMenu->addAction(act_openDownloadDir);
+    sysTrayMenu->addSeparator();
+    sysTrayMenu->addAction(act_openDiskSet);
+    sysTrayMenu->addAction(act_logout);
+    sysTrayMenu->addAction(act_quit);
+
+    connect(act_openPanel, SIGNAL(triggered(bool)), this, SLOT(actOpenPanel(bool)));
+    connect(act_openWebsite, SIGNAL(triggered(bool)), this, SLOT(actOpenWebsite(bool)));
+    connect(act_openDownloadDir, SIGNAL(triggered(bool)), this, SLOT(actOpenDownloadDir(bool)));
+    connect(act_openDiskSet, SIGNAL(triggered(bool)), this, SLOT(actOpenDiskSet(bool)));
+    connect(act_logout, SIGNAL(triggered(bool)), this, SLOT(actLogout(bool)));
+    connect(act_quit, SIGNAL(triggered(bool)), this, SLOT(actQuit(bool)));
+
+    setSysMenu();
+
     sysTray->show();
 }
 
@@ -376,7 +434,7 @@ void MainWidget::isLoading(bool checked)
 {qDebug()<<"loadint"<<checked;
     if(checked)
     {
-        loadingUi.reloadStart();
+//        loadingUi.reloadStart();
         loadingUi.show();
         scrollFolder->hide();
         transList->hide();
@@ -397,10 +455,10 @@ void MainWidget::reload()
 
 void MainWidget::netLogin()
 {
-    loginUi.close();
-    this->show();
-    diskPanel->panelCd((fileInfo*)NULL);
-//    diskPanel->httpClient->netLogin(netConf->getUsrname(), netConf->getPasswd());
+//    loginUi.close();
+//    this->show();
+//    diskPanel->panelCd((fileInfo*)NULL);
+    diskPanel->httpClient->netLogin(netConf->getUsrname(), netConf->getPasswd());
 }
 
 void MainWidget::netClose()
@@ -415,6 +473,9 @@ void MainWidget::loginRst(bool isSucceed)
     {
         loginUi.close();
         this->show();
+        diskPanel->panelCd((fileInfo*)NULL);
+        isLogin = true;
+        setSysMenu();
     }
 }
 
@@ -441,6 +502,40 @@ void MainWidget::pageUpdate(bool _isFirst,bool _isLast,int _pageNum,int _totalPa
     page_info->setText(QString("第%1页/共%2页").arg(_pageNum).arg(_totalPageNum));
 }
 
+void MainWidget::actOpenPanel(bool)
+{
+    this->setWindowState(Qt::WindowNoState);
+    this->show();
+}
+
+void MainWidget::actOpenWebsite(bool)
+{
+    QDesktopServices::openUrl(QUrl(HTTP_ADDR));
+}
+
+void MainWidget::actOpenDownloadDir(bool)
+{
+    QDesktopServices::openUrl(QUrl("file:///"+netConf->getDownloadPath()));
+}
+
+void MainWidget::actOpenDiskSet(bool)
+{
+    diskConfig->show();
+}
+
+void MainWidget::actLogout(bool)
+{
+    isLogin = false;
+    this->hide();
+    loginUi.show();
+    setSysMenu();
+}
+
+void MainWidget::actQuit(bool)
+{
+    this->close();
+}
+
 void MainWidget::aheadPage(bool)
 {
     if(diskPanel->pageNum < 2)
@@ -455,3 +550,8 @@ void MainWidget::nextPage(bool)
     diskPanel->panelCdPage(diskPanel->pageNum+1);
 }
 
+
+void MainWidget::on_functionList_clicked(const QModelIndex &index)
+{
+
+}

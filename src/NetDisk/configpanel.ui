@@ -13,21 +13,24 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QLineEdit" name="lineEdit">
+  <widget class="QLineEdit" name="downloadPath">
    <property name="geometry">
     <rect>
      <x>140</x>
-     <y>120</y>
-     <width>321</width>
+     <y>100</y>
+     <width>441</width>
      <height>31</height>
     </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::ClickFocus</enum>
    </property>
   </widget>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
      <x>140</x>
-     <y>90</y>
+     <y>70</y>
      <width>141</width>
      <height>31</height>
     </rect>
@@ -36,11 +39,11 @@
     <string>下载文件位置选择：</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="browse">
+  <widget class="QPushButton" name="downloadSet">
    <property name="geometry">
     <rect>
-     <x>470</x>
-     <y>120</y>
+     <x>590</x>
+     <y>100</y>
      <width>75</width>
      <height>31</height>
     </rect>
@@ -53,7 +56,7 @@
    <property name="geometry">
     <rect>
      <x>140</x>
-     <y>170</y>
+     <y>250</y>
      <width>71</width>
      <height>21</height>
     </rect>
@@ -62,14 +65,66 @@
     <string>并行任务数：</string>
    </property>
   </widget>
-  <widget class="QComboBox" name="comboBox">
+  <widget class="QComboBox" name="maxTask">
    <property name="geometry">
     <rect>
      <x>220</x>
-     <y>170</y>
+     <y>250</y>
      <width>51</width>
      <height>22</height>
     </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="syncPath">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>170</y>
+     <width>441</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::ClickFocus</enum>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="synccSet">
+   <property name="geometry">
+    <rect>
+     <x>590</x>
+     <y>170</y>
+     <width>75</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>浏览</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>140</y>
+     <width>141</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>文件同步目录：</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="autosync">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>210</y>
+     <width>91</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>开启文件同步</string>
    </property>
   </widget>
  </widget>

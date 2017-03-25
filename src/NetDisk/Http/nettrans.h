@@ -13,6 +13,8 @@
 #include "Http/nethttp.h"
 //#define HTTP_ADDR "http://120.24.216.97:8888"
 #define HTTP_ADDR "http://120.76.52.78:8800/LinkRealSkyDrive"
+#define APP_ID    "appId=PC123987456"
+#define APP_KEY     "secretKey=d9563ff28bca607fa367deb13cc45ca2"
 
 #define CHUNK_SIZE (4*1024*1024)
 class fileInfo;
@@ -43,7 +45,7 @@ class netWork : public QObject
 public:
     explicit netWork(QObject *parent = 0);
     int netUpload(QString fileName, double pId);
-    void netDownload(fileInfo info);
+    void netDownload(fileInfo info, QString downLoadPath);
     TaskInfo taskinfo();
     void taskStart();
     QString getTaskSpeed();
@@ -63,6 +65,7 @@ private:
     QFileInfo fInfo;
     QByteArray fileMd5;
     TaskInfo taskInfo;
+    QByteArray sign;
 
 
     double filepId;//文件父目录ID
@@ -80,13 +83,14 @@ private:
     void md5Check();
     QByteArray getMd5(QFile* f);
     int fileUpload(bool reload);
-
+    QByteArray getSign(QStringList param);
 signals:
     void taskFinish(int ret);
 
 private slots:
     void replyFinished(QNetworkReply* reply);
     void replyError(QNetworkReply::NetworkError errorCode);
+    void getServerAddr();
     void fileRecv();
     void fileRecvFinished();
 };
@@ -97,7 +101,7 @@ class netTrans : public QObject
 public:
     explicit netTrans(QObject *parent = 0);
     int netUpload(QString fileName, double pId);
-    void netDownload(fileInfo info);
+    void netDownload(fileInfo info, QString downLoadPath);
     void taskStart();
     QString getTaskSpeed();
     TaskInfo taskinfo();

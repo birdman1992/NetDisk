@@ -395,15 +395,15 @@ border-image: url(:/imgs/title/max-hover_03.png);
             <item>
              <widget class="QPushButton" name="translist">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
               <property name="minimumSize">
                <size>
-                <width>40</width>
-                <height>28</height>
+                <width>98</width>
+                <height>27</height>
                </size>
               </property>
               <property name="styleSheet">

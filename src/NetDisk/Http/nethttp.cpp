@@ -6,6 +6,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QRegExp>
 
 
 NetHttp::NetHttp(QObject *parent) : QObject(parent)
@@ -13,25 +14,27 @@ NetHttp::NetHttp(QObject *parent) : QObject(parent)
     manager = new QNetworkAccessManager(this);
     State = H_LOGIN;
     isLastPage = false;
+    needLoginSync = true;
     currentPageNum = 0;
+    token = QString();
 //    QString str;
     connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
-//    netLogin("admin","888888");
+    //    netLogin("admin","888888");
 }
 
 /***登录接口***/
 void NetHttp::netLogin(QString user, QString passwd)
 {
     QString nUrl;
-    QByteArray qba = QCryptographicHash::hash(passwd.toLocal8Bit(), QCryptographicHash::Md5);
-//    qDebug()<<qba.toHex();
-    QString passwdMD5 =qba.toHex();
-    nUrl = QString(HTTP_ADDR) + "/login/userlogin?" +QString("password=%1&username=%2").arg(passwdMD5).arg(user);
-//    nUrl = QString("http://120.24.216.97:8888/login/userlogin?password=%1&username=%2")
-//            .arg(passwdMD5).arg(user);
+    QStringList paramList;
+    State = H_LOGIN;
+    paramList<<"password="+QString(passwd)+"&"<<"userName="+user+"&"<<QString(APP_ID)+"&";
+    QByteArray sign = getSign(paramList);
+
+    nUrl = QString(HTTP_ADDR) + "/api/user/login?" +QString("password=%1&userName=%2&sign=%3").arg(passwd).arg(user).arg(QString(sign.toHex()));
+    nUrl+="&"+QString(APP_ID);//+"&"+QString(APP_KEY);
     qDebug()<<"[login]:"<<nUrl;
     manager->get(QNetworkRequest(QUrl(nUrl)));
-
 }
 
 /***获取文件列表***/
@@ -39,9 +42,16 @@ void NetHttp::netList(double pId, int cPage, int pageSize, int showdelete, QStri
 {
     QString nUrl;
     nUrl = QString(HTTP_ADDR) + "/api/file/getMyFile";//
+    QStringList param;
+    param<<QString("pid=%1&").arg(pId)<<QString("cpage=%1&").arg(cPage)<<QString("pageSize=%1&").arg(pageSize)<<QString("showDelete=%1&").arg(showdelete)<<QString(APP_ID)+"&";
 
-    QByteArray qba = QString("fileType=%1&pageSize=%2&cpage=%3&pid=%4&showDelete=%5&name=")\
-            .arg(fileType).arg(pageSize).arg(cPage).arg(pId).arg(showdelete).toLocal8Bit() + name.toUtf8();
+    if(!name.isEmpty())
+        param<<QString("name=%1").arg(name);
+    if(!fileType.isEmpty())
+        param<<QString("fileType=%1").arg(fileType);
+
+    QByteArray qba = getPost(param);
+
     qDebug()<<"LIST"<<nUrl<<qba;
     State = H_LIST;
     QNetworkRequest request(nUrl);
@@ -69,10 +79,10 @@ void NetHttp::netUpload(QString fileName, double pId)
     emit newTask(fTrans);
 }
 
-void NetHttp::netDownload(fileInfo info)
+void NetHttp::netDownload(fileInfo info, QString downloadPath)
 {
     fTrans = new netTrans;
-    fTrans->netDownload(info);
+    fTrans->netDownload(info, downloadPath);
     emit newTask(fTrans);
 }
 
@@ -87,12 +97,78 @@ void NetHttp::netDelete(double fId)
     manager->get(QNetworkRequest(QUrl(nUrl)));
 }
 
+void NetHttp::netCreatShareLinks(QStringList fids)
+{
+    QString nUrl;
+    QString fidList = fids.takeFirst();
+
+    while(!fids.isEmpty())
+    {
+        fidList += ",";
+        fidList += fids.takeFirst();
+    }
+    nUrl = QString(HTTP_ADDR) + "/createShareLink?fids="+fidList+"&"+APP_ID+"&"+APP_KEY;
+    qDebug()<<"[SHARE]"<<nUrl;
+    State = H_SHARE;
+    manager->get(QNetworkRequest(QUrl(nUrl)));
+}
+
+void NetHttp::netSync(double pId, QDateTime lastSyncTime)
+{
+    QString lastTime;
+    if(lastSyncTime.isNull())
+        lastTime = QString();
+    else
+        lastTime = lastSyncTime.toString("yyyy-MM-dd hh:mm:ss");
+
+    QString nUrl;
+    nUrl = QString(HTTP_ADDR) + "/api/file/sync";//
+    QStringList param;
+    param<<QString("pid=%1&").arg(pId)<<QString(APP_ID)+"&";
+    if(!lastTime.isNull())
+        param<<lastTime;
+
+    QByteArray qba = getPost(param);
+
+    qDebug()<<"SYNC"<<nUrl<<qba;
+    State = H_SYNC;
+    QNetworkRequest request(nUrl);
+    request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
+    manager->post(request,qba);
+}
+
+QString NetHttp::httpDateTran(QByteArray raw)
+{
+    QString str = QString(raw);
+    QString pattern("*, * * * *:*:*");
+    QRegExp rx(pattern);
+    rx.setPatternSyntax(QRegExp::Wildcard);
+    if(!rx.exactMatch(str))
+        return QString();
+
+    int i,j,k;
+    QStringList l;
+    l<<"Jan"<<"Feb"<<"Mar"<<"Apr"<<"May"<<"Jun"<<"Jul"<<"Aug"<<"Sep"<<"Oct"<<"Nov"<<"Dec"<<"";
+    str = str.right(str.length() - str.indexOf(' ') - 1);
+    i = str.indexOf(" ");
+    j = str.indexOf(" ",i+1);
+    QString month = str.mid(i+1,j-i-1);
+
+    k = 0;
+    while((l.at(k++) != month) && (k<l.count()));
+    str.replace(i+1, j-i-1, QString::number(k));
+    str.remove(str.length()-4,4);
+    return str;
+}
+
 /***接收http返回内容槽***/
 void NetHttp::replyFinished(QNetworkReply *reply)
 {
     QByteArray nRecv = reply->readAll();
+    QString str = httpDateTran(reply->rawHeader("Date"));
+    serverTime = QDateTime::fromString(str,"dd M yyyy hh:mm:ss");
     qDebug()<<"http recv:"<<nRecv.size();
-    qDebug()<<nRecv;
+//    qDebug()<<nRecv;
 
     switch(State)
     {
@@ -105,6 +181,11 @@ void NetHttp::replyFinished(QNetworkReply *reply)
             fileInfoRecv(nRecv);break;
         case H_NEW:
             callbackNew(nRecv);break;
+        case H_SHARE:
+            break;
+        case H_SYNC:
+            syncInfoRecv(nRecv, serverTime);
+            break;
         default:break;
     }
 }
@@ -237,6 +318,11 @@ void NetHttp::fileInfoRecv(QByteArray info)
         }
     }
     else return;
+    if(needLoginSync)
+    {
+        netSync(-1);
+        needLoginSync = false;
+    }
     emit listUpdate(listInfo);
     emit pageChanged(isFirstPage, isLastPage, currentPageNum, totalPage);
 }
@@ -278,6 +364,16 @@ void NetHttp::fileListClear()
         delete info;
     }
 
+    return;
+}
+
+void NetHttp::syncListClear()
+{
+    while(!listSync.isEmpty())
+    {
+        syncInfo* info = listSync.takeFirst();
+        delete info;
+    }
     return;
 }
 
@@ -328,6 +424,17 @@ void NetHttp::loginRst(QByteArray rst)
         {
             QJsonObject obj = parseDoc.object();
 
+            if(obj.contains("msg"))
+            {
+                jval = obj.take("msg");
+                qDebug()<<"[LOGIN MSG]"<<jval.toString();
+            }
+            if(obj.contains("result"))
+            {
+                jval = obj.take("result");
+                token = jval.toString();
+                qDebug()<<"[LOGIN TOKEN]"<<jval.toString();
+            }
             if(obj.contains("code"))
             {
                 //解析返回的状态码
@@ -337,10 +444,237 @@ void NetHttp::loginRst(QByteArray rst)
                     emit loginStateChanged(true);
                 }
                 else
-                    emit loginStateChanged(true);
+                    emit loginStateChanged(false);
             }
         }
     }
+}
+
+void NetHttp::syncInfoRecv(QByteArray info, QDateTime syncTime)
+{
+    QJsonParseError jError;
+    QJsonValue jval;
+    QJsonDocument parseDoc = QJsonDocument::fromJson(info, &jError);
+
+    if(jError.error == QJsonParseError::NoError)
+    {
+        if(parseDoc.isObject())
+        {
+            QJsonObject obj = parseDoc.object();
+
+            if(obj.contains("code"))
+            {
+                //解析返回的状态码
+                if(obj.contains("msg"))
+                {
+                    jval = obj.take("msg");
+                    qDebug()<<"[SYNC MSG]:"<<jval.toString();
+                }
+                jval = obj.take("code");
+                if(!(jval.isString() && (jval.toString() == "200")))
+                {
+                    return;
+                }
+            }
+            if(obj.contains("result"))
+            {
+                jval = obj.take("result");
+                QJsonArray syncArray = jval.toArray();
+                syncListCreat(syncArray, syncTime);
+            }
+        }
+    }
+}
+
+void NetHttp::syncListCreat(QJsonArray info, QDateTime syncTime)
+{
+    int i = 0;
+    QJsonValue jval;
+    syncListClear();
+    while(i<info.count())
+    {
+        QJsonValue value = info.at(i++);
+        QJsonObject obj = value.toObject();
+        syncInfo* sInfo = new syncInfo;
+        if(obj.contains("LAST_MOD_TIME"))
+        {
+            jval = obj.take("LAST_MOD_TIME");
+            sInfo->LAST_MOD_TIME = QDateTime::fromString(jval.toString(), "yyyy-MM-dd hh:mm:ss");
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("USER_ID"))
+        {
+            jval = obj.take("USER_ID");
+            sInfo->USER_ID = jval.toInt();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("FILE_SERVER"))
+        {
+            jval = obj.take("FILE_SERVER");
+            sInfo->FILE_SERVER = jval.toInt();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("MD5"))
+        {
+            jval = obj.take("MD5");
+            sInfo->MD5 = jval.toString();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("ADD_TIME"))
+        {
+            jval = obj.take("ADD_TIME");
+            sInfo->ADD_TIME = QDateTime::fromString(jval.toString(), "yyyy-MM-dd hh:mm:ss");;
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("EXT"))
+        {
+            jval = obj.take("EXT");
+            sInfo->EXT = jval.toString();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("STATUS"))
+        {
+            jval = obj.take("STATUS");
+            sInfo->STATUS = jval.toInt();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("FILE_NAME"))
+        {
+            jval = obj.take("FILE_NAME");
+            sInfo->FILE_NAME = jval.toString();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("VERSION"))
+        {
+            jval = obj.take("VERSION");
+            sInfo->VERSION = jval.toInt();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("REAL_KEY"))
+        {
+            jval = obj.take("REAL_KEY");
+            sInfo->REAL_KEY = jval.toString();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("FILE_TYPE"))
+        {
+            jval = obj.take("FILE_TYPE");
+            sInfo->FILE_TYPE = jval.toInt();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("FILE_CODE"))
+        {
+            jval = obj.take("FILE_CODE");
+            sInfo->FILE_CODE = jval.toString();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("ID"))
+        {
+            jval = obj.take("ID");
+            sInfo->ID = jval.toDouble();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("MASTER_ID"))
+        {
+            jval = obj.take("MASTER_ID");
+            sInfo->MASTER_ID = jval.toDouble();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("IS_ENCRYPED"))
+        {
+            jval = obj.take("IS_ENCRYPED");
+            sInfo->IS_ENCRYPED = jval.toInt();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("SIZE"))
+        {
+            jval = obj.take("SIZE");
+            sInfo->SIZE = jval.toDouble();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("PARENT_ID"))
+        {
+            jval = obj.take("PARENT_ID");
+            sInfo->PARENT_ID = jval.toDouble();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("FILE_PATH"))
+        {
+            jval = obj.take("FILE_PATH");
+            sInfo->FILE_PATH = jval.toString();
+        }
+        else
+            goto syncListCreatError;
+        if(obj.contains("TYPE"))
+        {
+            jval = obj.take("TYPE");
+            sInfo->TYPE = jval.toInt();
+        }
+        else
+            goto syncListCreatError;
+
+        listSync<<sInfo;
+    }
+
+    emit syncUpdate(listSync, syncTime);
+    return;
+    syncListCreatError:
+    qDebug("[SYNC INFO]:read error.");
+    return;
+}
+
+QByteArray NetHttp::getSign(QStringList param)
+{
+    qSort(param.begin(), param.end());
+    QString str = QString();
+    for(int i=0; i<param.count(); i++)
+    {
+        str += param.at(i);
+    }
+
+    str += QString(APP_KEY);
+    qDebug()<<str;
+
+    QByteArray qba = QCryptographicHash::hash(str.toLocal8Bit(), QCryptographicHash::Md5);
+    qDebug()<<qba.toHex();
+    return qba;
+}
+
+QByteArray NetHttp::getPost(QStringList param)
+{
+    QByteArray postData = QByteArray();
+    qSort(param.begin(), param.end());
+    QString str = QString();
+    for(int i=0; i<param.count(); i++)
+    {
+        str += param.at(i);
+    }
+    str += QString("token=%1&").arg(token);
+    postData += str.toLocal8Bit();
+    str += QString(APP_KEY);
+    qDebug()<<"[sign params]"<<str;
+    QByteArray sign = QCryptographicHash::hash(str.toLocal8Bit(), QCryptographicHash::Md5);
+//    qDebug()<<sign.toHex();
+    postData += QString("sign=%1").arg(QString(sign.toHex())).toLocal8Bit();
+    qDebug()<<"[post params]"<<postData;
+    return postData;
 }
 
 fileInfo::fileInfo()
@@ -369,4 +703,160 @@ fileInfo::fileInfo(const fileInfo &info)
     REAL_NAME = info.REAL_NAME;
     FILE_PATH = info.FILE_PATH;
     FILE_NAME = info.FILE_NAME;
+}
+
+
+/***********************************************
+syncInfo
+**************************************************/
+syncInfo::syncInfo()
+{
+
+}
+
+syncInfo::syncInfo(syncInfo *info)
+{
+    ADD_TIME = info->ADD_TIME;
+    EXT = info->EXT;
+    FILE_CODE = info->FILE_CODE;
+    FILE_NAME = info->FILE_NAME;
+    FILE_PATH = info->FILE_PATH;
+    FILE_SERVER = info->FILE_SERVER;
+    FILE_TYPE = info->FILE_TYPE;
+    ID = info->ID;
+    IS_ENCRYPED = info->IS_ENCRYPED;
+    LAST_MOD_TIME = info->LAST_MOD_TIME;
+    LOCAL_PATH = info->LOCAL_PATH;
+    MASTER_ID = info->MASTER_ID;
+    MD5 = info->MD5;
+    PARENT_ID = info->PARENT_ID;
+    REAL_KEY = info->REAL_KEY;
+    SIZE = info->SIZE;
+    STATUS = info->STATUS;
+    TYPE = info->TYPE;
+    USER_ID = info->USER_ID;
+    VERSION = info->VERSION;
+}
+
+
+/***************************
+syncTable
+*****************************/
+syncTable::syncTable()
+{
+    cur_path = netConf->getSyncPath();
+}
+
+void syncTable::setLocalList(QList<syncLocalInfo *> l)
+{
+    int i=0;
+    list_local_index.clear();
+    list_local = l;
+
+    for(i=0; i<list_local.count(); i++)
+    {
+        list_local_index<<QString::number(list_local.at(i)->fileId);
+    }
+}
+
+void syncTable::setHttpClient(NetHttp *client)
+{
+    syncClient = client;
+}
+
+void syncTable::syncInfoInsert(QList<syncInfo *> info)
+{
+    int i;
+    int dir_pos = list_dir.count();
+
+    recvListClear();//清除临时链表
+    //创建数据链表
+    for(i=0; i<info.count(); i++)
+    {
+        syncInfo* nInfo = new syncInfo(info.at(i));
+        list_temp<<nInfo;
+        if(nInfo->TYPE == 0)
+            list_dir<<nInfo;
+        else
+            list_file<<nInfo;
+    }
+    syncFile();
+    syncDir();
+}
+
+void syncTable::syncDir()
+{
+    syncInfo* info;
+    int i=0;
+    int ret = 0;
+    qDebug("[syncDir]");
+    for(i=0; i<list_dir.count(); i++)
+    {
+        info = list_dir.takeAt(i);
+        ret = list_local_index.indexOf(QString::number(info->ID));
+        if(ret == -1)
+        {
+            QDir dir;
+            if(dir.exists(cur_path+info->FILE_NAME))
+            {
+                continue;
+            }
+            else
+            {
+                dir.mkdir(cur_path+info->FILE_NAME);
+                syncLocalInfo* lInfo = new syncLocalInfo;
+                lInfo->syncPath = cur_path;
+                lInfo->fileId = info->ID;
+                lInfo->fileMd5 = info->MD5;
+                lInfo->fileName = info->FILE_NAME;
+                lInfo->fileSize = info->SIZE;
+                lInfo->isDir = 1;
+                emit localListChanged(lInfo);
+            }
+        }
+    }
+}
+
+void syncTable::syncFile()
+{
+    syncInfo* info;
+    int i=0;
+    int ret = 0;
+    fileInfo downloadInfo;
+
+    qDebug("[syncFile]");
+    for(i=0; i<list_file.count(); i++)
+    {
+        info = list_file.takeAt(i);
+        ret = list_local_index.indexOf(QString::number(info->ID));
+
+        if(ret == -1)
+        {
+            downloadInfo.FILE_NAME = info->FILE_NAME;
+            downloadInfo.SIZE = info->SIZE;
+            downloadInfo.MD5 = info->MD5;
+            downloadInfo.ID = info->ID;
+            syncClient->netDownload(downloadInfo,cur_path);
+            return;
+        }
+    }
+}
+
+void syncTable::recvListClear()
+{
+    while(!list_temp.isEmpty())
+    {
+        syncInfo* info = list_temp.takeFirst();
+        delete info;
+    }
+    while(!list_dir.isEmpty())
+    {
+        syncInfo* info = list_dir.takeFirst();
+        delete info;
+    }
+    while(!list_file.isEmpty())
+    {
+        syncInfo* info = list_file.takeFirst();
+        delete info;
+    }
 }

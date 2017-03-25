@@ -4,6 +4,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <qthread.h>
 #include "netconfig.h"
 
 netWork::netWork(QObject *parent) :
@@ -63,8 +64,10 @@ int netWork::netUpload(QString fileName, double pId)
     return 0;
 }
 
-void netWork::netDownload(fileInfo info)
+void netWork::netDownload(fileInfo info, QString downLoadPath)
 {
+
+    QStringList paramList;
     taskInfo.curSize = 0;
     isupload = false;
     manager = new QNetworkAccessManager(this->parent());
@@ -72,17 +75,42 @@ void netWork::netDownload(fileInfo info)
     fileMd5 = QByteArray::fromHex(info.MD5.toLocal8Bit());
     taskInfo.fileName = info.FILE_NAME;
     taskInfo.fileSize = info.SIZE;
+    fileId = info.ID;
 
-    pFile = new QFile(netConf->getDownloadPath() + info.FILE_NAME, this->parent());
+    if(downLoadPath.isEmpty())
+        pFile = new QFile(netConf->getDownloadPath() + info.FILE_NAME, this->parent());
+    else
+        pFile = new QFile(downLoadPath + info.FILE_NAME, this->parent());
     if(!pFile->open(QFile::ReadWrite))
     {
-        qDebug()<<"[File upload]:"<<"file open error.";
+        qDebug()<<"[File download]:"<<"file open error.";
         return;
     }
 
-    nUrl = QString(HTTP_ADDR) + "/api/file/download?"+QString("fid=%1").arg(info.ID);
-    qDebug()<<"[download]:"<<nUrl<<info.FILE_NAME<<fileMd5.toHex();
-    taskInfo.taskState = NO_STATE;
+    paramList<<QString("fid=%1&").arg(info.ID)<<QString(APP_ID)+"&";
+    sign = getSign(paramList);
+
+    nUrl = QString(HTTP_ADDR) + "/api/file/checkDownload?"+QString("fid=%1&sign=%2").arg(info.ID).arg(QString(sign.toHex()));
+    qDebug()<<"[checkDownload]"<<nUrl;
+    netReply = manager->get(QNetworkRequest(QUrl(nUrl)));
+    connect(netReply, SIGNAL(readyRead()), this, SLOT(getServerAddr()));
+}
+
+QByteArray netWork::getSign(QStringList param)
+{
+    qSort(param.begin(), param.end());
+    QString str = QString();
+    for(int i=0; i<param.count(); i++)
+    {
+        str += param.at(i);
+    }
+
+    str += QString(APP_KEY);
+    qDebug()<<str;
+
+    QByteArray qba = QCryptographicHash::hash(str.toLocal8Bit(), QCryptographicHash::Md5);
+    qDebug()<<qba.toHex();
+    return qba;
 }
 
 TaskInfo netWork::taskinfo()
@@ -106,11 +134,21 @@ void netWork::taskStart()
         }
         else
         {
-            taskInfo.taskState = DOWNLOAD_STATE;
-            netReply = manager->get(QNetworkRequest(QUrl(nUrl)));
-            connect(netReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(replyError(QNetworkReply::NetworkError)));
-            connect(netReply, SIGNAL(readyRead()), this, SLOT(fileRecv()));
-            connect(netReply, SIGNAL(finished()), this, SLOT(fileRecvFinished()));
+            if(taskInfo.taskState == NO_STATE)
+            {
+                taskInfo.taskState = DOWNLOAD_STATE;
+//                netReply = manager->get(QNetworkRequest(QUrl(nUrl)));
+//                connect(netReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(replyError(QNetworkReply::NetworkError)));
+//                connect(netReply, SIGNAL(readyRead()), this, SLOT(fileRecv()));
+//                connect(netReply, SIGNAL(finished()), this, SLOT(fileRecvFinished()));
+            }
+            else
+            {
+                netReply = manager->get(QNetworkRequest(QUrl(nUrl)));
+                connect(netReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(replyError(QNetworkReply::NetworkError)));
+                connect(netReply, SIGNAL(readyRead()), this, SLOT(fileRecv()));
+                connect(netReply, SIGNAL(finished()), this, SLOT(fileRecvFinished()));
+            }
         }
     }
 }
@@ -360,6 +398,49 @@ void netWork::replyError(QNetworkReply::NetworkError errorCode)
     qDebug()<<"remove"<<pFile->remove();
 }
 
+void netWork::getServerAddr()
+{
+    QJsonDocument parseDoc;
+    QJsonParseError jError;
+
+    QByteArray qba = netReply->readAll();qDebug()<<"[getServerAddr]"<<qba;
+    parseDoc = QJsonDocument::fromJson(qba, &jError);
+
+    nUrl = QString(HTTP_ADDR) + "/api/file/download?"+QString("fid=%1&sign=%2").arg(fileId).arg(QString(sign.toHex()));
+    disconnect(netReply, SIGNAL(readyRead()), this, SLOT(getServerAddr()));
+
+    if(jError.error == QJsonParseError::NoError)
+    {
+        if(parseDoc.isObject())
+        {
+            QJsonObject obj = parseDoc.object();
+
+            if(obj.contains("server"))
+            {
+                QJsonValue value = obj.take("server");
+                obj = value.toObject();
+                if(obj.contains("SERVER_URL"))
+                {
+                    value = obj.take("SERVER_URL");
+                    nUrl = value.toString() + "/api/file/download?"+QString("fid=%1&sign=%2").arg(fileId).arg(QString(sign.toHex()));
+                }
+            }
+        }
+    }
+//    qDebug()<<"[download]:"<<nUrl<<info.FILE_NAME<<fileMd5.toHex();
+    if(taskInfo.taskState == NO_STATE)
+    {
+        taskInfo.taskState = DOWNLOAD_STATE;
+    }
+    else
+    {
+        netReply = manager->get(QNetworkRequest(QUrl(nUrl)));
+        connect(netReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(replyError(QNetworkReply::NetworkError)));
+        connect(netReply, SIGNAL(readyRead()), this, SLOT(fileRecv()));
+        connect(netReply, SIGNAL(finished()), this, SLOT(fileRecvFinished()));
+    }
+}
+
 void netWork::fileRecv()
 {
     QByteArray qba = netReply->readAll();qDebug()<<"download:"<<qba.size();
@@ -400,9 +481,9 @@ int netTrans::netUpload(QString fileName, double pId)
     return 0;
 }
 
-void netTrans::netDownload(fileInfo info)
+void netTrans::netDownload(fileInfo info, QString downLoadPath)
 {
-    work->netDownload(info);
+    work->netDownload(info, downLoadPath);
     return;
 }
 

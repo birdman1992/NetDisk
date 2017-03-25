@@ -7,15 +7,18 @@
 #include <qscrollarea.h>
 #include <QresizeEvent>
 #include <QSystemTrayIcon>
+#include <QMenu>
 #include <QAction>
 #include <Translist/translist.h>
 #include <QLayout>
 #include <QPushButton>
 #include <QLabel>
 #include "Pathview/pathview.h"
+//#include "Netsync/netsync.h"
 #include "filespanel.h"
 #include "loading.h"
 #include "login.h"
+#include "configpanel.h"
 
 namespace Ui {
 class MainWidget;
@@ -57,6 +60,14 @@ private slots:
     void nextPage(bool);
     void aheadPage(bool);
     void pageUpdate(bool _isFirst, bool _isLast, int _pageNum, int _totalPageNum);
+    void actOpenPanel(bool);//打开主面板
+    void actOpenWebsite(bool);//打开企业网盘网站
+    void actOpenDownloadDir(bool);//打开下载目录
+    void actOpenDiskSet(bool);//打开网盘设置
+    void actLogout(bool);//注销
+    void actQuit(bool);//退出
+
+    void on_functionList_clicked(const QModelIndex &index);
 
 public slots:
     void historyEnabled(bool backEnable, bool aheadEnable);
@@ -71,17 +82,23 @@ private:
     QPushButton* page_next;
     QLabel* page_info;
     QSystemTrayIcon* sysTray;
+    QMenu* sysTrayMenu;
     FilesPanel* diskPanel;
     PathView* pathView;
     TransList* transList;
+    ConfigPanel* diskConfig;
+//    NetSync* diskSync;
     bool wMoveable;
+    bool isLogin;
     QPoint dragPosition;
     int fType;
     //系统托盘菜单项
     QAction* act_openPanel;//打开主面板
     QAction* act_openWebsite;//打开企业网盘网站
-    QAction* act_openDownloadUrl;//打开下载目录
-//    Qaction* act_open
+    QAction* act_openDownloadDir;//打开下载目录
+    QAction* act_openDiskSet;//打开网盘设置
+    QAction* act_logout;//注销
+    QAction* act_quit;//退出
 
 
     void initSysTray();
@@ -90,6 +107,7 @@ private:
     void initSysMenu();
     void initSilidebar();
     void initFunctionList();
+    void setSysMenu();
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);

@@ -9,13 +9,15 @@ NetConfig* netConf;
 
 NetConfig::NetConfig()
 {
-    downloadPath = "download/";
+    downloadPath = "LinkRealNetdiskDownload/";
+    syncPath = "sync/";
     maxTaskNum = 3;
     userName = QString();
     passwd = QString();
     passwdAes = QString();
     remPasswd = false;
     autoLogin = false;
+    autoSync = false;
     netAes.InitializePrivateKey(18,(UCHAR*)"Linkrealby@Birdman");
     creatDir();
     creatDefaultConfig();
@@ -64,6 +66,28 @@ QString NetConfig::getPasswd()
     return passwd;
 }
 
+void NetConfig::setSyncPath(QString path)
+{
+    if(!path.endsWith("/"))
+        path += "/";
+    syncPath = path;
+}
+
+QString NetConfig::getSyncPath()
+{
+    return syncPath;
+}
+
+void NetConfig::setautoSync(bool autosync)
+{
+    autoSync = autosync;
+}
+
+bool NetConfig::autoSyncDir()
+{
+    return autoSync;
+}
+
 void NetConfig::setremPassword(bool rempasswd)
 {
     remPasswd = rempasswd;
@@ -97,6 +121,8 @@ void NetConfig::creatDir()
         dir->mkdir("conf");
     if(!dir->exists(downloadPath))
         dir->mkdir(downloadPath);
+    if(!dir->exists(syncPath))
+        dir->mkdir(syncPath);
 
     delete dir;
     return;
@@ -119,9 +145,8 @@ void NetConfig::creatDefaultConfig()
     else
     {
         delete pFile;
-
         //设置默认配置
-        downloadPath = "download/";
+        setDownloadPath(QDir("LinkRealNetdiskDownload").absolutePath());
         maxTaskNum = 3;
         userName = QString();
         passwd = QString();
@@ -220,6 +245,29 @@ void NetConfig::readConfig()
             {
                 creatConfig();
             }
+            //读取是否开启文件同步
+            if(obj.contains("autoSync"))
+            {
+                jval = obj.take("autoSync");
+                autoSync = jval.toBool();
+                qDebug()<<"autoSync:"<<autoSync;
+            }
+            else
+            {
+                creatConfig();
+            }
+            //读取同步路径
+            if(obj.contains("syncPath"))
+            {
+                jval = obj.take("syncPath");
+                syncPath = jval.toString();
+                qDebug()<<"syncPath:"<<syncPath;
+            }
+            else
+            {
+                creatConfig();
+            }
+
 
             qDebug(" ");
         }
@@ -252,6 +300,8 @@ void NetConfig::saveConfig()
     obj.insert("passwdAes",passwdAes);
     obj.insert("remPasswd",remPasswd);
     obj.insert("autoLogin",autoLogin);
+    obj.insert("autoSync",autoSync);
+    obj.insert("syncPath",syncPath);
 
     QJsonDocument doc;
     doc.setObject(obj);

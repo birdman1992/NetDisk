@@ -30,6 +30,7 @@ FilesPanel::FilesPanel(QWidget *parent) :
     pageSize = 50;
     pageNum = 1;
     showDeleteFolder = 0;
+    isResize = false;
 
 
     ui->listView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -51,6 +52,9 @@ FilesPanel::FilesPanel(QWidget *parent) :
 
     //http
     httpClient = new NetHttp(this);
+
+    diskSync = new NetSync(this);
+    diskSync->setNetClient(httpClient);
 
     //主菜单
     menu = new QMenu(this);
@@ -310,6 +314,25 @@ void FilesPanel::panelSearch(int searchType, QString name)
     httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder, name, QString::number(searchType));
 }
 
+//创建分享链接
+void FilesPanel::panelShare()
+{
+    int i = 0;
+
+    if(showListView)
+    {
+        QStringList shareList;
+
+        for(i=0; i< checkList.count(); i++)
+        {
+            ListRowWidgets* row = checkList.at(i);
+            if(row->box->isChecked())
+                shareList<<QString::number(row->fInfo->ID);
+        }
+        httpClient->netCreatShareLinks(shareList);
+    }
+}
+
 bool FilesPanel::repeatCheck(QString *fName, QFolder* pFolder)
 {
     int i;
@@ -420,6 +443,7 @@ void FilesPanel::showList(QList<QFolder *> fPanel)
         ui->listView->show();
         return;
     }
+
     emit isLoading(false);
 
     for(i=0; i<fPanel.count(); i++)
