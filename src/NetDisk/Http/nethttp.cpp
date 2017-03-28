@@ -12,13 +12,16 @@
 NetHttp::NetHttp(QObject *parent) : QObject(parent)
 {
     manager = new QNetworkAccessManager(this);
+    managerSync = new QNetworkAccessManager(this);
     State = H_LOGIN;
     isLastPage = false;
     needLoginSync = true;
     currentPageNum = 0;
+    lastSyncId = 0;
     token = QString();
 //    QString str;
     connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
+    connect(managerSync, SIGNAL(finished(QNetworkReply*)), this, SLOT(replySyncFinished(QNetworkReply*)));
     //    netLogin("admin","888888");
 }
 
@@ -62,14 +65,16 @@ void NetHttp::netList(double pId, int cPage, int pageSize, int showdelete, QStri
 void NetHttp::netMkdir(double pId, QString fileName)
 {
     QString nUrl;
+    QStringList params;
 //    nUrl = QString(HTTP_ADDR) + "api/file/createFolder?"+QString("pid=%1&name=%2").arg(pId).arg(QString(fileName.toUtf8().toPercentEncoding()).replace('%','\\x'));
     nUrl = QString(HTTP_ADDR) + "/api/file/createFolder";
-    QByteArray qba = QString("pid=%1&name=").arg(pId).toLocal8Bit()+fileName.toUtf8();
+    params<<QString("pid=%1&").arg(pId)<<QString("name=%1&").arg(fileName)<<QString(APP_ID)+"&";
+//    QByteArray qba = QString("pid=%1&name=").arg(pId).toLocal8Bit()+fileName.toUtf8();
+    QByteArray qba = getPost(params);
     State = H_NEW;
     QNetworkRequest request(nUrl);
     request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
     manager->post(request,qba);
-
 }
 
 void NetHttp::netUpload(QString fileName, double pId)
@@ -82,7 +87,7 @@ void NetHttp::netUpload(QString fileName, double pId)
 void NetHttp::netDownload(fileInfo info, QString downloadPath)
 {
     fTrans = new netTrans;
-    fTrans->netDownload(info, downloadPath);
+    fTrans->netDownload(info, downloadPath,token);
     emit newTask(fTrans);
 }
 
@@ -126,15 +131,20 @@ void NetHttp::netSync(double pId, QDateTime lastSyncTime)
     QStringList param;
     param<<QString("pid=%1&").arg(pId)<<QString(APP_ID)+"&";
     if(!lastTime.isNull())
-        param<<lastTime;
+        param<<QString("syncTime=%1&").arg(lastTime);
 
     QByteArray qba = getPost(param);
+    lastSyncId = pId;
 
     qDebug()<<"SYNC"<<nUrl<<qba;
-    State = H_SYNC;
     QNetworkRequest request(nUrl);
     request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
-    manager->post(request,qba);
+    managerSync->post(request,qba);
+}
+
+void NetHttp::syncTraversal()
+{
+    netSync(100);
 }
 
 QString NetHttp::httpDateTran(QByteArray raw)
@@ -165,8 +175,8 @@ QString NetHttp::httpDateTran(QByteArray raw)
 void NetHttp::replyFinished(QNetworkReply *reply)
 {
     QByteArray nRecv = reply->readAll();
-    QString str = httpDateTran(reply->rawHeader("Date"));
-    serverTime = QDateTime::fromString(str,"dd M yyyy hh:mm:ss");
+//    QString str = httpDateTran(reply->rawHeader("Date"));
+//    serverTime = QDateTime::fromString(str,"dd M yyyy hh:mm:ss");
     qDebug()<<"http recv:"<<nRecv.size();
 //    qDebug()<<nRecv;
 
@@ -183,11 +193,26 @@ void NetHttp::replyFinished(QNetworkReply *reply)
             callbackNew(nRecv);break;
         case H_SHARE:
             break;
-        case H_SYNC:
-            syncInfoRecv(nRecv, serverTime);
-            break;
         default:break;
     }
+}
+
+void NetHttp::replySyncFinished(QNetworkReply *reply)
+{
+    QByteArray nRecv = reply->readAll();
+    if(reply->hasRawHeader("SERVER_TIME"))
+    {
+        QString str = QString(reply->rawHeader("SERVER_TIME"));
+        qDebug()<<"[raw date]"<<str;
+        serverTime = QDateTime::fromString(str,"yyyy-MM-dd hh:mm:ss");
+    }
+    else
+    {
+        qDebug()<<"Raw header SERVER_TIME not found.";
+    }
+    qDebug()<<"http SYNC recv:"<<nRecv.size();
+    qDebug()<<nRecv;
+    syncInfoRecv(nRecv, serverTime);
 }
 
 /************************************
@@ -200,7 +225,6 @@ void NetHttp::fileInfoRecv(QByteArray info)
     QJsonParseError jError;
     QJsonValue jval;
     QJsonDocument parseDoc = QJsonDocument::fromJson(info, &jError);
-
 
     if(jError.error == QJsonParseError::NoError)
     {
@@ -318,11 +342,11 @@ void NetHttp::fileInfoRecv(QByteArray info)
         }
     }
     else return;
-    if(needLoginSync)
-    {
-        netSync(-1);
-        needLoginSync = false;
-    }
+//    if(needLoginSync)
+//    {
+//        syncTraversal();
+//        needLoginSync = false;
+//    }
     emit listUpdate(listInfo);
     emit pageChanged(isFirstPage, isLastPage, currentPageNum, totalPage);
 }
@@ -667,10 +691,10 @@ QByteArray NetHttp::getPost(QStringList param)
         str += param.at(i);
     }
     str += QString("token=%1&").arg(token);
-    postData += str.toLocal8Bit();
+    postData += str.toUtf8();
     str += QString(APP_KEY);
-    qDebug()<<"[sign params]"<<str;
-    QByteArray sign = QCryptographicHash::hash(str.toLocal8Bit(), QCryptographicHash::Md5);
+//    qDebug()<<"[sign params]"<<str;
+    QByteArray sign = QCryptographicHash::hash(str.toUtf8(), QCryptographicHash::Md5);
 //    qDebug()<<sign.toHex();
     postData += QString("sign=%1").arg(QString(sign.toHex())).toLocal8Bit();
     qDebug()<<"[post params]"<<postData;
@@ -747,11 +771,10 @@ syncTable::syncTable()
     cur_path = netConf->getSyncPath();
 }
 
-void syncTable::setLocalList(QList<syncLocalInfo *> l)
+void syncTable::setLocalList()
 {
     int i=0;
     list_local_index.clear();
-    list_local = l;
 
     for(i=0; i<list_local.count(); i++)
     {
@@ -769,19 +792,51 @@ void syncTable::syncInfoInsert(QList<syncInfo *> info)
     int i;
     int dir_pos = list_dir.count();
 
-    recvListClear();//清除临时链表
+//    recvListClear();//清除临时链表
     //创建数据链表
     for(i=0; i<info.count(); i++)
     {
-        syncInfo* nInfo = new syncInfo(info.at(i));
+        syncInfo* nInfo = new syncInfo(info.at(i));qDebug()<<"[SYNC host]"<<nInfo->FILE_NAME;
         list_temp<<nInfo;
         if(nInfo->TYPE == 0)
+        {
             list_dir<<nInfo;
+            list_task<<nInfo;
+        }
         else
             list_file<<nInfo;
     }
-    syncFile();
-    syncDir();
+    tempListToHostList();
+
+    syncNextDir();
+}
+
+syncInfo *syncTable::getHostInfoById(double Id)
+{
+    QString strId = QString::number(Id);
+    int ret = list_index.indexOf(strId);
+    if(ret == -1)
+    {
+        qDebug()<<"[getHostInfoById]:"<<Id<<"not found.";
+        return NULL;
+    }
+    qDebug()<<"id:"<<strId<<"name:"<<list_all.at(ret)->FILE_NAME;
+    return list_all.at(ret);
+}
+
+QList<syncInfo *> syncTable::getHostList()
+{
+    return list_all;
+}
+
+void syncTable::setSyncAll(bool syncAllDir)
+{
+    syncAll = syncAllDir;
+}
+
+void syncTable::setCurPath(double Id)
+{
+
 }
 
 void syncTable::syncDir()
@@ -842,21 +897,46 @@ void syncTable::syncFile()
     }
 }
 
+void syncTable::syncNextDir()
+{
+    if(list_task.isEmpty())
+    {
+        emit hostSyncFinished();
+//        syncClient->netSync();
+        return;
+    }
+    syncInfo* info = list_task.takeFirst();
+    syncClient->netSync(info->ID, syncTime);
+    qDebug()<<"[SYNC DIR]"<<info->FILE_NAME;
+}
+
 void syncTable::recvListClear()
 {
-    while(!list_temp.isEmpty())
+//    while(!list_temp.isEmpty())
+//    {
+//        syncInfo* info = list_temp.takeFirst();
+//        delete info;
+//    }
+//    while(!list_dir.isEmpty())
+//    {
+//        syncInfo* info = list_dir.takeFirst();
+//        delete info;
+//    }
+//    while(!list_file.isEmpty())
+//    {
+//        syncInfo* info = list_file.takeFirst();
+//        delete info;
+    //    }
+}
+
+void syncTable::tempListToHostList()
+{
+    syncInfo* info;
+
+    while(list_temp.isEmpty())
     {
-        syncInfo* info = list_temp.takeFirst();
-        delete info;
-    }
-    while(!list_dir.isEmpty())
-    {
-        syncInfo* info = list_dir.takeFirst();
-        delete info;
-    }
-    while(!list_file.isEmpty())
-    {
-        syncInfo* info = list_file.takeFirst();
-        delete info;
+        info = list_temp.takeFirst();
+        list_all<<info;
+        list_index<<QString::number(info->ID);
     }
 }

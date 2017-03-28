@@ -7,6 +7,9 @@
 NetSync::NetSync(QObject *parent):
   QObject(parent)
 {
+    syncDate = QDateTime();
+
+    syncDateRead();
     initWatcher();
     syncLocalRead();
     syncLocalGet();
@@ -17,7 +20,8 @@ void NetSync::setNetClient(NetHttp *cli)
     netClient = cli;
     syncT.setHttpClient(cli);
     connect(netClient, SIGNAL(syncUpdate(QList<syncInfo*>,QDateTime)), this, SLOT(syncInfoRecv(QList<syncInfo*>,QDateTime)));
-
+    connect(netClient, SIGNAL(loginStateChanged(bool)), this, SLOT(loginSync(bool)));
+    connect(&syncT, SIGNAL(hostSyncFinished()), this, SLOT(syncHostFinished()));
 }
 
 void NetSync::syncAll()
@@ -28,7 +32,13 @@ void NetSync::syncAll()
 void NetSync::loginSync(bool isLogin)
 {
     if(isLogin)
-        netClient->netSync(-1);
+        netClient->netSync(428, syncT.syncTime);
+}
+
+void NetSync::syncHostFinished()
+{
+    qDebug("\n\n\n\n\n\n\n\n");
+    netClient->netSync(428, syncDate);
 }
 
 void NetSync::initWatcher()
@@ -41,9 +51,9 @@ void NetSync::syncLocalGet()
 {
     QDirIterator iter(netConf->getSyncPath(), QDirIterator::Subdirectories);
 
-    while(!listLocalReal.isEmpty())
+    while(!syncT.list_loacl_real.isEmpty())
     {
-        QFileInfo *info = listLocalReal.takeFirst();
+        QFileInfo *info = syncT.list_loacl_real.takeFirst();
         delete info;
     }
 
@@ -51,7 +61,7 @@ void NetSync::syncLocalGet()
     {
         iter.next();
         QFileInfo* info = new QFileInfo(iter.fileInfo());
-        listLocalReal<<info;
+        syncT.list_loacl_real<<info;
     }
 }
 
@@ -60,15 +70,15 @@ void NetSync::syncLocalRead()
     QFile* f = new QFile(netConf->getSyncPath()+QString(FILE_SYNC));
     if(!f->exists())
     {
-        syncT.setLocalList(listLocal);
+        syncT.setLocalList();
         return;
     }
     else
         f->open(QFile::ReadOnly);
 
-    while(!listLocal.isEmpty())
+    while(!syncT.list_local.isEmpty())
     {
-        syncLocalInfo* info = listLocal.takeFirst();
+        syncLocalInfo* info = syncT.list_local.takeFirst();
         delete info;
     }
 
@@ -85,9 +95,9 @@ void NetSync::syncLocalRead()
         info->fileMd5 = lInfo.at(3);
         info->fileSize = QString(lInfo.at(4)).toLongLong();
         info->isDir = QString(lInfo.at(5)).toInt();
-        listLocal<<info;
+        syncT.list_local<<info;
     }
-    syncT.setLocalList(listLocal);
+    syncT.setLocalList();
 }
 
 void NetSync::syncLocalWrite(QList<syncLocalInfo *> l)
@@ -107,6 +117,48 @@ void NetSync::syncLocalWrite(QList<syncLocalInfo *> l)
     delete f;
 }
 
+void NetSync::syncDateRead()
+{
+    QFile* f = new QFile(netConf->getSyncPath()+QString(FILE_SYNC_DATE));
+    if(!f->exists())
+    {
+        syncT.syncTime = QDateTime();
+        return;
+    }
+    else
+        f->open(QFile::ReadOnly);
+
+    syncT.syncTime = QDateTime::fromString(QString(f->readAll()),"yyyy-MM-dd hh:mm:ss");
+    qDebug()<<"[SYNC time read]"<<syncT.syncTime.toString("yyyy-MM-dd hh:mm:ss");
+}
+
+void NetSync::syncDateWrite(QDateTime date)
+{
+    QFile* f = new QFile(netConf->getSyncPath()+QString(FILE_SYNC_DATE));
+    f->open(QFile::WriteOnly);
+
+    if(date.isNull())
+    {
+        f->close();
+        return;
+    }
+
+    QString str = date.toString("yyyy-MM-dd hh:mm:ss");
+    qDebug()<<"[SYNC time write]"<<str;
+    f->write(str.toLocal8Bit());
+    f->close();
+    return;
+}
+
+QString NetSync::getLocalPath(QString path)
+{
+    int offset = netConf->getSyncPath().length();
+    if(path.length() < offset)
+        return QString();
+
+    return path.right(path.length() - offset);
+}
+
 void NetSync::syncDirChanged(QString dir)
 {
     qDebug("Local dir changed!");
@@ -115,5 +167,6 @@ void NetSync::syncDirChanged(QString dir)
 void NetSync::syncInfoRecv(QList<syncInfo *>sInfo, QDateTime sTime)
 {
     qDebug("syncInfoRecv");
+    syncDate = sTime;
     syncT.syncInfoInsert(sInfo);
 }

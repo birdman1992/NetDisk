@@ -98,7 +98,8 @@ FilesPanel::~FilesPanel()
 //设置视图显示模式
 //showList:true 显示列表视图  false 显示平铺视图
 void FilesPanel::setViewMode(bool showList)
-{qDebug()<<"list"<<showList;
+{
+    qDebug()<<"list"<<showList;
     showListView = showList;
     panelShow(curPanel);
 }
@@ -107,12 +108,12 @@ void FilesPanel::setViewMode(bool showList)
 void FilesPanel::panelShow(QList<QFolder*> fPanel)
 {
     if(showListView)
-    {qDebug("show list");
+    {//qDebug("show list");
         showList(fPanel);
         return;
     }
     else
-    {qDebug("show folder");
+    {//qDebug("show folder");
         int i = 0;
         int j = 0;
         int offset_x = 15;
@@ -368,8 +369,8 @@ void FilesPanel::resizeEvent(QResizeEvent*)
 {
     if(resizeEventEnable)
     {
-        isResize = true;qDebug("show2>");
-        panelShow(curPanel);qDebug("show2<");
+        isResize = true;
+        panelShow(curPanel);
         isResize = false;
     }
 }
@@ -549,8 +550,8 @@ void FilesPanel::httpGetListInfo(QList<fileInfo*> lInfo)
         pFolder = new QFolder(this, info);
         curPanel<<pFolder;
     }
-    qDebug("show1>");
-    panelShow(curPanel);qDebug("show1<");
+
+    panelShow(curPanel);
     scrollValueChanged(0);
     if(showListView)
         ui->listView->verticalScrollBar()->setValue(0);

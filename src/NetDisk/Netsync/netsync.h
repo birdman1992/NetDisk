@@ -13,6 +13,7 @@
 #include "Http/nethttp.h"
 
 #define FILE_SYNC ".sync"
+#define FILE_SYNC_DATE ".date"
 
 class NetSync:public QObject
 {
@@ -24,16 +25,24 @@ public:
 public slots:
     void syncAll();
     void loginSync(bool);
+    void syncHostFinished();
 
 private:
+    QDateTime syncDate;
     QFileSystemWatcher netWatcher;
     QList<QFileInfo*> listLocalReal;
     QList<syncLocalInfo*> listLocal;
+    QList<syncLocalInfo*> listchanged;
+    QList<syncLocalInfo*> listSyncUpload;
 
     void initWatcher();
     void syncLocalGet();
     void syncLocalRead();
     void syncLocalWrite(QList<syncLocalInfo *> l);
+    void syncDateRead();
+    void syncDateWrite(QDateTime date);
+    double getIdByPath(QString path);
+    QString getLocalPath(QString path);
 
     QJsonObject jSync;
     NetHttp* netClient;

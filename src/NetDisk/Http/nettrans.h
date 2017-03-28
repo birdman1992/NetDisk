@@ -44,12 +44,13 @@ class netWork : public QObject
     Q_OBJECT
 public:
     explicit netWork(QObject *parent = 0);
+    void netDownload(fileInfo info, QString downLoadPath, QString token);
     int netUpload(QString fileName, double pId);
-    void netDownload(fileInfo info, QString downLoadPath);
     TaskInfo taskinfo();
     void taskStart();
     QString getTaskSpeed();
     ~netWork();
+
 
 private:
     QNetworkAccessManager* manager;
@@ -61,6 +62,7 @@ private:
     QString crlf;
     QString b;
     QString nUrl;
+    QString transToken;
     QFile* pFile;
     QFileInfo fInfo;
     QByteArray fileMd5;
@@ -86,6 +88,7 @@ private:
     QByteArray getSign(QStringList param);
 signals:
     void taskFinish(int ret);
+    void transReady();
 
 private slots:
     void replyFinished(QNetworkReply* reply);
@@ -101,16 +104,20 @@ class netTrans : public QObject
 public:
     explicit netTrans(QObject *parent = 0);
     int netUpload(QString fileName, double pId);
-    void netDownload(fileInfo info, QString downLoadPath);
+    void netDownload(fileInfo info, QString downLoadPath, QString token);
     void taskStart();
     QString getTaskSpeed();
     TaskInfo taskinfo();
     ~netTrans();
 
+public slots:
+    void transReady();
+
 private:
     netWork* work;
     QNetworkAccessManager* pmanager;
     QThread* Thread;
+    bool readyTrans;
 };
 
 #endif // NETTRANS_H

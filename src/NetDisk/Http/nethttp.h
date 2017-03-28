@@ -34,6 +34,7 @@ public:
     QString fileMd5;
     quint64 fileSize;
     double fileId;
+    double parentId;
     int isDir;
 };
 
@@ -69,10 +70,14 @@ class syncTable: public QObject
     Q_OBJECT
 public:
     syncTable();
-    void setLocalList(QList<syncLocalInfo*> l);
+    void setLocalList();
     void setHttpClient(NetHttp* client);
     void syncInfoInsert(QList<syncInfo*> info);
-    syncInfo* getInfoById(double Id);
+    syncInfo* getHostInfoById(double Id);
+    QList<syncInfo*> getHostList();//获取服务端文件列表
+    QList<syncLocalInfo*> list_local;
+    QList<QFileInfo*> list_loacl_real;
+    QDateTime syncTime;
 
 private:
     QList<syncInfo*> list_all;
@@ -80,18 +85,23 @@ private:
     QList<syncInfo*> list_dir;
     QList<syncInfo*> list_file;
     QList<syncInfo*> list_task;
-    QList<syncLocalInfo*> list_local;
     QStringList list_index;
     QStringList list_local_index;
-    QStringList list_path;
+    QStringList list_path;//同步路径表
     QString cur_path;
     NetHttp* syncClient;
+    bool syncAll;//是否遍历同步所有目录
+    void setSyncAll(bool syncAllDir);
+    void setCurPath(double Id);
     void syncDir();
     void syncFile();
+    void syncNextDir();
     void nextTask();
     void recvListClear();
+    void tempListToHostList();
 signals:
     void localListChanged(syncLocalInfo*);
+    void hostSyncFinished();
 };
 
 class fileInfo
@@ -134,9 +144,11 @@ public:
     void netDelete(double fId);
     void netCreatShareLinks(QStringList fids);
     void netSync(double pId, QDateTime lastSyncTime=QDateTime());
+    void syncTraversal();//遍历同步
 
 private:
     QNetworkAccessManager* manager;
+    QNetworkAccessManager* managerSync;
     httpState State;
     netTrans* fTrans;//上传下载
     QList<netTrans*>listTask;//任务队列
@@ -148,6 +160,7 @@ private:
     int currentPageNum;
     int totalRow;
     int totalPage;
+    double lastSyncId;
     QList<fileInfo*> listInfo;
     QList<syncInfo*> listSync;
 
@@ -165,6 +178,7 @@ private:
 
 private slots:
     void replyFinished(QNetworkReply*);
+    void replySyncFinished(QNetworkReply*);
 
 signals:
     void listUpdate(QList<fileInfo*>);
@@ -173,6 +187,7 @@ signals:
     void loginStateChanged(bool);
     void pageChanged(bool isFirst,bool isLast,int pageNum,int totalPageNum);
     void syncUpdate(QList<syncInfo*>, QDateTime);
+    void isTraversal(bool);
 
 public slots:
 };
