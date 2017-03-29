@@ -51,6 +51,8 @@ private:
 private slots:
     void syncDirChanged(QString dir);
     void syncInfoRecv(QList<syncInfo*>, QDateTime);
+    void syncHostPointSave(QDateTime);
+    void syncLocalUpdate();
 };
 
 #endif // NETSYNC_H

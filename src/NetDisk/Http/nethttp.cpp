@@ -80,7 +80,7 @@ void NetHttp::netMkdir(double pId, QString fileName)
 void NetHttp::netUpload(QString fileName, double pId)
 {
     fTrans = new netTrans;
-    fTrans->netUpload(fileName, pId);
+    fTrans->netUpload(fileName, pId, token);
     emit newTask(fTrans);
 }
 
@@ -504,6 +504,11 @@ void NetHttp::syncInfoRecv(QByteArray info, QDateTime syncTime)
             {
                 jval = obj.take("result");
                 QJsonArray syncArray = jval.toArray();
+                if(syncArray.isEmpty())
+                {qDebug("SYNC over!!");
+                    emit syncHostPoint(syncTime);
+                    return;
+                }
                 syncListCreat(syncArray, syncTime);
             }
         }
@@ -787,6 +792,11 @@ void syncTable::setHttpClient(NetHttp *client)
     syncClient = client;
 }
 
+void syncTable::syncHostToLocal()
+{
+    syncDir();
+}
+
 void syncTable::syncInfoInsert(QList<syncInfo *> info)
 {
     int i;
@@ -839,6 +849,28 @@ void syncTable::setCurPath(double Id)
 
 }
 
+QString syncTable::getDirPath(double Id)
+{
+    int ret = 0;
+    double id = Id;
+    syncInfo* info = NULL;
+    QString path = QString();
+
+    while(1)
+    {
+        ret = list_index.indexOf(QString::number(id));
+        qDebug()<<"ret"<<ret<<"id"<<id;
+        if(ret == -1)
+            return QString();
+        info = list_all.at(ret);
+        path = info->FILE_NAME + "/" + path;
+        id = info->PARENT_ID;
+        if(id == 428)
+            break;
+    }
+    return path;
+}
+
 void syncTable::syncDir()
 {
     syncInfo* info;
@@ -847,18 +879,19 @@ void syncTable::syncDir()
     qDebug("[syncDir]");
     for(i=0; i<list_dir.count(); i++)
     {
-        info = list_dir.takeAt(i);
+        info = list_dir.at(i);
         ret = list_local_index.indexOf(QString::number(info->ID));
         if(ret == -1)
         {
             QDir dir;
-            if(dir.exists(cur_path+info->FILE_NAME))
+            QString dirPath = getDirPath(info->ID);qDebug()<<"[h->l:dir]"<<dirPath;
+            if(dir.exists(cur_path+dirPath))
             {
                 continue;
             }
             else
             {
-                dir.mkdir(cur_path+info->FILE_NAME);
+                dir.mkdir(cur_path+dirPath);
                 syncLocalInfo* lInfo = new syncLocalInfo;
                 lInfo->syncPath = cur_path;
                 lInfo->fileId = info->ID;
@@ -866,7 +899,8 @@ void syncTable::syncDir()
                 lInfo->fileName = info->FILE_NAME;
                 lInfo->fileSize = info->SIZE;
                 lInfo->isDir = 1;
-                emit localListChanged(lInfo);
+                list_local<<lInfo;
+                emit localListChanged();
             }
         }
     }
@@ -933,7 +967,7 @@ void syncTable::tempListToHostList()
 {
     syncInfo* info;
 
-    while(list_temp.isEmpty())
+    while(!list_temp.isEmpty())
     {
         info = list_temp.takeFirst();
         list_all<<info;

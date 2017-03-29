@@ -72,6 +72,7 @@ public:
     syncTable();
     void setLocalList();
     void setHttpClient(NetHttp* client);
+    void syncHostToLocal();
     void syncInfoInsert(QList<syncInfo*> info);
     syncInfo* getHostInfoById(double Id);
     QList<syncInfo*> getHostList();//获取服务端文件列表
@@ -93,6 +94,7 @@ private:
     bool syncAll;//是否遍历同步所有目录
     void setSyncAll(bool syncAllDir);
     void setCurPath(double Id);
+    QString getDirPath(double Id);
     void syncDir();
     void syncFile();
     void syncNextDir();
@@ -100,7 +102,7 @@ private:
     void recvListClear();
     void tempListToHostList();
 signals:
-    void localListChanged(syncLocalInfo*);
+    void localListChanged();
     void hostSyncFinished();
 };
 
@@ -187,6 +189,7 @@ signals:
     void loginStateChanged(bool);
     void pageChanged(bool isFirst,bool isLast,int pageNum,int totalPageNum);
     void syncUpdate(QList<syncInfo*>, QDateTime);
+    void syncHostPoint(QDateTime);
     void isTraversal(bool);
 
 public slots:

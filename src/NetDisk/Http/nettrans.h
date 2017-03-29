@@ -16,7 +16,7 @@
 #define APP_ID    "appId=PC123987456"
 #define APP_KEY     "secretKey=d9563ff28bca607fa367deb13cc45ca2"
 
-#define CHUNK_SIZE (4*1024*1024)
+#define CHUNK_SIZE (4*1024)
 class fileInfo;
 
 enum TaskState
@@ -45,7 +45,7 @@ class netWork : public QObject
 public:
     explicit netWork(QObject *parent = 0);
     void netDownload(fileInfo info, QString downLoadPath, QString token);
-    int netUpload(QString fileName, double pId);
+    int netUpload(QString fileName, double pId, QString token);
     TaskInfo taskinfo();
     void taskStart();
     QString getTaskSpeed();
@@ -54,6 +54,7 @@ public:
 
 private:
     QNetworkAccessManager* manager;
+    QNetworkAccessManager* managerUpload;
     QNetworkReply* netReply;
     QNetworkRequest request;
     QString contentType;
@@ -86,6 +87,7 @@ private:
     QByteArray getMd5(QFile* f);
     int fileUpload(bool reload);
     QByteArray getSign(QStringList param);
+    QByteArray getPost(QStringList param);
 signals:
     void taskFinish(int ret);
     void transReady();
@@ -103,7 +105,7 @@ class netTrans : public QObject
     Q_OBJECT
 public:
     explicit netTrans(QObject *parent = 0);
-    int netUpload(QString fileName, double pId);
+    int netUpload(QString fileName, double pId, QString token);
     void netDownload(fileInfo info, QString downLoadPath, QString token);
     void taskStart();
     QString getTaskSpeed();
@@ -115,7 +117,6 @@ public slots:
 
 private:
     netWork* work;
-    QNetworkAccessManager* pmanager;
     QThread* Thread;
     bool readyTrans;
 };

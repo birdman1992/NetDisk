@@ -15,6 +15,7 @@ netWork::netWork(QObject *parent) :
     isupload = false;
     pFile = NULL;
     manager = NULL;
+    managerUpload = NULL;
     netReply = NULL;
     taskInfo.taskState = NO_STATE;
     taskInfo.taskSpeed = 0;
@@ -27,18 +28,18 @@ netWork::netWork(QObject *parent) :
     contentType="multipart/form-data; boundary="+boundary;
     endBoundary=crlf+"--"+boundary+"--"+crlf;
     boundary="--"+boundary+crlf;
-
 }
 
 netWork::~netWork()
 {
 }
 
-int netWork::netUpload(QString fileName, double pId)
+int netWork::netUpload(QString fileName, double pId, QString token)
 {
     qDebug()<<fileName<<pId;
     netState = 0;
     taskInfo.curSize = 0;
+    transToken = token;
 
     if(manager == NULL)
     {
@@ -60,13 +61,12 @@ int netWork::netUpload(QString fileName, double pId)
     taskInfo.fileName = fInfo.fileName();
     taskInfo.fileSize = pFile->size();
 
-
+    emit transReady();
     return 0;
 }
 
 void netWork::netDownload(fileInfo info, QString downLoadPath, QString token)
 {
-
     QStringList paramList;
     taskInfo.curSize = 0;
     isupload = false;
@@ -114,6 +114,26 @@ QByteArray netWork::getSign(QStringList param)
     QByteArray qba = QCryptographicHash::hash(str.toLocal8Bit(), QCryptographicHash::Md5);
     qDebug()<<qba.toHex();
     return qba;
+}
+
+QByteArray netWork::getPost(QStringList param)
+{
+    QByteArray postData = QByteArray();
+    qSort(param.begin(), param.end());
+    QString str = QString();
+    for(int i=0; i<param.count(); i++)
+    {
+        str += param.at(i);
+    }
+    str += QString("token=%1&").arg(transToken);
+    postData += str.toUtf8();
+    str += QString(APP_KEY);
+//    qDebug()<<"[sign params]"<<str;
+    QByteArray sign = QCryptographicHash::hash(str.toUtf8(), QCryptographicHash::Md5);
+//    qDebug()<<sign.toHex();
+    postData += QString("sign=%1").arg(QString(sign.toHex())).toLocal8Bit();
+    qDebug()<<"[post params]"<<postData;
+    return postData;
 }
 
 TaskInfo netWork::taskinfo()
@@ -179,6 +199,7 @@ void netWork::md5Check()
     quint64 bytesWriten = 0;
     quint64 blockSize = 4*1024;
     QByteArray qba;
+    QStringList params;
     QCryptographicHash ch(QCryptographicHash::Md5);
 
     pFile->seek(0);
@@ -193,7 +214,8 @@ void netWork::md5Check()
     pFile->seek(0);
 
     fileMd5 = ch.result();
-    qba = "md5=" + fileMd5.toHex();
+    params<<QString("md5=%1&").arg(QString(fileMd5.toHex()))<<QString(APP_ID)+"&";
+    qba = getPost(params);
     qDebug()<<"MD5"<<ch.result().toHex();
     QString nUrl = QString(HTTP_ADDR) + "/api/file/getFileByMd5";
     request.setUrl(nUrl);
@@ -255,6 +277,11 @@ int netWork::fileUpload(bool)
     send.append(crlf);
     send.append(QString::number(chunksize).toUtf8());
 
+//    send.append(bond);
+//    send.append(QString("Content-Disposition: form-data; name=\"token\""+crlf));
+//    send.append(crlf);
+//    send.append(transToken);
+
     send.append(bond);
     send.append(QString("Content-Disposition: form-data; name=\"chunk\""+crlf));
     send.append(crlf);
@@ -291,12 +318,13 @@ int netWork::fileUpload(bool)
     ret = send.size()-ret;
     send.append(crlf);
     send.append(crlf);
+
     send.append(endBoundary);
     qDebug()<<"[payload]:"<<ret;
     qDebug()<<endBoundary;
     chunk++;
     bytesToLoad -= chunksize;
-    manager->post(request, send);
+    managerUpload->post(request, send);
     return 0;
 }
 
@@ -352,6 +380,12 @@ void netWork::replyFinished(QNetworkReply *reply)
             }
             else if(code == "-200")//文件MD5不存在
             {
+                if(managerUpload == NULL)
+                {
+                    managerUpload = new QNetworkAccessManager(this);
+                    connect(managerUpload, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
+                }
+
                 qDebug("file not exit upload");
                 chunks = (fInfo.size()) / CHUNK_SIZE + ((fInfo.size() % CHUNK_SIZE) != 0);
                 chunk = 0;
@@ -482,7 +516,6 @@ netTrans::netTrans(QObject *parent):
     QObject(parent)
 {
     Thread = new QThread(this);
-    pmanager = new QNetworkAccessManager(this);
     work = new netWork();
     readyTrans = false;
     work->moveToThread(Thread);
@@ -490,9 +523,9 @@ netTrans::netTrans(QObject *parent):
     connect(work, SIGNAL(transReady()), this, SLOT(transReady()));
 }
 
-int netTrans::netUpload(QString fileName, double pId)
+int netTrans::netUpload(QString fileName, double pId, QString token)
 {
-    work->netUpload(fileName, pId);
+    work->netUpload(fileName, pId, token);
     return 0;
 }
 

@@ -20,8 +20,10 @@ void NetSync::setNetClient(NetHttp *cli)
     netClient = cli;
     syncT.setHttpClient(cli);
     connect(netClient, SIGNAL(syncUpdate(QList<syncInfo*>,QDateTime)), this, SLOT(syncInfoRecv(QList<syncInfo*>,QDateTime)));
+    connect(&syncT, SIGNAL(localListChanged()), this, SLOT(syncLocalUpdate()));
     connect(netClient, SIGNAL(loginStateChanged(bool)), this, SLOT(loginSync(bool)));
     connect(&syncT, SIGNAL(hostSyncFinished()), this, SLOT(syncHostFinished()));
+    connect(netClient, SIGNAL(syncHostPoint(QDateTime)), this, SLOT(syncHostPointSave(QDateTime)));
 }
 
 void NetSync::syncAll()
@@ -83,18 +85,21 @@ void NetSync::syncLocalRead()
     }
 
     QByteArray qba;
-    qba.resize(1024);
-    while(0 < f->readLine(qba.data(),qba.size()))
+//    qba.resize(1024);
+    while(1)
     {
+        qba = f->readLine();
+        if(qba.isEmpty())
+            break;
         qDebug()<<"[local read]"<<qba;
         syncLocalInfo* info = new syncLocalInfo;
-        QStringList lInfo = QString(qba).split("\t");
+        QStringList lInfo = QString::fromUtf8(qba.left(qba.size()-1)).split("\t");
         info->fileId = QString(lInfo.at(0)).toDouble();
         info->syncPath = lInfo.at(1);
-        info->fileName = lInfo.at(2);
-        info->fileMd5 = lInfo.at(3);
-        info->fileSize = QString(lInfo.at(4)).toLongLong();
-        info->isDir = QString(lInfo.at(5)).toInt();
+        info->fileName = info->syncPath.section('/',-1);
+        info->fileMd5 = lInfo.at(2);
+        info->fileSize = QString(lInfo.at(3)).toLongLong();
+        info->isDir = QString(lInfo.at(4)).toInt();
         syncT.list_local<<info;
     }
     syncT.setLocalList();
@@ -169,4 +174,15 @@ void NetSync::syncInfoRecv(QList<syncInfo *>sInfo, QDateTime sTime)
     qDebug("syncInfoRecv");
     syncDate = sTime;
     syncT.syncInfoInsert(sInfo);
+}
+
+void NetSync::syncHostPointSave(QDateTime sTime)
+{
+    syncT.syncTime = sTime;
+    syncT.syncHostToLocal();
+}
+
+void NetSync::syncLocalUpdate()
+{qDebug("syncLocalUpdate");
+    syncLocalWrite(syncT.list_local);
 }
