@@ -36,6 +36,7 @@ public:
     double fileId;
     double parentId;
     int isDir;
+    QDateTime lastDate;
 };
 
 class syncInfo
@@ -73,21 +74,29 @@ public:
     void setLocalList();
     void setHttpClient(NetHttp* client);
     void syncHostToLocal();
+    void syncLocalToHost();
     void syncInfoInsert(QList<syncInfo*> info);
+    void syncNextDir();
+    void creatSyncUploadList();
     syncInfo* getHostInfoById(double Id);
+    double getIdByName(QString name, bool *isChanged=NULL);//从本地文件信息缓存中查询对应文件（夹）的ID
+    QString getPathById(double Id);//从本地文件信息缓存中查询ID对应的路径
     QList<syncInfo*> getHostList();//获取服务端文件列表
+    QList<syncInfo*> list_task;//遍历任务链表
     QList<syncLocalInfo*> list_local;
     QList<QFileInfo*> list_loacl_real;
+    QList<syncInfo*> list_sync_download;//同步下载链表
+    QList<syncInfo*> list_sync_upload;//同步上传链表
     QDateTime syncTime;
 
 private:
-    QList<syncInfo*> list_all;
-    QList<syncInfo*> list_temp;
-    QList<syncInfo*> list_dir;
-    QList<syncInfo*> list_file;
-    QList<syncInfo*> list_task;
-    QStringList list_index;
-    QStringList list_local_index;
+    QList<syncInfo*> list_all;//host端所有更新文件
+    QList<syncInfo*> list_temp;//host端单层目录所有更新文件
+    QList<syncInfo*> list_dir;//host端所有更新目录
+    QList<syncInfo*> list_file;//host端所有更新文件
+
+    QStringList list_index;//host端所有更新文件的id，和list_all一一对应
+    QStringList list_local_index;//本地所有文件id，和list_local一一对应
     QStringList list_path;//同步路径表
     QString cur_path;
     NetHttp* syncClient;
@@ -97,13 +106,17 @@ private:
     QString getDirPath(double Id);
     void syncDir();
     void syncFile();
-    void syncNextDir();
     void nextTask();
     void recvListClear();
     void tempListToHostList();
+
+    void creatSyncDownloadList();
+    void clearSyncList();
 signals:
     void localListChanged();
     void hostSyncFinished();
+    void syncUpload();
+    void syncDownload();
 };
 
 class fileInfo
@@ -147,6 +160,7 @@ public:
     void netCreatShareLinks(QStringList fids);
     void netSync(double pId, QDateTime lastSyncTime=QDateTime());
     void syncTraversal();//遍历同步
+    QString netToken();
 
 private:
     QNetworkAccessManager* manager;

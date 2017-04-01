@@ -8,6 +8,8 @@ NetSync::NetSync(QObject *parent):
   QObject(parent)
 {
     syncDate = QDateTime();
+    taskNum = 0;
+    uptask = 0;
 
     syncDateRead();
     initWatcher();
@@ -20,10 +22,13 @@ void NetSync::setNetClient(NetHttp *cli)
     netClient = cli;
     syncT.setHttpClient(cli);
     connect(netClient, SIGNAL(syncUpdate(QList<syncInfo*>,QDateTime)), this, SLOT(syncInfoRecv(QList<syncInfo*>,QDateTime)));
-    connect(&syncT, SIGNAL(localListChanged()), this, SLOT(syncLocalUpdate()));
     connect(netClient, SIGNAL(loginStateChanged(bool)), this, SLOT(loginSync(bool)));
-    connect(&syncT, SIGNAL(hostSyncFinished()), this, SLOT(syncHostFinished()));
     connect(netClient, SIGNAL(syncHostPoint(QDateTime)), this, SLOT(syncHostPointSave(QDateTime)));
+
+    connect(&syncT, SIGNAL(hostSyncFinished()), this, SLOT(syncHostFinished()));
+    connect(&syncT, SIGNAL(localListChanged()), this, SLOT(syncLocalUpdate()));
+    connect(&syncT, SIGNAL(syncDownload()), this, SLOT(syncTaskDownload()));
+    connect(&syncT, SIGNAL(syncUpload()), this, SLOT(syncTaskUpload()));
 }
 
 void NetSync::syncAll()
@@ -34,13 +39,13 @@ void NetSync::syncAll()
 void NetSync::loginSync(bool isLogin)
 {
     if(isLogin)
-        netClient->netSync(428, syncT.syncTime);
+        netClient->netSync(-1, syncT.syncTime);
 }
 
 void NetSync::syncHostFinished()
 {
     qDebug("\n\n\n\n\n\n\n\n");
-    netClient->netSync(428, syncDate);
+    netClient->netSync(-1, syncDate);
 }
 
 void NetSync::initWatcher()
@@ -51,7 +56,8 @@ void NetSync::initWatcher()
 
 void NetSync::syncLocalGet()
 {
-    QDirIterator iter(netConf->getSyncPath(), QDirIterator::Subdirectories);
+    QDirIterator iter(netConf->getSyncPath(),QDir::Dirs | QDir::Files | QDir::NoSymLinks | QDir::NoDot | QDir::NoDotDot,
+                      QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
 
     while(!syncT.list_loacl_real.isEmpty())
     {
@@ -63,7 +69,10 @@ void NetSync::syncLocalGet()
     {
         iter.next();
         QFileInfo* info = new QFileInfo(iter.fileInfo());
+        if(info->fileName() == ".sync")
+            continue;
         syncT.list_loacl_real<<info;
+//        qDebug()<<info->fileName()<<info->absolutePath()<<info->absoluteFilePath();
     }
 }
 
@@ -93,16 +102,18 @@ void NetSync::syncLocalRead()
             break;
         qDebug()<<"[local read]"<<qba;
         syncLocalInfo* info = new syncLocalInfo;
-        QStringList lInfo = QString::fromUtf8(qba.left(qba.size()-1)).split("\t");
+        QStringList lInfo = QString::fromLocal8Bit(qba.left(qba.size()-1)).split("\t");
         info->fileId = QString(lInfo.at(0)).toDouble();
         info->syncPath = lInfo.at(1);
         info->fileName = info->syncPath.section('/',-1);
         info->fileMd5 = lInfo.at(2);
         info->fileSize = QString(lInfo.at(3)).toLongLong();
         info->isDir = QString(lInfo.at(4)).toInt();
+        info->lastDate = QDateTime::fromString(lInfo.at(5), "yyyy-MM-dd hh:mm:ss");
         syncT.list_local<<info;
     }
     syncT.setLocalList();
+//    syncT.getIdByName("C:/Users/Administrator/Desktop/同步测试/C");
 }
 
 void NetSync::syncLocalWrite(QList<syncLocalInfo *> l)
@@ -114,7 +125,8 @@ void NetSync::syncLocalWrite(QList<syncLocalInfo *> l)
     for(int i=0; i<l.count(); i++)
     {
         syncLocalInfo* info = l.at(i);
-        QString str = QString::number(info->fileId) +"\t"+ info->syncPath + info->fileName +"\t"+ info->fileMd5 +"\t"+ QString::number(info->fileSize) +"\t"+ QString::number(info->isDir) +"\n";
+        QString str = QString::number(info->fileId) +"\t"+ info->syncPath+"\t"+ info->fileMd5 +"\t"+ QString::number(info->fileSize) +"\t"+
+                QString::number(info->isDir) +"\t" + info->lastDate.toString("yyyy-MM-dd hh:mm:ss")+"\n";
         f->write(str.toLocal8Bit());
     }
 
@@ -166,6 +178,8 @@ QString NetSync::getLocalPath(QString path)
 
 void NetSync::syncDirChanged(QString dir)
 {
+    syncLocalGet();
+    syncT.creatSyncUploadList();
     qDebug("Local dir changed!");
 }
 
@@ -178,6 +192,11 @@ void NetSync::syncInfoRecv(QList<syncInfo *>sInfo, QDateTime sTime)
 
 void NetSync::syncHostPointSave(QDateTime sTime)
 {
+    if(!syncT.list_task.isEmpty())
+    {
+        syncT.syncNextDir();
+        return;
+    }
     syncT.syncTime = sTime;
     syncT.syncHostToLocal();
 }
@@ -185,4 +204,137 @@ void NetSync::syncHostPointSave(QDateTime sTime)
 void NetSync::syncLocalUpdate()
 {qDebug("syncLocalUpdate");
     syncLocalWrite(syncT.list_local);
+}
+
+void NetSync::syncTaskDownload()
+{
+    netTrans* trans = new netTrans;
+    syncInfo* info;
+    int i = 0;
+
+    qDebug()<<"download:"<<syncT.list_sync_download.count();
+    for(i=0; i<syncT.list_sync_download.count(); i++)
+    {
+        trans = new netTrans;
+        info = syncT.list_sync_download.at(i);
+        qDebug()<<"[sync down]"<<info->PARENT_ID<<syncT.getPathById(info->PARENT_ID)<<info->FILE_NAME;
+        trans->netDownload(info, syncT.getPathById(info->PARENT_ID),netClient->netToken());
+        connect(trans, SIGNAL(taskFinished(TaskInfo)), this, SLOT(taskDownloadFinished(TaskInfo)));
+        taskDownload<<trans;
+    }
+    while((taskNum < 3) && (taskNum<taskDownload.count()))
+    {
+        taskDownload.at(taskNum++)->taskStart();
+    }
+}
+
+void NetSync::syncTaskUpload()
+{
+    netTrans* trans = new netTrans;
+    syncInfo* info;
+    int i = 0;
+
+    qDebug()<<"upload:"<<syncT.list_sync_upload.count();
+    for(i=0; i<syncT.list_sync_upload.count(); i++)
+    {
+        trans = new netTrans;
+        info = syncT.list_sync_upload.at(i);
+        qDebug()<<"[sync up]"<<info->PARENT_ID<<syncT.getPathById(info->PARENT_ID)<<info->FILE_NAME;
+        trans->netUpload(info->FILE_NAME, info->PARENT_ID, netClient->netToken());
+        trans->taskStart();
+    }
+    while((uptask < 3) && (uptask<taskUpload.count()))
+    {
+        taskUpload.at(uptask++)->taskStart();
+    }
+}
+
+void NetSync::taskDownloadFinished(TaskInfo info)
+{
+    int i=0;
+    netTrans* trans;
+    QCryptographicHash ch(QCryptographicHash::Md5);
+
+    for(i=0; i<taskDownload.count(); i++)
+    {
+        if(taskDownload.at(i)->taskinfo().taskId == info.taskId)
+        {
+            trans = taskDownload.takeAt(i);
+            syncLocalInfo* sInfo = new syncLocalInfo;
+            disconnect(trans, SIGNAL(taskFinished(TaskInfo)), this, SLOT(taskDownloadFinished(TaskInfo)));
+            QByteArray md5Input = (info.fileName+QString::number(info.fileSize)).toUtf8();
+            ch.addData(md5Input);
+            sInfo->fileId = info.taskId;
+            sInfo->fileMd5 = QString(ch.result().toHex());
+            sInfo->fileName = info.fileName;
+            sInfo->fileSize = info.fileSize;
+            sInfo->isDir = 0;
+            sInfo->parentId = 0;
+            sInfo->syncPath = info.filePath;
+            sInfo->lastDate = QFileInfo(sInfo->syncPath).lastModified();
+            syncT.list_local<<sInfo;
+            delete trans;
+            break;
+        }
+    }
+    i=0;
+    while(i<taskDownload.count())
+    {
+        if(taskDownload.at(i)->taskIsStart())
+        {
+            i++;
+            continue;
+        }
+        taskDownload.at(i)->taskStart();
+        break;
+    }
+
+    syncT.setLocalList();
+    syncLocalWrite(syncT.list_local);
+    qDebug()<<"[taskDownload]"<<taskDownload.count()<<syncT.list_local.count();
+}
+
+void NetSync::taskUploadFinished(TaskInfo info)
+{
+    int i=0;
+    netTrans* trans;
+    QCryptographicHash ch(QCryptographicHash::Md5);
+
+    for(i=0; i<taskUpload.count(); i++)
+    {
+        if(taskUpload.at(i)->taskinfo().taskId == info.taskId)
+        {
+            trans = taskUpload.takeAt(i);
+            syncLocalInfo* sInfo = new syncLocalInfo;
+//            disconnect(trans, SIGNAL(taskFinished(TaskInfo)), this, SLOT(taskUploadFinished(TaskInfo)));
+            QByteArray md5Input = (info.fileName+QString::number(info.fileSize)).toUtf8();
+            ch.addData(md5Input);
+            sInfo->fileId = info.taskId;
+            sInfo->fileMd5 = QString(ch.result().toHex());
+            sInfo->fileName = info.fileName;
+            sInfo->fileSize = info.fileSize;
+            sInfo->isDir = 0;
+            sInfo->parentId = info.taskId;
+            sInfo->syncPath = info.filePath;
+            sInfo->lastDate = QFileInfo(sInfo->syncPath).lastModified();
+            syncT.list_local<<sInfo;
+            delete trans;
+            break;
+        }
+    }
+    i=0;
+    while(i<taskUpload.count())
+    {
+        if(taskUpload.at(i)->taskIsStart())
+        {
+            i++;
+            continue;
+        }
+        taskUpload.at(i)->taskStart();
+        break;
+    }
+
+    syncT.setLocalList();
+    syncLocalWrite(syncT.list_local);
+    qDebug()<<"[taskUpload]"<<taskUpload.count()<<syncT.list_local.count();
 }

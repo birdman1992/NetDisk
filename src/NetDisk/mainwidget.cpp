@@ -107,18 +107,18 @@ void MainWidget::initSilidebar()
     item->setTextAlignment(Qt::AlignHCenter);
     item->setSizeHint(isize);
     ui->sliderbar->addItem(item);
-    item = new QListWidgetItem(QIcon(":/imgs/slidebar/他人共享.png"),"他人共享");
-    item->setTextAlignment(Qt::AlignHCenter);
-    item->setSizeHint(isize);
-    ui->sliderbar->addItem(item);
-    item = new QListWidgetItem(QIcon(":/imgs/slidebar/链接管理.png"),"链接管理");
-    item->setTextAlignment(Qt::AlignHCenter);
-    item->setSizeHint(isize);
-    ui->sliderbar->addItem(item);
-    item = new QListWidgetItem(QIcon(":/imgs/slidebar/文件同步.png"),"文件同步");
-    item->setTextAlignment(Qt::AlignJustify);
-    item->setSizeHint(isize);
-    ui->sliderbar->addItem(item);
+//    item = new QListWidgetItem(QIcon(":/imgs/slidebar/他人共享.png"),"他人共享");
+//    item->setTextAlignment(Qt::AlignHCenter);
+//    item->setSizeHint(isize);
+//    ui->sliderbar->addItem(item);
+//    item = new QListWidgetItem(QIcon(":/imgs/slidebar/链接管理.png"),"链接管理");
+//    item->setTextAlignment(Qt::AlignHCenter);
+//    item->setSizeHint(isize);
+//    ui->sliderbar->addItem(item);
+//    item = new QListWidgetItem(QIcon(":/imgs/slidebar/文件同步.png"),"文件同步");
+//    item->setTextAlignment(Qt::AlignJustify);
+//    item->setSizeHint(isize);
+//    ui->sliderbar->addItem(item);
 
     ui->sliderbar->setCurrentRow(0);
 }
@@ -551,7 +551,7 @@ void MainWidget::nextPage(bool)
 }
 
 
-void MainWidget::on_functionList_clicked(const QModelIndex &index)
+void MainWidget::on_functionList_clicked(const QModelIndex&)
 {
 
 }

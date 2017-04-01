@@ -60,6 +60,7 @@ int netWork::netUpload(QString fileName, double pId, QString token)
     taskInfo.taskState = NO_STATE;
     taskInfo.fileName = fInfo.fileName();
     taskInfo.fileSize = pFile->size();
+    taskInfo.taskId = pId;
 
     emit transReady();
     return 0;
@@ -76,12 +77,20 @@ void netWork::netDownload(fileInfo info, QString downLoadPath, QString token)
     fileMd5 = QByteArray::fromHex(info.MD5.toLocal8Bit());
     taskInfo.fileName = info.FILE_NAME;
     taskInfo.fileSize = info.SIZE;
+    taskInfo.taskId = info.ID;
+
     fileId = info.ID;
 
     if(downLoadPath.isEmpty())
+    {
         pFile = new QFile(netConf->getDownloadPath() + info.FILE_NAME, this->parent());
+        taskInfo.filePath = netConf->getDownloadPath() + info.FILE_NAME;
+    }
     else
-        pFile = new QFile(downLoadPath + info.FILE_NAME, this->parent());
+    {
+        pFile = new QFile(downLoadPath + "/" + info.FILE_NAME, this->parent());
+        taskInfo.filePath = downLoadPath + "/" + info.FILE_NAME;
+    }
     if(!pFile->open(QFile::ReadWrite))
     {
         qDebug()<<"[File download]:"<<"file open error.";
@@ -195,28 +204,31 @@ QString netWork::getTaskSpeed()
 
 void netWork::md5Check()
 {
-    quint64 bytesToWrite = fInfo.size();
-    quint64 bytesWriten = 0;
-    quint64 blockSize = 4*1024;
+//    quint64 bytesToWrite = fInfo.size();
+//    quint64 bytesWriten = 0;
+//    quint64 blockSize = 4*1024;
     QByteArray qba;
     QStringList params;
     QCryptographicHash ch(QCryptographicHash::Md5);
 
     pFile->seek(0);
-    while(bytesToWrite > 0)
-    {
-        qba = pFile->read(qMin(bytesToWrite, blockSize));
-        ch.addData(qba);
-        bytesToWrite -= qba.size();
-        bytesWriten += qba.size();
-        qba.resize(0);
-    }
-    pFile->seek(0);
+    QByteArray md5Input = (fInfo.fileName()+QString::number(fInfo.size())).toUtf8();
+
+    ch.addData(md5Input);
+//    while(bytesToWrite > 0)
+//    {
+//        qba = pFile->read(qMin(bytesToWrite, blockSize));
+//        ch.addData(qba);
+//        bytesToWrite -= qba.size();
+//        bytesWriten += qba.size();
+//        qba.resize(0);
+//    }
+//    pFile->seek(0);
 
     fileMd5 = ch.result();
     params<<QString("md5=%1&").arg(QString(fileMd5.toHex()))<<QString(APP_ID)+"&";
     qba = getPost(params);
-    qDebug()<<"MD5"<<ch.result().toHex();
+    qDebug()<<"info"<<md5Input<<"MD5"<<ch.result().toHex();
     QString nUrl = QString(HTTP_ADDR) + "/api/file/getFileByMd5";
     request.setUrl(nUrl);
     request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -226,30 +238,33 @@ void netWork::md5Check()
 
 QByteArray netWork::getMd5(QFile *f)
 {
-    quint64 bytesToWrite;
-    quint64 bytesWriten = 0;
-    quint64 blockSize = 4*1024;
-    QByteArray qba;
+//    quint64 bytesToWrite;
+//    quint64 bytesWriten = 0;
+//    quint64 blockSize = 4*1024;
+//    QByteArray qba;
     QCryptographicHash ch(QCryptographicHash::Md5);
 
-    if(!pFile->open(QFile::ReadOnly))
-    {
-        qDebug()<<"[File upload]:"<<"file open error.";
-        return QByteArray();
-    }
-    bytesToWrite = f->size();qDebug()<<f->size();
+//    if(!pFile->open(QFile::ReadOnly))
+//    {
+//        qDebug()<<"[File upload]:"<<"file open error.";
+//        return QByteArray();
+//    }
+//    bytesToWrite = f->size();qDebug()<<f->size();
 
-    while(bytesToWrite > 0)
-    {
-        qba = f->read(qMin(bytesToWrite, blockSize));
-        ch.addData(qba);
-        bytesToWrite -= qba.size();
-        bytesWriten += qba.size();
-        qba.resize(0);
-    }
-    pFile->close();
-
-//    qDebug()<<"MD5"<<ch.result().toHex();
+//    while(bytesToWrite > 0)
+//    {
+//        qba = f->read(qMin(bytesToWrite, blockSize));
+//        ch.addData(qba);
+//        bytesToWrite -= qba.size();
+//        bytesWriten += qba.size();
+//        qba.resize(0);
+//    }
+//    pFile->close();
+    QByteArray md5buf = (taskinfo().fileName+QString::number(f->size())).toUtf8();
+    ch.addData(md5buf);
+    qDebug()<<md5buf;
+    qDebug()<<"MD5"<<ch.result().toHex();
+    qDebug()<<"fileMd5"<<fileMd5.toHex();
     return ch.result();
 }
 
@@ -263,8 +278,10 @@ int netWork::fileUpload(bool)
     {
         qDebug()<<"[netWork]:Upload finishi.";
         taskInfo.taskState = FINISHI_STATE;
+        emit taskFinish(taskInfo);
         return 0;
     }
+    qDebug("%d/%d",chunk,chunks);
 
     chunksize = qMin(bytesToLoad, CHUNK_SIZE);
 
@@ -275,32 +292,32 @@ int netWork::fileUpload(bool)
     bond = (crlf + boundary).toLocal8Bit();
     send.append(QString("Content-Disposition: form-data; name=\"chunksize\""+crlf));
     send.append(crlf);
-    send.append(QString::number(chunksize).toUtf8());
+    send.append(QString::number(chunksize));
 
-//    send.append(bond);
-//    send.append(QString("Content-Disposition: form-data; name=\"token\""+crlf));
-//    send.append(crlf);
-//    send.append(transToken);
+    send.append(bond);
+    send.append(QString("Content-Disposition: form-data; name=\"token\""+crlf));
+    send.append(crlf);
+    send.append(transToken);
 
     send.append(bond);
     send.append(QString("Content-Disposition: form-data; name=\"chunk\""+crlf));
     send.append(crlf);
-    send.append(QString::number(chunk).toUtf8());
+    send.append(QString::number(chunk));
 
     send.append(bond);
     send.append(QString("Content-Disposition: form-data; name=\"chunks\""+crlf));
     send.append(crlf);
-    send.append(QString::number(chunks).toUtf8());
+    send.append(QString::number(chunks));
 
     send.append(bond);
     send.append(QString("Content-Disposition: form-data; name=\"size\""+crlf));
     send.append(crlf);
-    send.append(QString::number(fileSize).toUtf8());
+    send.append(QString::number(fileSize));
 
     send.append(bond);
     send.append(QString("Content-Disposition: form-data; name=\"pid\""+crlf));
     send.append(crlf);
-    send.append(QString::number(filepId).toUtf8());
+    send.append(QString::number(filepId));
 
     send.append(bond);
     send.append(QString("Content-Disposition: form-data; name=\"md5\""+crlf));
@@ -314,7 +331,8 @@ int netWork::fileUpload(bool)
     send.append(crlf);
     qDebug()<<"[fileUpload]:\n"<<QString(send);
     ret = send.size();
-    send.append(pFile->read(chunksize));
+    QByteArray buffer = pFile->read(chunksize);
+    send.append(buffer);
     ret = send.size()-ret;
     send.append(crlf);
     send.append(crlf);
@@ -339,7 +357,7 @@ void netWork::replyFinished(QNetworkReply *reply)
         QJsonValue result;
         QString code;
         QString msg;
-        qDebug()<<qba;
+        qDebug()<<"[reply]"<<qba;
         parseDoc = QJsonDocument::fromJson(qba, &jError);
 
         if(jError.error == QJsonParseError::NoError)
@@ -427,7 +445,7 @@ void netWork::replyError(QNetworkReply::NetworkError errorCode)
 }
 
 void netWork::getServerAddr()
-{
+{qDebug()<<"getServerAddr";
     QJsonDocument parseDoc;
     QJsonParseError jError;
 
@@ -468,28 +486,27 @@ void netWork::getServerAddr()
 
 void netWork::fileRecv()
 {
-    QByteArray qba = netReply->readAll();qDebug()<<"download:"<<qba.size();qDebug()<<qba;
+    QByteArray qba = netReply->readAll();qDebug()<<"download:"<<qba.size();
 
 
     QJsonDocument parseDoc;
     QJsonParseError jError;
     parseDoc = QJsonDocument::fromJson(qba, &jError);
 
-    if(jError.error == QJsonParseError::NoError)
-    {
-        if(parseDoc.isObject())
-        {
-            QJsonObject obj = parseDoc.object();
-            if(obj.contains("msg"))
-            {
-                //解析返回的状态码
-                QJsonValue value = obj.take("msg");
-                QString msg = value.toString();
-                qDebug()<<"msg"<<msg;
-            }
-        }
-    }
-
+//    if(jError.error == QJsonParseError::NoError)
+//    {
+//        if(parseDoc.isObject())
+//        {
+//            QJsonObject obj = parseDoc.object();
+//            if(obj.contains("msg"))
+//            {
+//                //解析返回的状态码
+//                QJsonValue value = obj.take("msg");
+//                QString msg = value.toString();
+//                qDebug()<<"msg"<<msg;
+//            }
+//        }
+//    }
 
     taskInfo.curSize+=qba.size();
     taskInfo.taskSpeed += qba.size();
@@ -509,6 +526,7 @@ void netWork::fileRecvFinished()
     }
     else
         taskInfo.taskState = ERROR_STATE;
+    emit taskFinish(taskInfo);
 }
 
 /****************************************************************************************************/
@@ -518,9 +536,11 @@ netTrans::netTrans(QObject *parent):
     Thread = new QThread(this);
     work = new netWork();
     readyTrans = false;
+    isStart = false;
     work->moveToThread(Thread);
     Thread->start();
     connect(work, SIGNAL(transReady()), this, SLOT(transReady()));
+    connect(work, SIGNAL(taskFinish(TaskInfo)), this, SIGNAL(taskFinished(TaskInfo)));
 }
 
 int netTrans::netUpload(QString fileName, double pId, QString token)
@@ -535,12 +555,31 @@ void netTrans::netDownload(fileInfo info, QString downLoadPath, QString token)
     return;
 }
 
+void netTrans::netDownload(syncInfo info, QString downLoadPath, QString token)
+{
+    fileInfo fInfo;
+    fInfo.FILE_NAME = info.FILE_NAME;
+    fInfo.ID = info.ID;
+    fInfo.SIZE = info.SIZE;
+    fInfo.MD5 = info.MD5;
+    work->netDownload(fInfo, downLoadPath,token);
+    return;
+}
+
 void netTrans::taskStart()
 {
+    if(isStart)
+        return;
+    isStart = true;
     if(readyTrans)
         work->taskStart();
     else
         readyTrans = true;
+}
+
+bool netTrans::taskIsStart()
+{
+    return isStart;
 }
 
 QString netTrans::getTaskSpeed()

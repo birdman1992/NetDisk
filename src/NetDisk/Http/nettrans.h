@@ -13,11 +13,13 @@
 #include "Http/nethttp.h"
 //#define HTTP_ADDR "http://120.24.216.97:8888"
 #define HTTP_ADDR "http://120.76.52.78:8800/LinkRealSkyDrive"
+//#define HTTP_ADDR "http://192.168.0.55:8888"
 #define APP_ID    "appId=PC123987456"
 #define APP_KEY     "secretKey=d9563ff28bca607fa367deb13cc45ca2"
 
-#define CHUNK_SIZE (4*1024)
+#define CHUNK_SIZE (1024)
 class fileInfo;
+class syncInfo;
 
 enum TaskState
 {
@@ -32,11 +34,13 @@ class TaskInfo
 {
 public:
     QString fileName;
+    QString filePath;
     quint64 fileSize;
     quint64 curSize;
     TaskState taskState;
     quint64 taskSpeed;
     QTime finishTime;
+    double taskId;
 };
 
 class netWork : public QObject
@@ -89,7 +93,7 @@ private:
     QByteArray getSign(QStringList param);
     QByteArray getPost(QStringList param);
 signals:
-    void taskFinish(int ret);
+    void taskFinish(TaskInfo);
     void transReady();
 
 private slots:
@@ -107,18 +111,23 @@ public:
     explicit netTrans(QObject *parent = 0);
     int netUpload(QString fileName, double pId, QString token);
     void netDownload(fileInfo info, QString downLoadPath, QString token);
+    void netDownload(syncInfo info, QString downLoadPath, QString token);
     void taskStart();
+    bool taskIsStart();
     QString getTaskSpeed();
     TaskInfo taskinfo();
     ~netTrans();
-
 public slots:
     void transReady();
+
+signals:
+    void taskFinished(TaskInfo);
 
 private:
     netWork* work;
     QThread* Thread;
     bool readyTrans;
+    bool isStart;
 };
 
 #endif // NETTRANS_H

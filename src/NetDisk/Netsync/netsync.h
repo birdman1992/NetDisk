@@ -11,6 +11,7 @@
 #include <QList>
 #include "netconfig.h"
 #include "Http/nethttp.h"
+#include "Http/nettrans.h"
 
 #define FILE_SYNC ".sync"
 #define FILE_SYNC_DATE ".date"
@@ -34,6 +35,10 @@ private:
     QList<syncLocalInfo*> listLocal;
     QList<syncLocalInfo*> listchanged;
     QList<syncLocalInfo*> listSyncUpload;
+    QList<netTrans*> taskDownload;
+    QList<netTrans*> taskUpload;
+    int taskNum;
+    int uptask;
 
     void initWatcher();
     void syncLocalGet();
@@ -53,6 +58,10 @@ private slots:
     void syncInfoRecv(QList<syncInfo*>, QDateTime);
     void syncHostPointSave(QDateTime);
     void syncLocalUpdate();
+    void syncTaskDownload();
+    void syncTaskUpload();
+    void taskDownloadFinished(TaskInfo info);
+    void taskUploadFinished(TaskInfo info);
 };
 
 #endif // NETSYNC_H
