@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     Tablewidget/transbtn.cpp \
     Tablewidget/listrowwidgets.cpp \
     Netsync/netsync.cpp \
-    Translist/synclist.cpp
+    Translist/synclist.cpp \
+    serverconfig.cpp
 
 HEADERS  += mainwidget.h \
     QFolder/qfolder.h \
@@ -53,7 +54,8 @@ HEADERS  += mainwidget.h \
     Tablewidget/transbtn.h \
     Tablewidget/listrowwidgets.h \
     Netsync/netsync.h \
-    Translist/synclist.h
+    Translist/synclist.h \
+    serverconfig.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \
@@ -63,7 +65,8 @@ FORMS    += mainwidget.ui \
     configpanel.ui \
     loading.ui \
     login.ui \
-    Translist/synclist.ui
+    Translist/synclist.ui \
+    serverconfig.ui
 
 RESOURCES += \
     img.qrc

@@ -33,19 +33,19 @@ void NetSync::setNetClient(NetHttp *cli)
 
 void NetSync::syncAll()
 {
-    netClient->netSync(-1);
+    netClient->netSync(SYNC_ID);
 }
 
 void NetSync::loginSync(bool isLogin)
 {
     if(isLogin)
-        netClient->netSync(-1, syncT.syncTime);
+        netClient->netSync(SYNC_ID, syncT.syncTime);
 }
 
 void NetSync::syncHostFinished()
 {
     qDebug("\n\n\n\n\n\n\n\n");
-    netClient->netSync(-1, syncDate);
+    netClient->netSync(SYNC_ID, syncDate);
 }
 
 void NetSync::initWatcher()

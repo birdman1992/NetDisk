@@ -18,10 +18,24 @@ NetConfig::NetConfig()
     remPasswd = false;
     autoLogin = false;
     autoSync = false;
+    serverAddress = QString();
     netAes.InitializePrivateKey(18,(UCHAR*)"Linkrealby@Birdman");
     creatDir();
     creatDefaultConfig();
     readConfig();
+}
+
+void NetConfig::setServerAddress(QString address)
+{
+    while(address.endsWith("/"))
+        address = address.left(address.length()-1);
+    qDebug()<<address;
+    serverAddress = address;
+}
+
+QString NetConfig::getServerAddress()
+{
+    return serverAddress;
 }
 
 void NetConfig::setDownloadPath(QString path)
@@ -129,7 +143,7 @@ void NetConfig::creatDir()
 }
 
 void NetConfig::creatConfig()
-{qDebug("sdadasda");
+{
     saveConfig();
 }
 
@@ -152,6 +166,7 @@ void NetConfig::creatDefaultConfig()
         passwd = QString();
         remPasswd = false;
         autoLogin = false;
+        serverAddress = QString();
         saveConfig();
     }
 }
@@ -267,6 +282,17 @@ void NetConfig::readConfig()
             {
                 creatConfig();
             }
+            //读取服务器地址
+            if(obj.contains("serverAddress"))
+            {
+                jval = obj.take("serverAddress");
+                serverAddress = jval.toString();
+                qDebug()<<"serverAddress:"<<serverAddress;
+            }
+            else
+            {
+                creatConfig();
+            }
 
 
             qDebug(" ");
@@ -302,6 +328,7 @@ void NetConfig::saveConfig()
     obj.insert("autoLogin",autoLogin);
     obj.insert("autoSync",autoSync);
     obj.insert("syncPath",syncPath);
+    obj.insert("serverAddress",serverAddress);
 
     QJsonDocument doc;
     doc.setObject(obj);

@@ -44,6 +44,7 @@ public:
     void panelAhead();//前进
     void panelSearch(int searchType, QString name=QString());
     void panelShare();
+    void pathRefresh();
     void fileDownload(fileInfo info);
     bool repeatCheck(QString* fName, QFolder* pFolder);
     void setViewMode(bool showList);
@@ -91,6 +92,7 @@ private:
     QAction* act_filesize;
     QAction* act_filetime;
 
+    void showEvent(QShowEvent* event);
     void contextMenuEvent(QContextMenuEvent*);
     void paintEvent(QPaintEvent*);
     void resizeEvent(QResizeEvent* size);

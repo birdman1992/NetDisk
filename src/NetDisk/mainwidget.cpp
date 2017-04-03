@@ -16,6 +16,7 @@ MainWidget::MainWidget(QWidget *parent) :
     wMoveable = false;
     fType = 0;
     isLogin = false;
+    ui->viewCut->setHidden(true);
 
     //系统托盘图标
     initSysTray();
@@ -35,6 +36,7 @@ MainWidget::MainWidget(QWidget *parent) :
 
     //网盘设置
     diskConfig = new ConfigPanel();
+    syncPanel = new syncList(this);
 //    diskSync = new NetSync(this);
 
     //路径面板
@@ -44,6 +46,9 @@ MainWidget::MainWidget(QWidget *parent) :
     ui->pathLayout->addWidget(pathView);
 
     //文件面板
+//    panelStack = new QStackedLayout(this);
+    pageWidget = new QWidget(this);
+
     scrollFolder = new QScrollArea(this);
     scrollFolder->setFrameShape(QFrame::NoFrame);
     scrollFolder->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -52,12 +57,14 @@ MainWidget::MainWidget(QWidget *parent) :
     ui->panelLayout->addWidget(scrollFolder);
     ui->panelLayout->addWidget(transList);
     ui->panelLayout->addWidget(&loadingUi);
+    ui->panelLayout->addWidget(syncPanel);
 
 //    scrollFolder->verticalScrollBar()->setRange(0,100);
 //    loadingUi.reloadStart();
     transList->hide();
     scrollFolder->hide();
     loadingUi.show();
+    syncPanel->hide();
 
     diskPanel = new FilesPanel(this);
     initPageWidgets();
@@ -72,11 +79,14 @@ MainWidget::MainWidget(QWidget *parent) :
     connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
     connect(diskPanel, SIGNAL(isLoading(bool)), this, SLOT(isLoading(bool)));
     connect(diskPanel, SIGNAL(scrollValueChanged(int)), this, SLOT(scrollValueUpdate(int)));
+    connect(syncPanel, SIGNAL(pathChanged(QList<QFileInfo*>)), pathView, SLOT(pathChange(QList<QFileInfo*>)));
+    connect(syncPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
     connect(ui->showDelete, SIGNAL(toggled(bool)), diskPanel, SLOT(showDelete(bool)));
     connect(pathView, SIGNAL(cdRequest(double)), diskPanel, SLOT(cmdCd(double)));
+    connect(pathView, SIGNAL(cdRequest(int)), syncPanel, SLOT(cmdCd(int)));
     connect(ui->searchFilter,  SIGNAL(currentIndexChanged(int)), this, SLOT(searchTypeChanged(int)));
+    connect(ui->sliderbar, SIGNAL(clicked(QModelIndex)), this, SLOT(on_sliderbar_clicked(QModelIndex)));
     loginUi.show();
-
 }
 
 MainWidget::~MainWidget()
@@ -115,10 +125,10 @@ void MainWidget::initSilidebar()
 //    item->setTextAlignment(Qt::AlignHCenter);
 //    item->setSizeHint(isize);
 //    ui->sliderbar->addItem(item);
-//    item = new QListWidgetItem(QIcon(":/imgs/slidebar/文件同步.png"),"文件同步");
-//    item->setTextAlignment(Qt::AlignJustify);
-//    item->setSizeHint(isize);
-//    ui->sliderbar->addItem(item);
+    item = new QListWidgetItem(QIcon(":/imgs/slidebar/文件同步.png"),"文件同步");
+    item->setTextAlignment(Qt::AlignJustify);
+    item->setSizeHint(isize);
+    ui->sliderbar->addItem(item);
 
     ui->sliderbar->setCurrentRow(0);
 }
@@ -158,6 +168,15 @@ void MainWidget::initFunctionList()
 
     connect(ui->functionList, SIGNAL(clicked(QModelIndex)), this, SLOT(functionBtnClicked(QModelIndex)));
     //    connect(ui->functionList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(founctionListClicked(QListWidgetItem*)));
+}
+
+void MainWidget::hidePanel()
+{
+    transList->hide();
+    scrollFolder->hide();
+    loadingUi.hide();
+    pageWidget->hide();
+    syncPanel->hide();
 }
 
 void MainWidget::setSysMenu()
@@ -348,9 +367,12 @@ void MainWidget::initSysTray()
 void MainWidget::initPageWidgets()
 {
     pageLayout = new QHBoxLayout();
-    page_ahead = new QPushButton("上一页",this);
-    page_next = new QPushButton("下一页",this);
-    page_info = new QLabel("第0页/共0页",this);
+    page_ahead = new QPushButton("上一页",pageWidget);
+    page_next = new QPushButton("下一页",pageWidget);
+    page_info = new QLabel("第0页/共0页",pageWidget);
+
+    ui->panelLayout->addWidget(pageWidget);
+    pageWidget->setLayout(pageLayout);
 
     page_ahead->setStyleSheet("QPushButton{border:0px;color:rgb(67,122,232)}QPushButton:hover{text-decoration: underline}");
     page_next->setStyleSheet("QPushButton{border:0px;color:rgb(67,122,232)}QPushButton:hover{text-decoration: underline}");
@@ -362,7 +384,7 @@ void MainWidget::initPageWidgets()
     pageLayout->addWidget(page_next);
     pageLayout->addStretch(1);
 
-    ui->panelLayout->addLayout(pageLayout);
+//    ui->panelLayout->addLayout(pageLayout);
 
     connect(diskPanel->httpClient, SIGNAL(pageChanged(bool,bool,int,int)), this, SLOT(pageUpdate(bool,bool,int,int)));
     connect(page_ahead, SIGNAL(clicked(bool)), this, SLOT(aheadPage(bool)));
@@ -373,12 +395,18 @@ void MainWidget::initPageWidgets()
 
 void MainWidget::on_back_clicked()
 {
-    diskPanel->panelBack();
+    if(syncPanel->isHidden())
+        diskPanel->panelBack();
+    else
+        syncPanel->goBack();
 }
 
 void MainWidget::on_forward_clicked()
 {
-    diskPanel->panelAhead();
+    if(syncPanel->isHidden())
+        diskPanel->panelAhead();
+    else
+        syncPanel->goAhead();
 }
 
 void MainWidget::on_refresh_clicked()
@@ -476,6 +504,9 @@ void MainWidget::loginRst(bool isSucceed)
         diskPanel->panelCd((fileInfo*)NULL);
         isLogin = true;
         setSysMenu();
+//        QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::Information;
+
+        sysTray->showMessage(QString("文件同步中"), QString("正在同步第2个文件，共17个文件"),QSystemTrayIcon::Information);
     }
 }
 
@@ -534,6 +565,22 @@ void MainWidget::actLogout(bool)
 void MainWidget::actQuit(bool)
 {
     this->close();
+}
+
+void MainWidget::on_sliderbar_clicked(QModelIndex index)
+{
+    hidePanel();
+    switch(index.row())
+    {
+    case 0:
+        scrollFolder->show();
+        pageWidget->show();
+        diskPanel->pathRefresh();
+        break;
+    case 1:
+        syncPanel->show();break;
+    default:break;
+    }
 }
 
 void MainWidget::aheadPage(bool)

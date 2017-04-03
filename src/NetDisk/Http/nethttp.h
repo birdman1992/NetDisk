@@ -10,7 +10,7 @@
 #include "Http/nettrans.h"
 #include "Http/nethttp.h"
 #include "netconfig.h"
-
+#define SYNC_ID 428
 class netTrans;
 class NetHttp;
 

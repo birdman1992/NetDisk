@@ -6,6 +6,7 @@
 #include <QPainter>
 #include <QString>
 #include "netconfig.h"
+#include "serverconfig.h"
 
 namespace Ui {
 class login;
@@ -21,6 +22,7 @@ public:
 
 private:
     Ui::login *ui;
+    ServerConfig serverSet;
     bool wMoveable;
     QPoint dragPosition;
     QString username;

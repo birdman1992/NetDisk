@@ -16,6 +16,7 @@ PathView::PathView(QWidget *parent) :
     ui(new Ui::PathView)
 {
     ui->setupUi(this);
+    showLocal = false;
     connect(&pathBtn, SIGNAL(buttonClicked(int)), this, SLOT(pathClicked(int)));
     styleInit();
 }
@@ -119,6 +120,7 @@ void PathView::pathChange(QList<fileInfo *> newPath)
     fileInfo* head = new fileInfo;
     head->FILE_NAME = "我的文件";
     head->ID = -1;
+    showLocal = false;
     qDebug("PATH");
     qDebug()<<head->ID;
     while(!pathList.isEmpty())
@@ -136,18 +138,43 @@ void PathView::pathChange(QList<fileInfo *> newPath)
     pathViewPaint(pathList);
 }
 
+void PathView::pathChange(QList<QFileInfo *> newPath)
+{
+    qDebug("pathchange");
+//        QFileInfo* head = new QFileInfo("我的同步");
+        showLocal = true;
+        while(!pathinfoList.isEmpty())
+        {
+            QFileInfo* info = pathinfoList.takeFirst();
+            delete info;
+        }
+        for(int i=0; i<newPath.count(); i++)
+        {
+            QFileInfo* info = new QFileInfo(*(newPath.at(i)));qDebug()<<info->fileName();
+            pathinfoList<<info;
+        }
+
+//        pathinfoList.insert(0,head);
+        pathViewPaint(pathinfoList);
+}
+
 /*****************
 私有槽函数
 ******************/
 void PathView::pathClicked(int index)
 {
-    if(pathList.count() <= index)
-        return;
-//    if(index == 0)
-//        return;
-
-    qDebug()<<"pathClicked"<<pathList.at(index)->ID;
-    emit cdRequest(pathList.at(index)->ID);
+    if(showLocal)
+    {
+        emit cdRequest(index);
+        qDebug()<<"pathClicked"<<index;
+    }
+    else
+    {
+        if(pathList.count() <= index)
+            return;
+        emit cdRequest(pathList.at(index)->ID);
+        qDebug()<<"pathClicked"<<pathList.at(index)->ID;
+    }
 }
 
 void PathView::boxClicked(QString file)
@@ -180,6 +207,62 @@ void PathView::pathViewPaint(QList<fileInfo*> fileListIn)
     for(i=0; i<fileListIn.count(); i++)
     {
         str = fileListIn.at(i)->FILE_NAME;//qDebug()<<"dir"<<*str;
+        pBtn = new QPushButton(str,this);
+        pBtn->setFont(wordFont);
+        pathBtn.addButton(pBtn,i);
+        rct = fm.boundingRect(str);
+        pBtn->resize(rct.width()+BTN_INTERVAL,_size);
+        pBtn->move(x_offset, 3);
+        x_offset += pBtn->width();
+        pBtn->setCursor(QCursor(Qt::PointingHandCursor));
+        pBtn->setStyleSheet("background-color:white");
+        pBtn->show();
+
+        pBox1 = new PathBox(this);
+        pBox1->resize(_size/2, _size);
+
+        pBox1->move(x_offset, 3);
+
+        x_offset += pBox1->width();
+
+//        for(j=0; j<fileListIn.count(); j++)
+//        {qDebug()<<"folder"<<fileListIn.at(j)->fileName();
+//            pBox1->insertItem(j,QIcon(":/imgs/folder_m.ico"),QString(fileListIn.at(j)->fileName()));
+//        }
+//        connect(pBox1, SIGNAL(pathSelected(QString)), this, SLOT(boxClicked(QString)));
+//        pBox1->setBoxPath(pathIn);
+        pBox1->setCurrentIndex(-1);
+        pBox1->view()->setFixedWidth(100);
+//        pBox1->setCursor(QCursor(Qt::PointingHandCursor));
+        fileBoxList<<pBox1;//qDebug()<<"boxlist size"<<fileBoxList.count();
+        pBox1->show();
+//        if(fileBoxList.count()>2)
+//            pathClear();
+    }
+}
+
+void PathView::pathViewPaint(QList<QFileInfo *> fileListIn)
+{
+    int x_offset = 0;
+    int _size = 24;//this->geometry().height()-4;
+    int i;
+//    int j;
+    QString str;
+    QPushButton *pBtn;
+    PathBox *pBox1;
+    QFont wordFont;
+    QRect rct;
+
+    wordFont.setFamily("微软雅黑");
+    wordFont.setPointSize(9);
+//    wordFont.setPixelSize(this->geometry().height()/2);
+    QFontMetrics fm(wordFont);
+
+    pathClear();
+
+    for(i=0; i<fileListIn.count(); i++)
+    {
+        str = fileListIn.at(i)->fileName();//qDebug()<<"dir"<<*str;
         pBtn = new QPushButton(str,this);
         pBtn->setFont(wordFont);
         pathBtn.addButton(pBtn,i);

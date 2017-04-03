@@ -783,7 +783,7 @@ syncTable::syncTable()
 {
     cur_path = netConf->getSyncPath();
     syncLocalInfo* info = new syncLocalInfo;
-    info->fileId = -1;
+    info->fileId = SYNC_ID;
     info->syncPath = netConf->getSyncPath();
     info->syncPath = info->syncPath.left(info->syncPath.length()-1);
     info->fileName = info->syncPath.section('/',-1);
@@ -941,8 +941,9 @@ QString syncTable::getDirPath(double Id)
             return QString();
         info = list_all.at(ret);
         path = info->FILE_NAME + "/" + path;
+        qDebug()<<"PATH>>>>>>>>"<<path;
         id = info->PARENT_ID;
-        if(id == -1)
+        if(id == SYNC_ID)
             break;
     }
     path = path.left(path.length()-1);
@@ -962,7 +963,7 @@ void syncTable::syncDir()
         if(ret == -1)
         {
             QDir dir;
-            QString dirPath = getDirPath(info->ID);qDebug()<<"[h->l:dir]"<<dirPath;
+            QString dirPath = getDirPath(info->ID);qDebug()<<"[h->l:dir]"<<dirPath<<"\n";
             if(dir.exists(cur_path+dirPath))
             {
                 continue;
@@ -1053,6 +1054,7 @@ void syncTable::tempListToHostList()
         list_all<<info;
         list_index<<QString::number(info->ID);
     }
+//    qDebug()<<"all size"<<list_all.count()<<"index size"<<list_index.count();
 }
 
 void syncTable::creatSyncUploadList()
@@ -1082,7 +1084,7 @@ void syncTable::creatSyncUploadList()
         list_sync_upload<<localInfo;
         localInfo = new syncInfo;
     }
-    emit syncUpload();
+//    emit syncUpload();
 }
 
 void syncTable::creatSyncDownloadList()

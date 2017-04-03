@@ -1,5 +1,6 @@
 #include "login.h"
 #include "ui_login.h"
+#include "netconfig.h"
 
 login::login(QWidget *parent) :
     QWidget(parent),
@@ -14,6 +15,9 @@ login::login(QWidget *parent) :
         ui->passwd->setText(netConf->getPasswd());
     if(netConf->autoLoginDisk())
         emit netLogin();
+
+//    if(netConf->getServerAddress().isEmpty())
+//        ui->btn_set->setStatusTip("请点击这里配置服务器地址");
 }
 
 login::~login()
@@ -67,7 +71,7 @@ void login::on_btn_min_clicked()
 
 void login::on_btn_set_clicked()
 {
-
+    serverSet.show();
 }
 
 void login::on_btn_close_clicked()

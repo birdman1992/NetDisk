@@ -24,7 +24,7 @@ FilesPanel::FilesPanel(QWidget *parent) :
     pFolder = NULL;
     curDirId = 0;
     pCdFolder = NULL;
-    showListView = true;
+    showListView = false;
     resizeEventEnable = true;
     curDirId = -1;
     pageSize = 50;
@@ -292,8 +292,6 @@ void FilesPanel::panelBack()
         emit historyEnable(false, true);
     else
         emit historyEnable(true, true);
-
-
 }
 
 void FilesPanel::panelAhead()
@@ -332,6 +330,11 @@ void FilesPanel::panelShare()
         }
         httpClient->netCreatShareLinks(shareList);
     }
+}
+
+void FilesPanel::pathRefresh()
+{
+    emit pathChanged(folderPath);
 }
 
 bool FilesPanel::repeatCheck(QString *fName, QFolder* pFolder)
@@ -519,6 +522,12 @@ void FilesPanel::fileRefresh()
 void FilesPanel::fileSort()
 {
     qDebug("sort");
+}
+
+void FilesPanel::showEvent(QShowEvent *event)
+{
+//    emit pathChanged(folderPath);
+    QWidget::showEvent(event);
 }
 
 void FilesPanel::fileUpload()

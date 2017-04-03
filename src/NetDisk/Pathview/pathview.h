@@ -24,16 +24,20 @@ public:
 
 public slots:
     void pathChange(QList<fileInfo*> newPath);
+    void pathChange(QList<QFileInfo *> newPath);
 
 private:
     Ui::PathView *ui;
     QList<fileInfo*> pathList;
+    QList<QFileInfo*> pathinfoList;
     QList<PathBox*> fileBoxList;
     QButtonGroup pathBtn;
+    bool showLocal;
 
     void styleInit();
     void pathClear();
     void pathViewPaint(QList<fileInfo*> fileListIn);
+    void pathViewPaint(QList<QFileInfo*> fileListIn);
     void paintEvent(QPaintEvent*);
 
 private slots:
@@ -42,6 +46,7 @@ private slots:
 
 signals:
     void cdRequest(double id);
+    void cdRequest(int id);
 };
 
 #endif // PATHVIEW_H

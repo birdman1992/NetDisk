@@ -13,6 +13,9 @@
 #include <QLayout>
 #include <QPushButton>
 #include <QLabel>
+#include "Translist/synclist.h"
+#include <qstackedlayout.h>
+#include <qstackedwidget.h>
 #include "Pathview/pathview.h"
 //#include "Netsync/netsync.h"
 #include "filespanel.h"
@@ -66,6 +69,7 @@ private slots:
     void actOpenDiskSet(bool);//打开网盘设置
     void actLogout(bool);//注销
     void actQuit(bool);//退出
+    void on_sliderbar_clicked(QModelIndex);
 
     void on_functionList_clicked(const QModelIndex &index);
 
@@ -77,6 +81,7 @@ private:
     loading loadingUi;
     login loginUi;
     QScrollArea* scrollFolder;
+    QStackedLayout* panelStack;
     QHBoxLayout* pageLayout;
     QPushButton* page_ahead;
     QPushButton* page_next;
@@ -87,6 +92,8 @@ private:
     PathView* pathView;
     TransList* transList;
     ConfigPanel* diskConfig;
+    QWidget* pageWidget;
+    syncList* syncPanel;
 //    NetSync* diskSync;
     bool wMoveable;
     bool isLogin;
@@ -107,6 +114,7 @@ private:
     void initSysMenu();
     void initSilidebar();
     void initFunctionList();
+    void hidePanel();
     void setSysMenu();
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);

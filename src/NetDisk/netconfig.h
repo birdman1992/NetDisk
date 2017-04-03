@@ -14,6 +14,9 @@ class NetConfig
 {
 public:
     NetConfig();
+
+    void setServerAddress(QString address);
+    QString getServerAddress();
     void setDownloadPath(QString path);
     QString getDownloadPath();
     void setMaxTaskNum(int num);
@@ -42,6 +45,7 @@ private:
     QString userName;
     QString passwd;
     QString passwdAes;
+    QString serverAddress;
     bool remPasswd;
     bool autoLogin;
     bool autoSync;

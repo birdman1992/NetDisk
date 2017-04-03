@@ -16,6 +16,7 @@
 #define FILE_SYNC ".sync"
 #define FILE_SYNC_DATE ".date"
 
+
 class NetSync:public QObject
 {
     Q_OBJECT
