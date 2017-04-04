@@ -93,5 +93,7 @@
         <file>imgs/32x32/缺省文件格式.png</file>
         <file>imgs/32x32/收藏文件夹.png</file>
         <file>imgs/32x32/锁定文件夹.png</file>
+        <file>imgs/32x32/alert_warning.png</file>
+        <file>imgs/32x32/green_ok_yes.png</file>
     </qresource>
 </RCC>

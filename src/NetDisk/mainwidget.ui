@@ -568,7 +568,7 @@ background:rgb(0, 131, 196);
      <item>
       <layout class="QVBoxLayout" name="verticalLayout" stretch="1000,1000,1000,1000,1">
        <property name="spacing">
-        <number>10</number>
+        <number>0</number>
        </property>
        <item>
         <widget class="QFrame" name="frame_2">

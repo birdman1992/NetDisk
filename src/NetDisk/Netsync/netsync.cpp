@@ -31,6 +31,11 @@ void NetSync::setNetClient(NetHttp *cli)
     connect(&syncT, SIGNAL(syncUpload()), this, SLOT(syncTaskUpload()));
 }
 
+syncTable *NetSync::getTable()
+{
+    return &syncT;
+}
+
 void NetSync::syncAll()
 {
     netClient->netSync(SYNC_ID);

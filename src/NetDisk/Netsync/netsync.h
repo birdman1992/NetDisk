@@ -23,6 +23,7 @@ class NetSync:public QObject
 public:
     NetSync(QObject *parent = 0);
     void setNetClient(NetHttp* cli);
+    syncTable* getTable();
 
 public slots:
     void syncAll();

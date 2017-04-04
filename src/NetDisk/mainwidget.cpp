@@ -37,6 +37,7 @@ MainWidget::MainWidget(QWidget *parent) :
     //网盘设置
     diskConfig = new ConfigPanel();
     syncPanel = new syncList(this);
+
 //    diskSync = new NetSync(this);
 
     //路径面板
@@ -65,10 +66,13 @@ MainWidget::MainWidget(QWidget *parent) :
     scrollFolder->hide();
     loadingUi.show();
     syncPanel->hide();
+    ui->frame_sync->hide();
+    ui->frame_function->show();
 
     diskPanel = new FilesPanel(this);
     initPageWidgets();
     scrollFolder->setWidget(diskPanel);
+    syncPanel->initTable(diskPanel->diskSync->getTable());
 
     //信号槽
 //    connect(&loadingUi, SIGNAL(reload()), this, SLOT(reload()));
@@ -177,6 +181,8 @@ void MainWidget::hidePanel()
     loadingUi.hide();
     pageWidget->hide();
     syncPanel->hide();
+    ui->frame_sync->hide();
+    ui->frame_function->hide();
 }
 
 void MainWidget::setSysMenu()
@@ -575,10 +581,12 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
     case 0:
         scrollFolder->show();
         pageWidget->show();
+        ui->frame_function->show();
         diskPanel->pathRefresh();
         break;
     case 1:
-        syncPanel->show();break;
+        syncPanel->show();
+        ui->frame_sync->show();break;
     default:break;
     }
 }
