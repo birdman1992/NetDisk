@@ -10,7 +10,7 @@
 #include "Http/nettrans.h"
 #include "Http/nethttp.h"
 #include "netconfig.h"
-#define SYNC_ID 428
+#define SYNC_ID -1
 class netTrans;
 class NetHttp;
 
@@ -77,6 +77,7 @@ public:
     void syncLocalToHost();
     void syncInfoInsert(QList<syncInfo*> info);
     void syncNextDir();
+    void reportSyncNum();
     void creatSyncUploadList();
     syncInfo* getHostInfoById(double Id);
     double getIdByName(QString name, bool *isChanged=NULL);//从本地文件信息缓存中查询对应文件（夹）的ID
@@ -88,6 +89,7 @@ public:
     QList<syncInfo*> list_sync_download;//同步下载链表
     QList<syncInfo*> list_sync_upload;//同步上传链表
     QDateTime syncTime;
+    bool isSyncing;//是否正在同步
 
 private:
     QList<syncInfo*> list_all;//host端所有更新文件
@@ -117,6 +119,7 @@ signals:
     void hostSyncFinished();
     void syncUpload();
     void syncDownload();
+    void syncUploadChanged(int uploadNum);
 };
 
 class fileInfo

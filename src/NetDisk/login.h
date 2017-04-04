@@ -19,6 +19,7 @@ class login : public QWidget
 public:
     explicit login(QWidget *parent = 0);
     ~login();
+    void loginFailed();
 
 private:
     Ui::login *ui;

@@ -27,6 +27,8 @@ public:
 
 public slots:
     void cmdCd(int);
+    void syncUploadMsg(int);
+    void syncDownloadMsg(int);
 
 private slots:
     void on_tableWidget_doubleClicked(const QModelIndex &index);
@@ -36,6 +38,8 @@ private:
     syncTable* checkTable;
     QString currentDir;
     int currentIndex;
+    int downloadNum;
+    int uploadNum;
 
     QFileInfoList list_show;
     QList<QFileInfo*> list_path;
@@ -45,10 +49,13 @@ private:
 
     QString getFolderType(QFileInfo fInfo);
     QString getFolderSize(quint64 fileSize);
+    void updateSyncMessage();
+    void syncRefresh();
 
 signals:
     void pathChanged(QList<QFileInfo*>);
     void historyEnable(bool,bool);
+    void syncNumChanged(int upNum, int downNum);
 };
 
 class NoFocusDelegate:public QStyledItemDelegate

@@ -124,6 +124,7 @@ void NetSync::syncLocalRead()
 void NetSync::syncLocalWrite(QList<syncLocalInfo *> l)
 {
     QJsonDocument doc;
+    syncT.isSyncing = true;
     QFile* f = new QFile(netConf->getSyncPath()+QString(FILE_SYNC));
     f->open(QFile::WriteOnly);
 
@@ -136,6 +137,7 @@ void NetSync::syncLocalWrite(QList<syncLocalInfo *> l)
     }
 
     f->close();
+    syncT.isSyncing = false;
     delete f;
 }
 
@@ -183,6 +185,8 @@ QString NetSync::getLocalPath(QString path)
 
 void NetSync::syncDirChanged(QString dir)
 {
+    if(syncT.isSyncing)
+        return;
     syncLocalGet();
     syncT.creatSyncUploadList();
     qDebug("Local dir changed!");
@@ -204,6 +208,7 @@ void NetSync::syncHostPointSave(QDateTime sTime)
     }
     syncT.syncTime = sTime;
     syncT.syncHostToLocal();
+    syncT.creatSyncUploadList();
 }
 
 void NetSync::syncLocalUpdate()
@@ -216,7 +221,8 @@ void NetSync::syncTaskDownload()
     netTrans* trans = new netTrans;
     syncInfo* info;
     int i = 0;
-
+    taskNum = 0;
+//    syncT.isSyncing = true;
     qDebug()<<"download:"<<syncT.list_sync_download.count();
     for(i=0; i<syncT.list_sync_download.count(); i++)
     {
@@ -238,6 +244,7 @@ void NetSync::syncTaskUpload()
     netTrans* trans = new netTrans;
     syncInfo* info;
     int i = 0;
+    uptask = 0;
 
     qDebug()<<"upload:"<<syncT.list_sync_upload.count();
     for(i=0; i<syncT.list_sync_upload.count(); i++)
@@ -246,6 +253,8 @@ void NetSync::syncTaskUpload()
         info = syncT.list_sync_upload.at(i);
         qDebug()<<"[sync up]"<<info->PARENT_ID<<syncT.getPathById(info->PARENT_ID)<<info->FILE_NAME;
         trans->netUpload(info->FILE_NAME, info->PARENT_ID, netClient->netToken());
+        connect(trans, SIGNAL(taskUpFinished(TaskInfo)), this, SLOT(taskUploadFinished(TaskInfo)));
+        taskUpload<<trans;
         trans->taskStart();
     }
     while((uptask < 3) && (uptask<taskUpload.count()))
@@ -293,7 +302,8 @@ void NetSync::taskDownloadFinished(TaskInfo info)
         taskDownload.at(i)->taskStart();
         break;
     }
-
+//    syncT.isSyncing = false;
+    syncT.creatSyncUploadList();
     syncT.setLocalList();
     syncLocalWrite(syncT.list_local);
     qDebug()<<"[taskDownload]"<<taskDownload.count()<<syncT.list_local.count();
@@ -338,7 +348,11 @@ void NetSync::taskUploadFinished(TaskInfo info)
         taskUpload.at(i)->taskStart();
         break;
     }
+    if(taskUpload.count() == 0)
+        syncT.creatSyncUploadList();
 
+//    syncT.reportSyncNum();
+    uploadNum(taskUpload.count());
     syncT.setLocalList();
     syncLocalWrite(syncT.list_local);
     qDebug()<<"[taskUpload]"<<taskUpload.count()<<syncT.list_local.count();

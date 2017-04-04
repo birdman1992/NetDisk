@@ -15,6 +15,7 @@ login::login(QWidget *parent) :
         ui->passwd->setText(netConf->getPasswd());
     if(netConf->autoLoginDisk())
         emit netLogin();
+    ui->btn_msglogin->setHidden(true);
 
 //    if(netConf->getServerAddress().isEmpty())
 //        ui->btn_set->setStatusTip("请点击这里配置服务器地址");
@@ -23,6 +24,11 @@ login::login(QWidget *parent) :
 login::~login()
 {
     delete ui;
+}
+
+void login::loginFailed()
+{
+    ui->label_loginmsg->setText("用户名或密码错误");
 }
 
 void login::paintEvent(QPaintEvent*)

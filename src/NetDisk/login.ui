@@ -134,6 +134,9 @@ QPushButton:hover{text-decoration: underline}
      <height>44</height>
     </rect>
    </property>
+   <property name="cursor">
+    <cursorShape>PointingHandCursor</cursorShape>
+   </property>
    <property name="styleSheet">
     <string notr="true">border-image: url(:/imgs/Login/login_btn.png);
 font: 75 13pt &quot;微软雅黑&quot;;
@@ -286,6 +289,22 @@ QPushButton:hover{text-decoration: underline}
    </property>
    <property name="styleSheet">
     <string notr="true">border-image: url(:/imgs/Login/close_win.png);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_loginmsg">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>220</y>
+     <width>151</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">color: rgb(170, 0, 0);</string>
    </property>
    <property name="text">
     <string/>

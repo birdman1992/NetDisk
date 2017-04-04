@@ -73,8 +73,13 @@ private slots:
 
     void on_functionList_clicked(const QModelIndex &index);
 
+    void on_syncStart_clicked();
+
 public slots:
     void historyEnabled(bool backEnable, bool aheadEnable);
+    void getSyncNum(int upNum, int downNum);
+    void getSyncNum(int upNum);
+
 
 private:
     Ui::MainWidget *ui;

@@ -29,6 +29,8 @@ public slots:
     void syncAll();
     void loginSync(bool);
     void syncHostFinished();
+    void syncTaskDownload();
+    void syncTaskUpload();
 
 private:
     QDateTime syncDate;
@@ -60,10 +62,11 @@ private slots:
     void syncInfoRecv(QList<syncInfo*>, QDateTime);
     void syncHostPointSave(QDateTime);
     void syncLocalUpdate();
-    void syncTaskDownload();
-    void syncTaskUpload();
     void taskDownloadFinished(TaskInfo info);
     void taskUploadFinished(TaskInfo info);
+
+signals:
+    void uploadNum(int);
 };
 
 #endif // NETSYNC_H

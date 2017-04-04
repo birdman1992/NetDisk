@@ -17,7 +17,7 @@
 #define APP_ID    "appId=PC123987456"
 #define APP_KEY     "secretKey=d9563ff28bca607fa367deb13cc45ca2"
 
-#define CHUNK_SIZE (1024)
+#define CHUNK_SIZE (1024*100)
 class fileInfo;
 class syncInfo;
 
@@ -94,6 +94,7 @@ private:
     QByteArray getPost(QStringList param);
 signals:
     void taskFinish(TaskInfo);
+    void taskUpFinish(TaskInfo);
     void transReady();
 
 private slots:
@@ -102,6 +103,7 @@ private slots:
     void getServerAddr();
     void fileRecv();
     void fileRecvFinished();
+
 };
 
 class netTrans : public QObject
@@ -122,6 +124,7 @@ public slots:
 
 signals:
     void taskFinished(TaskInfo);
+    void taskUpFinished(TaskInfo);
 
 private:
     netWork* work;

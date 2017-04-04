@@ -35,7 +35,7 @@ void NetHttp::netLogin(QString user, QString passwd)
     paramList<<"password="+QString(passwd)+"&"<<"userName="+user+"&"<<QString(APP_ID)+"&";
     QByteArray sign = getSign(paramList);
 
-    nUrl = QString(HTTP_ADDR) + "/api/user/login?" +QString("password=%1&userName=%2&sign=%3").arg(passwd).arg(user).arg(QString(sign.toHex()));
+    nUrl = netConf->getServerAddress() + "/api/user/login?" +QString("password=%1&userName=%2&sign=%3").arg(passwd).arg(user).arg(QString(sign.toHex()));
     nUrl+="&"+QString(APP_ID);//+"&"+QString(APP_KEY);
     qDebug()<<"[login]:"<<nUrl;
     manager->get(QNetworkRequest(QUrl(nUrl)));
@@ -45,14 +45,14 @@ void NetHttp::netLogin(QString user, QString passwd)
 void NetHttp::netList(double pId, int cPage, int pageSize, int showdelete, QString name, QString fileType)
 {
     QString nUrl;
-    nUrl = QString(HTTP_ADDR) + "/api/file/getMyFile";//
+    nUrl = netConf->getServerAddress() + "/api/file/getMyFile";//
     QStringList param;
     param<<QString("pid=%1&").arg(pId)<<QString("cpage=%1&").arg(cPage)<<QString("pageSize=%1&").arg(pageSize)<<QString("showDelete=%1&").arg(showdelete)<<QString(APP_ID)+"&";
 
     if(!name.isEmpty())
-        param<<QString("name=%1").arg(name);
+        param<<QString("name=%1&").arg(name);
     if(!fileType.isEmpty())
-        param<<QString("fileType=%1").arg(fileType);
+        param<<QString("fileType=%1&").arg(fileType);
 
     QByteArray qba = getPost(param);
 
@@ -67,8 +67,8 @@ void NetHttp::netMkdir(double pId, QString fileName)
 {
     QString nUrl;
     QStringList params;
-//    nUrl = QString(HTTP_ADDR) + "api/file/createFolder?"+QString("pid=%1&name=%2").arg(pId).arg(QString(fileName.toUtf8().toPercentEncoding()).replace('%','\\x'));
-    nUrl = QString(HTTP_ADDR) + "/api/file/createFolder";
+//    nUrl = netConf->getServerAddress() + "api/file/createFolder?"+QString("pid=%1&name=%2").arg(pId).arg(QString(fileName.toUtf8().toPercentEncoding()).replace('%','\\x'));
+    nUrl = netConf->getServerAddress() + "/api/file/createFolder";
     params<<QString("pid=%1&").arg(pId)<<QString("name=%1&").arg(fileName)<<QString(APP_ID)+"&";
 //    QByteArray qba = QString("pid=%1&name=").arg(pId).toLocal8Bit()+fileName.toUtf8();
     QByteArray qba = getPost(params);
@@ -99,7 +99,7 @@ void NetHttp::netDelete(double fId)
 
     params<<QString("fid=%1&").arg(fId)<<QString("token=%1&").arg(token)<<QString(APP_ID)+"&";
     QByteArray sign = getSign(params);
-    nUrl = QString(HTTP_ADDR) + QString("/api/file/deleteFile?fid=%1&token=%2&sign=%3&").arg(fId).arg(token).arg(QString(sign.toHex()))+APP_ID+"&";
+    nUrl = netConf->getServerAddress() + QString("/api/file/deleteFile?fid=%1&token=%2&sign=%3&").arg(fId).arg(token).arg(QString(sign.toHex()))+APP_ID+"&";
     qDebug()<<"DELETE"<<nUrl;
     State = H_DEL;
     manager->get(QNetworkRequest(QUrl(nUrl)));
@@ -115,7 +115,7 @@ void NetHttp::netCreatShareLinks(QStringList fids)
         fidList += ",";
         fidList += fids.takeFirst();
     }
-    nUrl = QString(HTTP_ADDR) + "/createShareLink?fids="+fidList+"&"+APP_ID+"&"+APP_KEY;
+    nUrl = netConf->getServerAddress() + "/createShareLink?fids="+fidList+"&"+APP_ID+"&"+APP_KEY;
     qDebug()<<"[SHARE]"<<nUrl;
     State = H_SHARE;
     manager->get(QNetworkRequest(QUrl(nUrl)));
@@ -130,7 +130,7 @@ void NetHttp::netSync(double pId, QDateTime lastSyncTime)
         lastTime = lastSyncTime.toString("yyyy-MM-dd hh:mm:ss");
 
     QString nUrl;
-    nUrl = QString(HTTP_ADDR) + "/api/file/sync";//
+    nUrl = netConf->getServerAddress() + "/api/file/sync";//
     QStringList param;
     param<<QString("pid=%1&").arg(pId)<<QString(APP_ID)+"&";
     if(!lastTime.isNull())
@@ -782,6 +782,7 @@ syncTable
 syncTable::syncTable()
 {
     cur_path = netConf->getSyncPath();
+    isSyncing = false;
     syncLocalInfo* info = new syncLocalInfo;
     info->fileId = SYNC_ID;
     info->syncPath = netConf->getSyncPath();
@@ -865,7 +866,7 @@ double syncTable::getIdByName(QString name, bool* isChanged)
     syncLocalInfo* info = NULL;
     int i = 0;
     double ret = 0;
-    qDebug()<<"[getIdByName]"<<name;
+//    qDebug()<<"[getIdByName]"<<name;
 
     for(i=0; i<list_local.count(); i++)
     {
@@ -877,7 +878,7 @@ double syncTable::getIdByName(QString name, bool* isChanged)
             break;
         }
     }
-    qDebug()<<ret;
+//    qDebug()<<ret;
     if(isChanged == NULL)
         return ret;
 
@@ -886,16 +887,16 @@ double syncTable::getIdByName(QString name, bool* isChanged)
     else
     {
         QFileInfo fInfo = QFileInfo(name);
-        qDebug()<<"[date]"<<fInfo.lastModified().toString("yyyy-MM-dd hh:mm:ss")<<info->lastDate.toString("yyyy-MM-dd hh:mm:ss");
+//        qDebug()<<"[date]"<<fInfo.lastModified().toString("yyyy-MM-dd hh:mm:ss")<<info->lastDate.toString("yyyy-MM-dd hh:mm:ss");
         if((fInfo.lastModified().toMSecsSinceEpoch()/1000) > (info->lastDate.toMSecsSinceEpoch()/1000))
         {
             *isChanged = true;
-            qDebug()<<fInfo.absoluteFilePath()<<"changed";
+//            qDebug()<<fInfo.absoluteFilePath()<<"changed";
         }
         else
         {
             *isChanged = false;
-            qDebug()<<fInfo.absoluteFilePath()<<"not changed";
+//            qDebug()<<fInfo.absoluteFilePath()<<"not changed";
         }
     }
     return ret;
@@ -956,6 +957,7 @@ void syncTable::syncDir()
     int i=0;
     int ret = 0;
     qDebug("[syncDir]");
+    isSyncing = true;
     for(i=0; i<list_dir.count(); i++)
     {
         info = list_dir.at(i);
@@ -984,6 +986,7 @@ void syncTable::syncDir()
             }
         }
     }
+    isSyncing = false;
     setLocalList();
 }
 
@@ -1023,6 +1026,11 @@ void syncTable::syncNextDir()
     syncInfo* info = list_task.takeFirst();
     syncClient->netSync(info->ID, syncTime);
     qDebug()<<"[SYNC DIR]"<<info->FILE_NAME<<list_task.count();
+}
+
+void syncTable::reportSyncNum()
+{
+    emit syncUploadChanged(list_sync_upload.count());
 }
 
 void syncTable::recvListClear()
@@ -1074,7 +1082,10 @@ void syncTable::creatSyncUploadList()
     localInfo = new syncInfo;
     for(i=0; i<list_loacl_real.count(); i++)
     {
+
         localInfoReal = list_loacl_real.at(i);
+        if(localInfoReal->isDir())
+            continue;
         localInfo->PARENT_ID = getIdByName(localInfoReal->absolutePath());
         localInfo->ID = getIdByName(localInfoReal->absoluteFilePath(),&isUpdated);
         localInfo->FILE_NAME = localInfoReal->absoluteFilePath();//此处使用FILE_NAME保存待上传的本地文件路径
@@ -1084,6 +1095,7 @@ void syncTable::creatSyncUploadList()
         list_sync_upload<<localInfo;
         localInfo = new syncInfo;
     }
+    reportSyncNum();
 //    emit syncUpload();
 }
 

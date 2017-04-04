@@ -13,7 +13,7 @@ syncList::syncList(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->tableWidget->setItemDelegate(new NoFocusDelegate());
-    ui->tableWidget->setColumnCount(4);
+    ui->tableWidget->setColumnCount(5);
     ui->tableWidget->setHorizontalHeaderItem(0, new QTableWidgetItem(""));
     ui->tableWidget->setHorizontalHeaderItem(1, new QTableWidgetItem("名称"));
     ui->tableWidget->setHorizontalHeaderItem(2, new QTableWidgetItem("修改日期"));
@@ -27,6 +27,8 @@ syncList::syncList(QWidget *parent) :
 
     checkTable = NULL;
     currentIndex = 0;
+    uploadNum = 0;
+    downloadNum = 0;
     currentDir = netConf->getSyncPath();
     list_show = QDir(currentDir).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoSymLinks | QDir::NoDot | QDir::NoDotDot);
 //    showList();
@@ -41,6 +43,7 @@ syncList::~syncList()
 void syncList::initTable(syncTable *table)
 {
     checkTable = table;
+    connect(checkTable, SIGNAL(syncUploadChanged(int)), this, SLOT(syncUploadMsg(int)));
 }
 
 void syncList::goAhead()
@@ -114,12 +117,33 @@ void syncList::cmdCd(int id)
     showList();
 }
 
+void syncList::syncUploadMsg(int num)
+{
+    uploadNum = num;
+    updateSyncMessage();
+}
+
+void syncList::syncDownloadMsg(int num)
+{
+    downloadNum = num;
+    updateSyncMessage();
+}
+
 void syncList::showList()
 {
+    if(currentDir == netConf->getSyncPath())
+    {
+        for(int i=0; i<list_show.count(); i++)
+        {
+            if(list_show.at(i).fileName() == ".sync")
+            {
+                list_show.removeAt(i);
+                break;
+            }
+        }
+    }
     ui->tableWidget->clearContents();
     ui->tableWidget->setRowCount(list_show.count());
-
-    for(int i=0; i<list_show.count();)
 
     if(list_show.isEmpty())
     {
@@ -168,6 +192,18 @@ QString syncList::getFolderSize(quint64 fileSize)
     return QString::number(fileSize)+l.at(i);
 }
 
+void syncList::updateSyncMessage()
+{
+    emit syncNumChanged(uploadNum, downloadNum);
+    syncRefresh();
+}
+
+void syncList::syncRefresh()
+{
+    list_show = QDir(currentDir).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoSymLinks | QDir::NoDot | QDir::NoDotDot);
+    showList();
+}
+
 void syncList::on_tableWidget_doubleClicked(const QModelIndex &index)
 {
     QFileInfo* info = new QFileInfo(list_show.at(index.row()));
@@ -181,10 +217,9 @@ void syncList::on_tableWidget_doubleClicked(const QModelIndex &index)
     }
     list_path<<info;
 
-
-    list_show = QDir(info->absoluteFilePath()).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoSymLinks | QDir::NoDot | QDir::NoDotDot);
-
     currentDir = info->absoluteFilePath();
+    list_show = QDir(currentDir).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoSymLinks | QDir::NoDot | QDir::NoDotDot);
+
     emit historyEnable(true, false);
     currentIndex = list_path.count()-1;
     emit pathChanged(list_path);
@@ -196,7 +231,7 @@ void syncList::on_tableWidget_doubleClicked(const QModelIndex &index)
 void syncList::showEvent(QShowEvent* event)
 {
     qDebug()<<"showevent"<<currentIndex;
-    emit pathChanged(list_path);
+    emit pathChanged(list_path.mid(0, currentIndex+1));
     if(currentIndex <= 0)
     {
         if(currentIndex<(list_path.count()-1))

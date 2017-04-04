@@ -10,7 +10,8 @@ NetConfig* netConf;
 NetConfig::NetConfig()
 {
     downloadPath = "LinkRealNetdiskDownload/";
-    syncPath = "sync/";
+    QDir dir = QDir("sync/");
+    syncPath = dir.absolutePath();
     maxTaskNum = 3;
     userName = QString();
     passwd = QString();
@@ -29,6 +30,7 @@ void NetConfig::setServerAddress(QString address)
 {
     while(address.endsWith("/"))
         address = address.left(address.length()-1);
+    address = "http://"+address;
     qDebug()<<address;
     serverAddress = address;
 }

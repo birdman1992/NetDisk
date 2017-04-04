@@ -67,7 +67,9 @@ MainWidget::MainWidget(QWidget *parent) :
     loadingUi.show();
     syncPanel->hide();
     ui->frame_sync->hide();
-    ui->frame_function->show();
+    ui->frame_function->hide();
+    ui->translist->hide();
+
 
     diskPanel = new FilesPanel(this);
     initPageWidgets();
@@ -83,8 +85,10 @@ MainWidget::MainWidget(QWidget *parent) :
     connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
     connect(diskPanel, SIGNAL(isLoading(bool)), this, SLOT(isLoading(bool)));
     connect(diskPanel, SIGNAL(scrollValueChanged(int)), this, SLOT(scrollValueUpdate(int)));
+    connect(ui->syncStart, SIGNAL(clicked()), diskPanel->diskSync, SLOT(syncTaskUpload()));
     connect(syncPanel, SIGNAL(pathChanged(QList<QFileInfo*>)), pathView, SLOT(pathChange(QList<QFileInfo*>)));
     connect(syncPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
+    connect(syncPanel, SIGNAL(syncNumChanged(int,int)), this, SLOT(getSyncNum(int,int)));
     connect(ui->showDelete, SIGNAL(toggled(bool)), diskPanel, SLOT(showDelete(bool)));
     connect(pathView, SIGNAL(cdRequest(double)), diskPanel, SLOT(cmdCd(double)));
     connect(pathView, SIGNAL(cdRequest(int)), syncPanel, SLOT(cmdCd(int)));
@@ -335,6 +339,20 @@ void MainWidget::historyEnabled(bool backEnable, bool aheadEnable)
     ui->forward->setEnabled(aheadEnable);
 }
 
+void MainWidget::getSyncNum(int upNum, int)
+{
+    QString str = QString("本地更新文件%1个").arg(upNum);
+    ui->syncMsg->setText(str);
+    sysTray->showMessage(QString("文件同步"), str,QSystemTrayIcon::Information);
+}
+
+void MainWidget::getSyncNum(int upNum)
+{
+    QString str = QString("本地更新文件%1个").arg(upNum);
+    ui->syncMsg->setText(str);
+    sysTray->showMessage(QString("文件同步"), str,QSystemTrayIcon::Information);
+}
+
 void MainWidget::initSysTray()
 {
     sysTray = new QSystemTrayIcon(this);
@@ -512,7 +530,11 @@ void MainWidget::loginRst(bool isSucceed)
         setSysMenu();
 //        QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::Information;
 
-        sysTray->showMessage(QString("文件同步中"), QString("正在同步第2个文件，共17个文件"),QSystemTrayIcon::Information);
+//        sysTray->showMessage(QString("文件同步中"), QString("正在同步第2个文件，共17个文件"),QSystemTrayIcon::Information);
+    }
+    else
+    {
+        loginUi.loginFailed();
     }
 }
 
@@ -547,7 +569,7 @@ void MainWidget::actOpenPanel(bool)
 
 void MainWidget::actOpenWebsite(bool)
 {
-    QDesktopServices::openUrl(QUrl(HTTP_ADDR));
+    QDesktopServices::openUrl(QUrl(netConf->getServerAddress()));
 }
 
 void MainWidget::actOpenDownloadDir(bool)
@@ -581,7 +603,7 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
     case 0:
         scrollFolder->show();
         pageWidget->show();
-        ui->frame_function->show();
+//        ui->frame_function->show();
         diskPanel->pathRefresh();
         break;
     case 1:
@@ -607,6 +629,11 @@ void MainWidget::nextPage(bool)
 
 
 void MainWidget::on_functionList_clicked(const QModelIndex&)
+{
+
+}
+
+void MainWidget::on_syncStart_clicked()
 {
 
 }
