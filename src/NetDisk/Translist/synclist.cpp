@@ -44,6 +44,7 @@ void syncList::initTable(syncTable *table)
 {
     checkTable = table;
     connect(checkTable, SIGNAL(syncUploadChanged(int)), this, SLOT(syncUploadMsg(int)));
+    connect(checkTable, SIGNAL(syncDownloadChanged(int)), this, SLOT(syncDownloadMsg(int)));
 }
 
 void syncList::goAhead()

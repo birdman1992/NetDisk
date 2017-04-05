@@ -67,6 +67,8 @@ private slots:
 
 signals:
     void uploadNum(int);
+    void downloadNum(int);
+    void syncStateChanged(bool);
 };
 
 #endif // NETSYNC_H

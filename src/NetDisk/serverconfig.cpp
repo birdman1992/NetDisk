@@ -8,6 +8,7 @@ ServerConfig::ServerConfig(QWidget *parent) :
     ui(new Ui::ServerConfig)
 {
     ui->setupUi(this);
+    ui->server_info->setText(netConf->getServerAddress());
 }
 
 ServerConfig::~ServerConfig()
@@ -18,7 +19,7 @@ ServerConfig::~ServerConfig()
 void ServerConfig::on_btn_conf_clicked()
 {
     QString str = ui->server_info->text();
-    QString pattern("*.*.*.*:*");
+    QString pattern("http://*.*.*.*:*");
     QRegExp rx(pattern);
     rx.setPatternSyntax(QRegExp::Wildcard);
     if(rx.exactMatch(str))
@@ -36,5 +37,5 @@ void ServerConfig::on_btn_conf_clicked()
 
 void ServerConfig::on_btn_cancel_clicked()
 {
-
+    this->close();
 }

@@ -77,6 +77,7 @@ public:
     void syncLocalToHost();
     void syncInfoInsert(QList<syncInfo*> info);
     void syncNextDir();
+    void updateParentDate(double id);
     void reportSyncNum();
     void creatSyncUploadList();
     syncInfo* getHostInfoById(double Id);
@@ -120,6 +121,7 @@ signals:
     void syncUpload();
     void syncDownload();
     void syncUploadChanged(int uploadNum);
+    void syncDownloadChanged(int uploadNum);
 };
 
 class fileInfo

@@ -1,0 +1,10 @@
+xml version=1.0 encoding=UTF-8 standalone=yes
+assembly xmlns=urnschemas-microsoft-comasm.v1 manifestVersion=1.0
+    trustInfo xmlns=urnschemas-microsoft-comasm.v2
+        security
+            requestedPrivileges xmlns=urnschemas-microsoft-comasm.v3
+                requestedExecutionLevel level=asInvoker uiAccess=false
+            requestedPrivileges
+        security
+    trustInfo
+assembly

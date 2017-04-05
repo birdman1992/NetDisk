@@ -218,25 +218,36 @@ void NetSync::syncLocalUpdate()
 
 void NetSync::syncTaskDownload()
 {
-    netTrans* trans = new netTrans;
+    netTrans* trans;
     syncInfo* info;
-    int i = 0;
+//    int i = 0;
     taskNum = 0;
+    emit syncStateChanged(true);
 //    syncT.isSyncing = true;
     qDebug()<<"download:"<<syncT.list_sync_download.count();
-    for(i=0; i<syncT.list_sync_download.count(); i++)
+    while((!syncT.list_sync_download.isEmpty()) && taskDownload.count()<=3)
     {
         trans = new netTrans;
-        info = syncT.list_sync_download.at(i);
+        info = syncT.list_sync_download.takeFirst();
         qDebug()<<"[sync down]"<<info->PARENT_ID<<syncT.getPathById(info->PARENT_ID)<<info->FILE_NAME;
         trans->netDownload(info, syncT.getPathById(info->PARENT_ID),netClient->netToken());
+        trans->taskStart();
         connect(trans, SIGNAL(taskFinished(TaskInfo)), this, SLOT(taskDownloadFinished(TaskInfo)));
         taskDownload<<trans;
     }
-    while((taskNum < 3) && (taskNum<taskDownload.count()))
-    {
-        taskDownload.at(taskNum++)->taskStart();
-    }
+//    for(i=0; i<syncT.list_sync_download.count(); i++)
+//    {
+//        trans = new netTrans;
+//        info = syncT.list_sync_download.at(i);
+//        qDebug()<<"[sync down]"<<info->PARENT_ID<<syncT.getPathById(info->PARENT_ID)<<info->FILE_NAME;
+//        trans->netDownload(info, syncT.getPathById(info->PARENT_ID),netClient->netToken());
+//        connect(trans, SIGNAL(taskFinished(TaskInfo)), this, SLOT(taskDownloadFinished(TaskInfo)));
+//        taskDownload<<trans;
+//    }
+//    while((taskNum < 3) && (taskNum<taskDownload.count()))
+//    {
+//        taskDownload.at(taskNum++)->taskStart();
+//    }
 }
 
 void NetSync::syncTaskUpload()
@@ -287,25 +298,25 @@ void NetSync::taskDownloadFinished(TaskInfo info)
             sInfo->syncPath = info.filePath;
             sInfo->lastDate = QFileInfo(sInfo->syncPath).lastModified();
             syncT.list_local<<sInfo;
+            syncT.updateParentDate(sInfo->parentId);
             delete trans;
+            syncLocalWrite(syncT.list_local);
+
+            syncTaskDownload();
+
             break;
         }
     }
     i=0;
-    while(i<taskDownload.count())
-    {
-        if(taskDownload.at(i)->taskIsStart())
-        {
-            i++;
-            continue;
-        }
-        taskDownload.at(i)->taskStart();
-        break;
-    }
+
 //    syncT.isSyncing = false;
-    syncT.creatSyncUploadList();
+//    syncT.creatSyncUploadList();
+    syncT.reportSyncNum();
+    if(syncT.list_sync_download.count() == 0)
+        syncStateChanged(false);
+    downloadNum(syncT.list_sync_download.count());
     syncT.setLocalList();
-    syncLocalWrite(syncT.list_local);
+//    syncLocalWrite(syncT.list_local);
     qDebug()<<"[taskDownload]"<<taskDownload.count()<<syncT.list_local.count();
 }
 
@@ -351,8 +362,7 @@ void NetSync::taskUploadFinished(TaskInfo info)
     if(taskUpload.count() == 0)
         syncT.creatSyncUploadList();
 
-//    syncT.reportSyncNum();
-    uploadNum(taskUpload.count());
+    syncT.reportSyncNum();
     syncT.setLocalList();
     syncLocalWrite(syncT.list_local);
     qDebug()<<"[taskUpload]"<<taskUpload.count()<<syncT.list_local.count();

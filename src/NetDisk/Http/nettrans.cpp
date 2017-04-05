@@ -503,25 +503,25 @@ void netWork::fileRecv()
 {
     QByteArray qba = netReply->readAll();qDebug()<<"download:"<<qba.size();
 
-
     QJsonDocument parseDoc;
     QJsonParseError jError;
     parseDoc = QJsonDocument::fromJson(qba, &jError);
 
-//    if(jError.error == QJsonParseError::NoError)
-//    {
-//        if(parseDoc.isObject())
-//        {
-//            QJsonObject obj = parseDoc.object();
-//            if(obj.contains("msg"))
-//            {
-//                //解析返回的状态码
-//                QJsonValue value = obj.take("msg");
-//                QString msg = value.toString();
-//                qDebug()<<"msg"<<msg;
-//            }
-//        }
-//    }
+    if(jError.error == QJsonParseError::NoError)
+    {
+        if(parseDoc.isObject())
+        {
+            QJsonObject obj = parseDoc.object();
+            if(obj.contains("msg"))
+            {
+                //解析返回的状态码
+                QJsonValue value = obj.take("msg");
+                QString msg = value.toString();
+                qDebug()<<"msg"<<msg;
+
+            }
+        }
+    }
 
     taskInfo.curSize+=qba.size();
     taskInfo.taskSpeed += qba.size();

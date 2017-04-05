@@ -887,16 +887,16 @@ double syncTable::getIdByName(QString name, bool* isChanged)
     else
     {
         QFileInfo fInfo = QFileInfo(name);
-//        qDebug()<<"[date]"<<fInfo.lastModified().toString("yyyy-MM-dd hh:mm:ss")<<info->lastDate.toString("yyyy-MM-dd hh:mm:ss");
-        if((fInfo.lastModified().toMSecsSinceEpoch()/1000) > (info->lastDate.toMSecsSinceEpoch()/1000))
+        qDebug()<<"[date]"<<fInfo.lastModified().toString("yyyy-MM-dd hh:mm:ss")<<info->lastDate.toString("yyyy-MM-dd hh:mm:ss");
+        if((fInfo.lastModified().toMSecsSinceEpoch()/1000) > (info->lastDate.toMSecsSinceEpoch()/1000)+1)
         {
             *isChanged = true;
-//            qDebug()<<fInfo.absoluteFilePath()<<"changed";
+            qDebug()<<fInfo.absoluteFilePath()<<"changed";
         }
         else
         {
             *isChanged = false;
-//            qDebug()<<fInfo.absoluteFilePath()<<"not changed";
+            qDebug()<<fInfo.absoluteFilePath()<<"not changed";
         }
     }
     return ret;
@@ -1028,9 +1028,29 @@ void syncTable::syncNextDir()
     qDebug()<<"[SYNC DIR]"<<info->FILE_NAME<<list_task.count();
 }
 
+void syncTable::updateParentDate(double id)
+{
+    int pId = id;
+    int index = 0;
+    syncLocalInfo* info;
+
+    while(pId != -1)
+    {
+        index = list_local_index.indexOf(QString::number(pId));qDebug()<<"[updateParentDateret]"<<index<<pId;
+        if(index == -1)
+            return;
+        info = list_local.takeAt(index);
+        qDebug()<<"[updateParentDate]"<<info->lastDate.toString("yyyy/MM/dd hh:mm:ss")<<QFileInfo(info->syncPath).lastModified().toString("yyyy/MM/dd hh:mm:ss");
+        info->lastDate = QFileInfo(info->syncPath).lastModified();
+        pId = info->parentId;
+        list_local.insert(index, info);
+    }
+}
+
 void syncTable::reportSyncNum()
 {
     emit syncUploadChanged(list_sync_upload.count());
+    emit syncDownloadChanged(list_sync_download.count());
 }
 
 void syncTable::recvListClear()
@@ -1089,7 +1109,7 @@ void syncTable::creatSyncUploadList()
         localInfo->PARENT_ID = getIdByName(localInfoReal->absolutePath());
         localInfo->ID = getIdByName(localInfoReal->absoluteFilePath(),&isUpdated);
         localInfo->FILE_NAME = localInfoReal->absoluteFilePath();//此处使用FILE_NAME保存待上传的本地文件路径
-        qDebug()<<"isupdated"<<isUpdated;
+//        qDebug()<<"isupdated"<<isUpdated;
         if(!isUpdated)
             continue;
         list_sync_upload<<localInfo;

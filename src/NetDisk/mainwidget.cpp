@@ -89,6 +89,7 @@ MainWidget::MainWidget(QWidget *parent) :
     connect(syncPanel, SIGNAL(pathChanged(QList<QFileInfo*>)), pathView, SLOT(pathChange(QList<QFileInfo*>)));
     connect(syncPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
     connect(syncPanel, SIGNAL(syncNumChanged(int,int)), this, SLOT(getSyncNum(int,int)));
+    connect(diskPanel->diskSync, SIGNAL(syncStateChanged(bool)), this, SLOT(syncEnable(bool)));
     connect(ui->showDelete, SIGNAL(toggled(bool)), diskPanel, SLOT(showDelete(bool)));
     connect(pathView, SIGNAL(cdRequest(double)), diskPanel, SLOT(cmdCd(double)));
     connect(pathView, SIGNAL(cdRequest(int)), syncPanel, SLOT(cmdCd(int)));
@@ -339,9 +340,9 @@ void MainWidget::historyEnabled(bool backEnable, bool aheadEnable)
     ui->forward->setEnabled(aheadEnable);
 }
 
-void MainWidget::getSyncNum(int upNum, int)
+void MainWidget::getSyncNum(int upNum, int downNum)
 {
-    QString str = QString("本地更新文件%1个").arg(upNum);
+    QString str = QString("云端更新文件%1个 本地更新文件%2个").arg(downNum).arg(upNum);
     ui->syncMsg->setText(str);
     sysTray->showMessage(QString("文件同步"), str,QSystemTrayIcon::Information);
 }
@@ -351,6 +352,20 @@ void MainWidget::getSyncNum(int upNum)
     QString str = QString("本地更新文件%1个").arg(upNum);
     ui->syncMsg->setText(str);
     sysTray->showMessage(QString("文件同步"), str,QSystemTrayIcon::Information);
+}
+
+void MainWidget::syncEnable(bool enable)
+{
+    if(enable)
+    {
+        ui->syncStart->setEnabled(false);
+        ui->syncStart->setText("同步中");
+    }
+    else
+    {
+        ui->syncStart->setEnabled(true);
+        ui->syncStart->setText("一键同步");
+    }
 }
 
 void MainWidget::initSysTray()

@@ -16,7 +16,8 @@ login::login(QWidget *parent) :
     if(netConf->autoLoginDisk())
         emit netLogin();
     ui->btn_msglogin->setHidden(true);
-
+    ui->btn_fgtpasswd->setHidden(true);
+    ui->btn_reg->setHidden(true);
 //    if(netConf->getServerAddress().isEmpty())
 //        ui->btn_set->setStatusTip("请点击这里配置服务器地址");
 }
@@ -88,6 +89,10 @@ void login::on_btn_close_clicked()
 
 void login::on_btn_login_clicked()
 {
+    if(netConf->getServerAddress().isEmpty())
+    {
+        ui->label_loginmsg->setText("请先配置服务器地址");
+    }
     netConf->setUsrname(ui->username->text());
     netConf->setPasswd(ui->passwd->text());
     netConf->saveAll();

@@ -79,6 +79,7 @@ public slots:
     void historyEnabled(bool backEnable, bool aheadEnable);
     void getSyncNum(int upNum, int downNum);
     void getSyncNum(int upNum);
+    void syncEnable(bool);
 
 
 private:

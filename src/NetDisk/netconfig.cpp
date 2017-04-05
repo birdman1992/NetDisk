@@ -2,15 +2,16 @@
 #include <QChar>
 #include <QtDebug>
 #include <QCryptographicHash>
-
+#include <qcoreapplication.h>
 #define CONF_FILENAME "Netdisk.conf"
 
 NetConfig* netConf;
 
 NetConfig::NetConfig()
 {
-    downloadPath = "LinkRealNetdiskDownload/";
-    QDir dir = QDir("sync/");
+    qDebug()<<QCoreApplication::applicationDirPath();
+    downloadPath = QCoreApplication::applicationDirPath()+"/LinkRealNetdiskDownload/";
+    QDir dir = QDir(QCoreApplication::applicationDirPath()+"/sync/");
     syncPath = dir.absolutePath();
     maxTaskNum = 3;
     userName = QString();
@@ -30,7 +31,6 @@ void NetConfig::setServerAddress(QString address)
 {
     while(address.endsWith("/"))
         address = address.left(address.length()-1);
-    address = "http://"+address;
     qDebug()<<address;
     serverAddress = address;
 }
@@ -133,8 +133,8 @@ void NetConfig::saveAll()
 void NetConfig::creatDir()
 {
     QDir* dir = new QDir;
-    if(!dir->exists("conf"))
-        dir->mkdir("conf");
+    if(!dir->exists(QCoreApplication::applicationDirPath()+"/conf"))
+        dir->mkdir(QCoreApplication::applicationDirPath()+"/conf");
     if(!dir->exists(downloadPath))
         dir->mkdir(downloadPath);
     if(!dir->exists(syncPath))
@@ -151,7 +151,7 @@ void NetConfig::creatConfig()
 
 void NetConfig::creatDefaultConfig()
 {
-    QFile* pFile = new QFile("conf/"+QString(CONF_FILENAME));
+    QFile* pFile = new QFile(QCoreApplication::applicationDirPath()+"/conf/"+QString(CONF_FILENAME));
 
     if(pFile->exists())
     {
@@ -162,8 +162,9 @@ void NetConfig::creatDefaultConfig()
     {
         delete pFile;
         //设置默认配置
-        setDownloadPath(QDir("LinkRealNetdiskDownload").absolutePath());
+        setDownloadPath(QDir(QCoreApplication::applicationDirPath()+"/LinkRealNetdiskDownload").absolutePath());
         maxTaskNum = 3;
+        syncPath = QCoreApplication::applicationDirPath()+"/sync/";
         userName = QString();
         passwd = QString();
         remPasswd = false;
@@ -177,7 +178,7 @@ void NetConfig::readConfig()
 {
     QJsonParseError jError;
     QJsonValue jval;
-    QFile* pFile = new QFile("conf/"+ QString(CONF_FILENAME));
+    QFile* pFile = new QFile(QCoreApplication::applicationDirPath()+"/conf/"+ QString(CONF_FILENAME));
     if(!pFile->open(QFile::ReadOnly))
     {
         qDebug()<<"[config file]:open error";
@@ -305,7 +306,7 @@ void NetConfig::readConfig()
 
 void NetConfig::saveConfig()
 {
-    QFile* pFile = new QFile("conf/"+QString(CONF_FILENAME));
+    QFile* pFile = new QFile(QCoreApplication::applicationDirPath()+"/conf/"+QString(CONF_FILENAME));
 
 //    if(pFile->exists())
 //    {
