@@ -18,6 +18,7 @@ login::login(QWidget *parent) :
     ui->btn_msglogin->setHidden(true);
     ui->btn_fgtpasswd->setHidden(true);
     ui->btn_reg->setHidden(true);
+    connect(ui->btn_set, SIGNAL(clicked()), this, SIGNAL(diskSet()));
 //    if(netConf->getServerAddress().isEmpty())
 //        ui->btn_set->setStatusTip("请点击这里配置服务器地址");
 }
@@ -30,6 +31,23 @@ login::~login()
 void login::loginFailed()
 {
     ui->label_loginmsg->setText("用户名或密码错误");
+}
+
+void login::autoLogin()
+{
+    if(netConf->autoLoginDisk())
+    {
+        ui->btn_login->setText("登录中");
+        netConf->setUsrname(ui->username->text());
+        netConf->setPasswd(ui->passwd->text());
+        netConf->saveAll();
+        emit netLogin();
+    }
+}
+
+void login::logout()
+{
+    ui->btn_login->setText("登录");
 }
 
 void login::paintEvent(QPaintEvent*)
@@ -76,15 +94,10 @@ void login::on_btn_min_clicked()
     this->setWindowState(Qt::WindowMinimized);
 }
 
-void login::on_btn_set_clicked()
-{
-    serverSet.show();
-}
-
 void login::on_btn_close_clicked()
 {
     this->close();
-    emit close();
+    emit winClose();
 }
 
 void login::on_btn_login_clicked()
@@ -92,6 +105,7 @@ void login::on_btn_login_clicked()
     if(netConf->getServerAddress().isEmpty())
     {
         ui->label_loginmsg->setText("请先配置服务器地址");
+        return;
     }
     netConf->setUsrname(ui->username->text());
     netConf->setPasswd(ui->passwd->text());

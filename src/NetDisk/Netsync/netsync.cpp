@@ -105,16 +105,17 @@ void NetSync::syncLocalRead()
         qba = f->readLine();
         if(qba.isEmpty())
             break;
-        qDebug()<<"[local read]"<<qba;
+//        qDebug()<<"[local read]"<<qba;
         syncLocalInfo* info = new syncLocalInfo;
         QStringList lInfo = QString::fromLocal8Bit(qba.left(qba.size()-1)).split("\t");
-        info->fileId = QString(lInfo.at(0)).toDouble();
-        info->syncPath = lInfo.at(1);
+        info->parentId = QString(lInfo.at(0)).toDouble();
+        info->fileId = QString(lInfo.at(1)).toDouble();
+        info->syncPath = lInfo.at(2);
         info->fileName = info->syncPath.section('/',-1);
-        info->fileMd5 = lInfo.at(2);
-        info->fileSize = QString(lInfo.at(3)).toLongLong();
-        info->isDir = QString(lInfo.at(4)).toInt();
-        info->lastDate = QDateTime::fromString(lInfo.at(5), "yyyy-MM-dd hh:mm:ss");
+        info->fileMd5 = lInfo.at(3);
+        info->fileSize = QString(lInfo.at(4)).toLongLong();
+        info->isDir = QString(lInfo.at(5)).toInt();
+        info->lastDate = QDateTime::fromString(lInfo.at(6), "yyyy-MM-dd hh:mm:ss");
         syncT.list_local<<info;
     }
     syncT.setLocalList();
@@ -131,7 +132,7 @@ void NetSync::syncLocalWrite(QList<syncLocalInfo *> l)
     for(int i=0; i<l.count(); i++)
     {
         syncLocalInfo* info = l.at(i);
-        QString str = QString::number(info->fileId) +"\t"+ info->syncPath+"\t"+ info->fileMd5 +"\t"+ QString::number(info->fileSize) +"\t"+
+        QString str = QString::number(info->parentId) +"\t"+ QString::number(info->fileId) +"\t"+ info->syncPath+"\t"+ info->fileMd5 +"\t"+ QString::number(info->fileSize) +"\t"+
                 QString::number(info->isDir) +"\t" + info->lastDate.toString("yyyy-MM-dd hh:mm:ss")+"\n";
         f->write(str.toLocal8Bit());
     }
@@ -206,6 +207,7 @@ void NetSync::syncHostPointSave(QDateTime sTime)
         syncT.syncNextDir();
         return;
     }
+    syncDateWrite(sTime);
     syncT.syncTime = sTime;
     syncT.syncHostToLocal();
     syncT.creatSyncUploadList();
@@ -294,8 +296,8 @@ void NetSync::taskDownloadFinished(TaskInfo info)
             sInfo->fileName = info.fileName;
             sInfo->fileSize = info.fileSize;
             sInfo->isDir = 0;
-            sInfo->parentId = 0;
-            sInfo->syncPath = info.filePath;
+            sInfo->parentId = info.parentId;
+            sInfo->syncPath = info.filePath;qDebug()<<"[date 2]"<<QFileInfo(sInfo->syncPath).absoluteFilePath()<<QFileInfo(sInfo->syncPath).lastModified();
             sInfo->lastDate = QFileInfo(sInfo->syncPath).lastModified();
             syncT.list_local<<sInfo;
             syncT.updateParentDate(sInfo->parentId);

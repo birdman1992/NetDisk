@@ -4,6 +4,9 @@
 #include <qfileiconprovider.h>
 #include <QDebug>
 #include <QIcon>
+//#include <shellapi.h>
+//#include <Windows.h>
+#include <qdesktopservices.h>
 
 #include "netconfig.h"
 
@@ -161,7 +164,7 @@ void syncList::showList()
         else
             ui->tableWidget->setItem(i,0,new QTableWidgetItem(QIcon(":/imgs/32x32/green_ok_yes.png"),""));
         ui->tableWidget->setItem(i,1,new QTableWidgetItem(QIcon(icoProvider.icon(list_show.at(i))),list_show.at(i).fileName()));
-        ui->tableWidget->setItem(i,2,new QTableWidgetItem(list_show.at(i).lastModified().toString("yyyy/MM/dd hh:mm")));
+        ui->tableWidget->setItem(i,2,new QTableWidgetItem(list_show.at(i).lastModified().toString("yyyy/MM/dd hh:mm:ss")));
         ui->tableWidget->setItem(i,3,new QTableWidgetItem(getFolderType(list_show.at(i))));
         ui->tableWidget->setItem(i,4,new QTableWidgetItem(getFolderSize(list_show.at(i).size())));
     }
@@ -209,7 +212,11 @@ void syncList::on_tableWidget_doubleClicked(const QModelIndex &index)
 {
     QFileInfo* info = new QFileInfo(list_show.at(index.row()));
     if(!info->isDir())
+    {
+        qDebug()<<info->absoluteFilePath();
+        QDesktopServices::openUrl(QUrl::fromLocalFile(info->absoluteFilePath()));
         return;
+    }
 
     while(list_path.count()>(currentIndex+1))
     {

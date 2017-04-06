@@ -200,18 +200,25 @@ void FilesPanel::panelCd(fileInfo* dir)
     }
     fileInfo* info = new fileInfo(*dir);
 
-    for(i=0; i<folderPath.count(); i++)
+    while((folderPath.count()-1)>curIndex)
     {
-        if(del||(i>curIndex))
-        {
-            fileInfo* f = folderPath.takeAt(i);
-            delete f;
-            continue;
-        }
-        if(folderPath.at(i)->ID == dir->ID)
-            del = true;
+        fileInfo* f = folderPath.takeLast();
+        delete f;
     }
-    if(!del)
+
+//    for(i=0; i<folderPath.count(); i++)
+//    {
+//        if(del||(i>curIndex))
+//        if(i>curIndex)
+//        {
+//            fileInfo* f = folderPath.takeAt(i);
+//            delete f;
+//            continue;
+//        }
+//        if(folderPath.at(i)->ID == dir->ID)
+//            del = true;
+//    }
+//    if(!del)
         folderPath<<info;
     curDirId = dir->ID;
     curIndex = folderPath.count()-1;

@@ -41,6 +41,7 @@ public:
     quint64 taskSpeed;
     QTime finishTime;
     double taskId;
+    double parentId;
 };
 
 class netWork : public QObject
@@ -53,6 +54,7 @@ public:
     TaskInfo taskinfo();
     void taskStart();
     QString getTaskSpeed();
+    void setTaskInfo(double parentId);
     ~netWork();
 
 

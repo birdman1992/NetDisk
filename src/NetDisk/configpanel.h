@@ -14,6 +14,8 @@ class ConfigPanel : public QWidget
 public:
     explicit ConfigPanel(QWidget *parent = 0);
     ~ConfigPanel();
+    bool configCheck();
+    bool configIsFinished();
 
 private slots:
     void on_downloadSet_clicked();
@@ -24,8 +26,14 @@ private slots:
 
     void on_maxTask_activated(int index);
 
+    void on_finish_clicked();
+
+signals:
+    void configOver();
+
 private:
     Ui::ConfigPanel *ui;
+    bool configFinshed;
 };
 
 #endif // CONFIGPANEL_H

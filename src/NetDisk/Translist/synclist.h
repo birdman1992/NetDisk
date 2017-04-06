@@ -24,6 +24,7 @@ public:
     void initTable(syncTable *table);
     void goAhead();
     void goBack();
+    void syncRefresh();
 
 public slots:
     void cmdCd(int);
@@ -50,7 +51,6 @@ private:
     QString getFolderType(QFileInfo fInfo);
     QString getFolderSize(quint64 fileSize);
     void updateSyncMessage();
-    void syncRefresh();
 
 signals:
     void pathChanged(QList<QFileInfo*>);

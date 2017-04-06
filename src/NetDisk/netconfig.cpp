@@ -10,9 +10,11 @@ NetConfig* netConf;
 NetConfig::NetConfig()
 {
     qDebug()<<QCoreApplication::applicationDirPath();
-    downloadPath = QCoreApplication::applicationDirPath()+"/LinkRealNetdiskDownload/";
-    QDir dir = QDir(QCoreApplication::applicationDirPath()+"/sync/");
-    syncPath = dir.absolutePath();
+//    downloadPath = QCoreApplication::applicationDirPath()+"/LinkRealNetdiskDownload/";
+//    QDir dir = QDir(QCoreApplication::applicationDirPath()+"/sync/");
+//    syncPath = dir.absolutePath();
+    downloadPath = QString();
+    syncPath = QString();
     maxTaskNum = 3;
     userName = QString();
     passwd = QString();
@@ -37,6 +39,7 @@ void NetConfig::setServerAddress(QString address)
 
 QString NetConfig::getServerAddress()
 {
+    qDebug()<<"serveraddress"<<serverAddress.isEmpty();
     return serverAddress;
 }
 
@@ -135,10 +138,10 @@ void NetConfig::creatDir()
     QDir* dir = new QDir;
     if(!dir->exists(QCoreApplication::applicationDirPath()+"/conf"))
         dir->mkdir(QCoreApplication::applicationDirPath()+"/conf");
-    if(!dir->exists(downloadPath))
-        dir->mkdir(downloadPath);
-    if(!dir->exists(syncPath))
-        dir->mkdir(syncPath);
+//    if(!dir->exists(downloadPath))
+//        dir->mkdir(downloadPath);
+//    if(!dir->exists(syncPath))
+//        dir->mkdir(syncPath);
 
     delete dir;
     return;
@@ -162,9 +165,10 @@ void NetConfig::creatDefaultConfig()
     {
         delete pFile;
         //设置默认配置
-        setDownloadPath(QDir(QCoreApplication::applicationDirPath()+"/LinkRealNetdiskDownload").absolutePath());
+//        setDownloadPath(QDir(QCoreApplication::applicationDirPath()+"/LinkRealNetdiskDownload").absolutePath());
+        downloadPath = QString();
         maxTaskNum = 3;
-        syncPath = QCoreApplication::applicationDirPath()+"/sync/";
+        syncPath = QString();//QCoreApplication::applicationDirPath()+"/sync/";
         userName = QString();
         passwd = QString();
         remPasswd = false;

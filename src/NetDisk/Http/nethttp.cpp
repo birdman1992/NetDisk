@@ -888,6 +888,7 @@ double syncTable::getIdByName(QString name, bool* isChanged)
     {
         QFileInfo fInfo = QFileInfo(name);
         qDebug()<<"[date]"<<fInfo.lastModified().toString("yyyy-MM-dd hh:mm:ss")<<info->lastDate.toString("yyyy-MM-dd hh:mm:ss");
+        qDebug()<<info->syncPath;
         if((fInfo.lastModified().toMSecsSinceEpoch()/1000) > (info->lastDate.toMSecsSinceEpoch()/1000)+1)
         {
             *isChanged = true;
@@ -980,6 +981,7 @@ void syncTable::syncDir()
                 lInfo->fileName = info->FILE_NAME;
                 lInfo->fileSize = info->SIZE;
                 lInfo->isDir = 1;
+                lInfo->parentId = info->PARENT_ID;
                 lInfo->lastDate = QFileInfo(cur_path+dirPath).lastModified();
                 list_local<<lInfo;
                 emit localListChanged();
@@ -1036,7 +1038,7 @@ void syncTable::updateParentDate(double id)
 
     while(pId != -1)
     {
-        index = list_local_index.indexOf(QString::number(pId));qDebug()<<"[updateParentDateret]"<<index<<pId;
+        index = list_local_index.indexOf(QString::number(pId));
         if(index == -1)
             return;
         info = list_local.takeAt(index);

@@ -230,22 +230,6 @@ QPushButton:hover{text-decoration: underline}
     <string/>
    </property>
   </widget>
-  <widget class="QLabel" name="label_3">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>111</width>
-     <height>44</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">image: url(:/imgs/Login/login_logo.png);</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
   <widget class="QPushButton" name="btn_min">
    <property name="geometry">
     <rect>

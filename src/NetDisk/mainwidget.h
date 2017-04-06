@@ -80,6 +80,8 @@ public slots:
     void getSyncNum(int upNum, int downNum);
     void getSyncNum(int upNum);
     void syncEnable(bool);
+    void openDiskConfig();
+    void diskInit();
 
 
 private:

@@ -641,6 +641,9 @@ border-bottom:1px;</string>
               <height>28</height>
              </size>
             </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
             <property name="styleSheet">
              <string notr="true">#back{
 	image: url(:/imgs/function/Arrow-left.png);
@@ -684,6 +687,9 @@ border-bottom:1px;</string>
               <width>32</width>
               <height>28</height>
              </size>
+            </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
             </property>
             <property name="styleSheet">
              <string notr="true">#forward{
@@ -753,6 +759,9 @@ border-bottom:1px;</string>
               <height>28</height>
              </size>
             </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
             <property name="styleSheet">
              <string notr="true">#refresh{
 	background-color: rgb(255, 255, 255);
@@ -792,6 +801,9 @@ border-bottom:1px;</string>
               <width>63</width>
               <height>28</height>
              </size>
+            </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
             </property>
             <property name="styleSheet">
              <string notr="true">#searchFilter{
@@ -858,6 +870,9 @@ border-bottom:1px;</string>
               <width>25</width>
               <height>28</height>
              </size>
+            </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
             </property>
             <property name="styleSheet">
              <string notr="true">#searchBtn{
@@ -1182,6 +1197,9 @@ font: 9pt &quot;微软雅黑&quot;;
               <width>70</width>
               <height>47</height>
              </size>
+            </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
             </property>
             <property name="styleSheet">
              <string notr="true">border-image: url(:/imgs/Login/login_btn.png);

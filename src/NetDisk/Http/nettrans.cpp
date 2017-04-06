@@ -206,6 +206,11 @@ QString netWork::getTaskSpeed()
     return fTime+"  "+QString::number(speed)+l.at(i);
 }
 
+void netWork::setTaskInfo(double parentId)
+{
+    taskInfo.parentId = parentId;
+}
+
 void netWork::md5Check()
 {
 //    quint64 bytesToWrite = fInfo.size();
@@ -580,6 +585,7 @@ void netTrans::netDownload(syncInfo info, QString downLoadPath, QString token)
     fInfo.SIZE = info.SIZE;
     fInfo.MD5 = info.MD5;
     work->netDownload(fInfo, downLoadPath,token);
+    work->setTaskInfo(info.PARENT_ID);
     return;
 }
 
@@ -611,8 +617,9 @@ TaskInfo netTrans::taskinfo()
 
 netTrans::~netTrans()
 {
-    Thread->quit();
-    Thread->wait();
+    Thread->quit();qDebug()<<"A1";
+    Thread->wait();qDebug()<<"A2";
+    delete work;
 }
 
 void netTrans::transReady()

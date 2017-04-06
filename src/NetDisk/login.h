@@ -20,10 +20,11 @@ public:
     explicit login(QWidget *parent = 0);
     ~login();
     void loginFailed();
+    void autoLogin();
+    void logout();
 
 private:
     Ui::login *ui;
-    ServerConfig serverSet;
     bool wMoveable;
     QPoint dragPosition;
     QString username;
@@ -36,10 +37,10 @@ private:
 signals:
     void winClose();
     void netLogin();
+    void diskSet();
 
 private slots:
     void on_btn_min_clicked();
-    void on_btn_set_clicked();
     void on_btn_close_clicked();
     void on_btn_login_clicked();
     void on_isrem_toggled(bool checked);
