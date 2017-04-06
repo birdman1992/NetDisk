@@ -7,6 +7,8 @@
 #include <qthread.h>
 #include "netconfig.h"
 
+int thread_count;
+
 netWork::netWork(QObject *parent) :
     QObject(parent)
 {
@@ -447,10 +449,11 @@ void netWork::replyFinished(QNetworkReply *reply)
     }
     else
     {
-        qDebug()<<"[down]:"<<qba.size()<<reply->isFinished();
+        qDebug()<<"[down]:"<<qba.size();
         pFile->write(qba);
     }
     reply->deleteLater();
+    return;
 }
 
 void netWork::replyError(QNetworkReply::NetworkError errorCode)
@@ -475,6 +478,7 @@ void netWork::getServerAddr()
     nUrl = netConf->getServerAddress() + "/api/file/download?"+QString("fid=%1&sign=%2&token=%3").arg(fileId).arg(QString(sign.toHex())).arg(transToken);
     nUrl+="&"+QString(APP_ID);
     disconnect(netReply, SIGNAL(readyRead()), this, SLOT(getServerAddr()));
+    netReply->deleteLater();
 
     if(jError.error == QJsonParseError::NoError)
     {
@@ -619,6 +623,7 @@ netTrans::~netTrans()
 {
     Thread->quit();qDebug()<<"A1";
     Thread->wait();qDebug()<<"A2";
+    thread_count--;
     delete work;
 }
 

@@ -89,8 +89,11 @@ void NetSync::syncLocalRead()
         syncT.setLocalList();
         return;
     }
-    else
-        f->open(QFile::ReadOnly);
+    else if(!f->open(QFile::ReadOnly))
+    {
+        qDebug()<<netConf->getSyncPath()+QString(FILE_SYNC)<<"open failed";
+    }
+
 
     while(!syncT.list_local.isEmpty())
     {
@@ -228,7 +231,7 @@ void NetSync::syncTaskDownload()
 //    syncT.isSyncing = true;
     qDebug()<<"download:"<<syncT.list_sync_download.count();
     while((!syncT.list_sync_download.isEmpty()) && taskDownload.count()<=3)
-    {
+    {thread_count++;
         trans = new netTrans;
         info = syncT.list_sync_download.takeFirst();
         qDebug()<<"[sync down]"<<info->PARENT_ID<<syncT.getPathById(info->PARENT_ID)<<info->FILE_NAME;
@@ -297,11 +300,11 @@ void NetSync::taskDownloadFinished(TaskInfo info)
             sInfo->fileSize = info.fileSize;
             sInfo->isDir = 0;
             sInfo->parentId = info.parentId;
-            sInfo->syncPath = info.filePath;qDebug()<<"[date 2]"<<QFileInfo(sInfo->syncPath).absoluteFilePath()<<QFileInfo(sInfo->syncPath).lastModified();
+            sInfo->syncPath = info.filePath;
             sInfo->lastDate = QFileInfo(sInfo->syncPath).lastModified();
             syncT.list_local<<sInfo;
             syncT.updateParentDate(sInfo->parentId);
-            delete trans;
+            delete trans;    qDebug()<<"thread_count"<<thread_count;
             syncLocalWrite(syncT.list_local);
 
             syncTaskDownload();

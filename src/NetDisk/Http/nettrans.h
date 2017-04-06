@@ -20,7 +20,7 @@
 #define CHUNK_SIZE (1024*100)
 class fileInfo;
 class syncInfo;
-
+extern int thread_count;
 enum TaskState
 {
     NO_STATE,

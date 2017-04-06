@@ -887,17 +887,17 @@ double syncTable::getIdByName(QString name, bool* isChanged)
     else
     {
         QFileInfo fInfo = QFileInfo(name);
-        qDebug()<<"[date]"<<fInfo.lastModified().toString("yyyy-MM-dd hh:mm:ss")<<info->lastDate.toString("yyyy-MM-dd hh:mm:ss");
-        qDebug()<<info->syncPath;
+//        qDebug()<<"[date]"<<fInfo.lastModified().toString("yyyy-MM-dd hh:mm:ss")<<info->lastDate.toString("yyyy-MM-dd hh:mm:ss");
+//        qDebug()<<info->syncPath;
         if((fInfo.lastModified().toMSecsSinceEpoch()/1000) > (info->lastDate.toMSecsSinceEpoch()/1000)+1)
         {
             *isChanged = true;
-            qDebug()<<fInfo.absoluteFilePath()<<"changed";
+//            qDebug()<<fInfo.absoluteFilePath()<<"changed";
         }
         else
         {
             *isChanged = false;
-            qDebug()<<fInfo.absoluteFilePath()<<"not changed";
+//            qDebug()<<fInfo.absoluteFilePath()<<"not changed";
         }
     }
     return ret;

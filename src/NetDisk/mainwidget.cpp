@@ -313,7 +313,10 @@ void MainWidget::openDiskConfig()
 }
 
 void MainWidget::diskInit()
-{qDebug()<<"diskInit";
+{
+    QThread thread_t;
+    qDebug()<<"diskInit"<<thread_t.stackSize();
+
     //系统托盘图标
     initSysTray();
 
@@ -358,7 +361,7 @@ void MainWidget::diskInit()
     syncPanel->hide();
     ui->frame_sync->hide();
     ui->frame_function->hide();
-
+    thread_count = 0;
     diskPanel = new FilesPanel(this);
     initPageWidgets();
     scrollFolder->setWidget(diskPanel);
