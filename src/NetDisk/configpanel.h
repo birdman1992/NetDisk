@@ -28,6 +28,8 @@ private slots:
 
     void on_finish_clicked();
 
+    void on_serverAddr_editingFinished();
+
 signals:
     void configOver();
 

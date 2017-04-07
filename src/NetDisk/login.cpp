@@ -1,6 +1,7 @@
 #include "login.h"
 #include "ui_login.h"
 #include "netconfig.h"
+#include <QDebug>
 
 login::login(QWidget *parent) :
     QWidget(parent),
@@ -18,6 +19,7 @@ login::login(QWidget *parent) :
     ui->btn_msglogin->setHidden(true);
     ui->btn_fgtpasswd->setHidden(true);
     ui->btn_reg->setHidden(true);
+
     connect(ui->btn_set, SIGNAL(clicked()), this, SIGNAL(diskSet()));
 //    if(netConf->getServerAddress().isEmpty())
 //        ui->btn_set->setStatusTip("请点击这里配置服务器地址");
@@ -48,6 +50,11 @@ void login::autoLogin()
 void login::logout()
 {
     ui->btn_login->setText("登录");
+}
+
+void login::hideLoginWaring()
+{
+    ui->label_loginmsg->setText("");
 }
 
 void login::paintEvent(QPaintEvent*)
@@ -124,3 +131,4 @@ void login::on_isauto_toggled(bool checked)
     netConf->setautoLogin(checked);
     netConf->saveAll();
 }
+

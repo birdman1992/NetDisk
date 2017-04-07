@@ -30,6 +30,7 @@ MainWidget::MainWidget(QWidget *parent) :
     connect(&loginUi, SIGNAL(diskSet()), this, SLOT(openDiskConfig()));
     connect(&loginUi, SIGNAL(winClose()), this, SLOT(on_wClose_clicked()));
     connect(diskConfig, SIGNAL(configOver()), this, SLOT(diskInit()));
+    connect(diskConfig, SIGNAL(configOver()), &loginUi, SLOT(hideLoginWaring()));
 
     loginUi.show();
     loginUi.autoLogin();

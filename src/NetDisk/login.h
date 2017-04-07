@@ -22,7 +22,6 @@ public:
     void loginFailed();
     void autoLogin();
     void logout();
-
 private:
     Ui::login *ui;
     bool wMoveable;
@@ -45,6 +44,9 @@ private slots:
     void on_btn_login_clicked();
     void on_isrem_toggled(bool checked);
     void on_isauto_toggled(bool checked);
+
+public slots:
+    void hideLoginWaring();
 };
 
 #endif // LOGIN_H

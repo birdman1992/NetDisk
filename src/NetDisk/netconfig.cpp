@@ -3,6 +3,7 @@
 #include <QtDebug>
 #include <QCryptographicHash>
 #include <qcoreapplication.h>
+#include <QMessageBox>
 #define CONF_FILENAME "Netdisk.conf"
 
 NetConfig* netConf;
@@ -137,7 +138,11 @@ void NetConfig::creatDir()
 {
     QDir* dir = new QDir;
     if(!dir->exists(QCoreApplication::applicationDirPath()+"/conf"))
-        dir->mkdir(QCoreApplication::applicationDirPath()+"/conf");
+        if(dir->mkdir(QCoreApplication::applicationDirPath()+"/conf"))
+        {
+            qDebug("权限不足,请以管理员权限运行程序");
+        }
+
 //    if(!dir->exists(downloadPath))
 //        dir->mkdir(downloadPath);
 //    if(!dir->exists(syncPath))

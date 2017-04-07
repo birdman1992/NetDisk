@@ -19,6 +19,7 @@ ConfigPanel::ConfigPanel(QWidget *parent) :
     ui->maxTask->addItem("4");
     ui->maxTask->addItem("5");
     ui->maxTask->setCurrentIndex(netConf->getMaxTaskNum()-1);
+    ui->warn_address->hide();
     configFinshed = configCheck();
 }
 
@@ -30,9 +31,20 @@ ConfigPanel::~ConfigPanel()
 bool ConfigPanel::configCheck()
 {
     if(netConf->getDownloadPath().isEmpty())
+    {
         ui->warn_download->show();
+        return false;
+    }
+    else
+        ui->warn_download->hide();
+
     if(netConf->getSyncPath().isEmpty())
-        ui->warn_download->show();
+    {
+        ui->warn_sync->show();
+        return false;
+    }
+    else
+        ui->warn_sync->hide();
 
     QString str = ui->serverAddr->text();
     if(str.isEmpty())
@@ -110,4 +122,9 @@ void ConfigPanel::on_finish_clicked()
         this->close();
         return;
     }
+}
+
+void ConfigPanel::on_serverAddr_editingFinished()
+{
+    configCheck();
 }
