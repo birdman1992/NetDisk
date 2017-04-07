@@ -7,8 +7,6 @@
 #include <qthread.h>
 #include "netconfig.h"
 
-int thread_count;
-
 netWork::netWork(QObject *parent) :
     QObject(parent)
 {
@@ -621,9 +619,9 @@ TaskInfo netTrans::taskinfo()
 
 netTrans::~netTrans()
 {
-    Thread->quit();qDebug()<<"A1";
-    Thread->wait();qDebug()<<"A2";
-    thread_count--;
+    Thread->quit();
+    Thread->wait();
+
     delete work;
 }
 

@@ -231,7 +231,7 @@ void NetSync::syncTaskDownload()
 //    syncT.isSyncing = true;
     qDebug()<<"download:"<<syncT.list_sync_download.count();
     while((!syncT.list_sync_download.isEmpty()) && taskDownload.count()<=3)
-    {thread_count++;
+    {
         trans = new netTrans;
         info = syncT.list_sync_download.takeFirst();
         qDebug()<<"[sync down]"<<info->PARENT_ID<<syncT.getPathById(info->PARENT_ID)<<info->FILE_NAME;
@@ -304,7 +304,7 @@ void NetSync::taskDownloadFinished(TaskInfo info)
             sInfo->lastDate = QFileInfo(sInfo->syncPath).lastModified();
             syncT.list_local<<sInfo;
             syncT.updateParentDate(sInfo->parentId);
-            delete trans;    qDebug()<<"thread_count"<<thread_count;
+            delete trans;
             syncLocalWrite(syncT.list_local);
 
             syncTaskDownload();

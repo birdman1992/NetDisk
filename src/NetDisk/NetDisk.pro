@@ -34,7 +34,8 @@ SOURCES += main.cpp\
     Tablewidget/listrowwidgets.cpp \
     Netsync/netsync.cpp \
     Translist/synclist.cpp \
-    serverconfig.cpp
+    serverconfig.cpp \
+    Http/netdonwloader.cpp
 
 HEADERS  += mainwidget.h \
     QFolder/qfolder.h \
@@ -55,7 +56,8 @@ HEADERS  += mainwidget.h \
     Tablewidget/listrowwidgets.h \
     Netsync/netsync.h \
     Translist/synclist.h \
-    serverconfig.h
+    serverconfig.h \
+    Http/netdonwloader.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \

@@ -10,9 +10,14 @@
 #include "Http/nettrans.h"
 #include "Http/nethttp.h"
 #include "netconfig.h"
+#include "Http/netdonwloader.h"
+#include <Translist/translist.h>
 #define SYNC_ID -1
+#define APP_ID    "appId=PC123987456"
+#define APP_KEY     "secretKey=d9563ff28bca607fa367deb13cc45ca2"
 class netTrans;
 class NetHttp;
+class TransList;
 
 enum httpState
 {
@@ -156,6 +161,7 @@ class NetHttp : public QObject
     Q_OBJECT
 public:
     explicit NetHttp(QObject *parent = 0);
+    void netInit(TransList* trans);
     void netLogin(QString user, QString passwd);
     void netList(double pId=-1, int cPage=1, int pageSize=20, int showdelete=0, QString name=QString(), QString fileType=QString());
     void netMkdir(double pId=-1, QString fileName = QString("新建文件夹"));
@@ -171,6 +177,7 @@ private:
     QNetworkAccessManager* manager;
     QNetworkAccessManager* managerSync;
     httpState State;
+    TransList* transList;
     netTrans* fTrans;//上传下载
     QList<netTrans*>listTask;//任务队列
     QDateTime serverTime;

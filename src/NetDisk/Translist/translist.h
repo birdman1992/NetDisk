@@ -6,10 +6,11 @@
 #include <QList>
 #include "Translist/bardelegata.h"
 #include "Http/nettrans.h"
-
+#include "Http/netdonwloader.h"
 namespace Ui {
 class TransList;
 }
+class netTrans;
 
 class TransList : public QWidget
 {
@@ -17,6 +18,8 @@ class TransList : public QWidget
 
 public:
     explicit TransList(QWidget *parent = 0);
+    int download(DownloadInfo* info);
+
     ~TransList();
 
 private:
@@ -24,6 +27,8 @@ private:
     QTimer tProgress;
     TransModel* transModel;
     QList<netTrans*> taskList;
+    QList<NetDonwloader*> list_downloader;//下载器队列
+    NetDonwloader* downloadInfo;
     int transNum;
     int progress;
     int colIndex_speed;
@@ -34,6 +39,7 @@ private:
 
 private slots:
     void progressCheck();
+    void downloadFinish(DownloadInfo* info);
 
 public slots:
     void newTask(netTrans*);

@@ -14,13 +14,12 @@
 //#define HTTP_ADDR "http://120.2 4.216.97:8888"
 #define HTTP_ADDR "http://120.76.52.78:8800/LinkRealSkyDrive"
 //#define HTTP_ADDR "http://192.168.0.55:8888"
-#define APP_ID    "appId=PC123987456"
-#define APP_KEY     "secretKey=d9563ff28bca607fa367deb13cc45ca2"
+
 
 #define CHUNK_SIZE (1024*100)
 class fileInfo;
 class syncInfo;
-extern int thread_count;
+
 enum TaskState
 {
     NO_STATE,

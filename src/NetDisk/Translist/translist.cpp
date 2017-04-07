@@ -46,6 +46,11 @@ TransList::TransList(QWidget *parent) :
     tProgress.start(1000);
 }
 
+int TransList::download(DownloadInfo *info)
+{
+
+}
+
 TransList::~TransList()
 {
     delete ui;
@@ -87,6 +92,11 @@ void TransList::progressCheck()
         transModel->setData(transModel->index(i,colIndex_progress),(taskList.at(i)->taskinfo().curSize)*100/(taskList.at(i)->taskinfo().fileSize));
         i++;
     }
+}
+
+void TransList::downloadFinish(DownloadInfo *info)
+{
+
 }
 
 void TransList::newTask(netTrans *trans)

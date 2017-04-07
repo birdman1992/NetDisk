@@ -362,8 +362,8 @@ void MainWidget::diskInit()
     syncPanel->hide();
     ui->frame_sync->hide();
     ui->frame_function->hide();
-    thread_count = 0;
     diskPanel = new FilesPanel(this);
+    diskPanel->httpClient->netInit(transList);
     initPageWidgets();
     scrollFolder->setWidget(diskPanel);
     syncPanel->initTable(diskPanel->diskSync->getTable());

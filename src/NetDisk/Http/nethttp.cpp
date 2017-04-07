@@ -26,6 +26,11 @@ NetHttp::NetHttp(QObject *parent) : QObject(parent)
     //    netLogin("admin","888888");
 }
 
+void NetHttp::netInit(TransList *trans)
+{
+    transList = trans;
+}
+
 /***登录接口***/
 void NetHttp::netLogin(QString user, QString passwd)
 {
@@ -87,9 +92,9 @@ void NetHttp::netUpload(QString fileName, double pId)
 
 void NetHttp::netDownload(fileInfo info, QString downloadPath)
 {
-    fTrans = new netTrans;
-    fTrans->netDownload(info, downloadPath,token);
-    emit newTask(fTrans);
+//    fTrans = new netTrans;
+//    fTrans->netDownload(info, downloadPath,token);
+//    emit newTask(fTrans);
 }
 
 void NetHttp::netDelete(double fId)
