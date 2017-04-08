@@ -217,6 +217,7 @@ signals:
     void syncUpdate(QList<syncInfo*>, QDateTime);
     void syncHostPoint(QDateTime);
     void isTraversal(bool);
+    void needSync();
 
 public slots:
 };

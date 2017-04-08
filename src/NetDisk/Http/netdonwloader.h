@@ -78,7 +78,7 @@ class NetDonwloader : public QObject
 {
     Q_OBJECT
 public:
-    explicit NetDonwloader(DownloadInfo* info,QObject *parent = 0);
+    explicit NetDonwloader(QObject *parent = 0);
     bool downloaderIsLeisure();//下载器是否空闲
     bool addTask(DownloadInfo* info);
     ~NetDonwloader();

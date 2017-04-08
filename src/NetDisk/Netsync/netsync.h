@@ -27,7 +27,7 @@ public:
 
 public slots:
     void syncAll();
-    void loginSync(bool);
+    void loginSync();
     void syncHostFinished();
     void syncTaskDownload();
     void syncTaskUpload();

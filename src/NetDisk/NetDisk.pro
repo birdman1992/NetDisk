@@ -8,7 +8,7 @@ QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = Netdisk
+TARGET = LinkReal
 TEMPLATE = app
 RC_ICONS =app.ico
 

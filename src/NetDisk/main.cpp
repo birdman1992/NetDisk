@@ -14,7 +14,7 @@ void outputMessage(QtMsgType type, const QMessageLogContext &context, const QStr
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-//    qInstallMessageHandler(outputMessage); //注册MsgHandler回调函数
+    qInstallMessageHandler(outputMessage); //注册MsgHandler回调函数
     qDebug("Netdisk start");
     QFont font;
     font.setFamily("微软雅黑");

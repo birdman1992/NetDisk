@@ -224,7 +224,7 @@ void NetHttp::replySyncFinished(QNetworkReply *reply)
         qDebug()<<"Raw header SERVER_TIME not found.";
     }
     qDebug()<<"http SYNC recv:"<<nRecv.size();
-    qDebug()<<nRecv;
+//    qDebug()<<nRecv;
     syncInfoRecv(nRecv, serverTime);
 }
 
@@ -355,11 +355,11 @@ void NetHttp::fileInfoRecv(QByteArray info)
         }
     }
     else return;
-//    if(needLoginSync)
-//    {
-//        syncTraversal();
-//        needLoginSync = false;
-//    }
+    if(needLoginSync)
+    {
+        emit needSync();
+        needLoginSync = false;
+    }
     emit listUpdate(listInfo);
     emit pageChanged(isFirstPage, isLastPage, currentPageNum, totalPage);
 }
@@ -837,12 +837,12 @@ void syncTable::syncInfoInsert(QList<syncInfo *> info)
     //创建数据链表
     for(i=0; i<info.count(); i++)
     {
-        syncInfo* nInfo = new syncInfo(info.at(i));qDebug()<<"[SYNC host]"<<nInfo->FILE_NAME;
+        syncInfo* nInfo = new syncInfo(info.at(i));qDebug()<<"[SYNC from host]"<<nInfo->FILE_NAME<<"id:"<<nInfo->ID;
         list_temp<<nInfo;
         if(nInfo->TYPE == 0)
         {
             list_dir<<nInfo;
-            list_task<<nInfo;
+            list_task<<nInfo;qDebug()<<"list_task"<<list_task.count();
         }
         else
             list_file<<nInfo;
@@ -1032,7 +1032,7 @@ void syncTable::syncNextDir()
     }
     syncInfo* info = list_task.takeFirst();
     syncClient->netSync(info->ID, syncTime);
-    qDebug()<<"[SYNC DIR]"<<info->FILE_NAME<<list_task.count();
+    qDebug()<<"[SYNC DIR]"<<info->FILE_NAME<<list_task.count()<<info->ID<<info->PARENT_ID;
 }
 
 void syncTable::updateParentDate(double id)

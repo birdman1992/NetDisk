@@ -11,11 +11,10 @@ NetConfig* netConf;
 NetConfig::NetConfig()
 {
     qDebug()<<QCoreApplication::applicationDirPath();
-//    downloadPath = QCoreApplication::applicationDirPath()+"/LinkRealNetdiskDownload/";
-//    QDir dir = QDir(QCoreApplication::applicationDirPath()+"/sync/");
-//    syncPath = dir.absolutePath();
-    downloadPath = QString();
-    syncPath = QString();
+    QString rootPath = QCoreApplication::applicationDirPath();
+    rootPath = rootPath.left(rootPath.indexOf(":")+1);qDebug()<<"rootpath"<<rootPath;
+    downloadPath = rootPath + "/linkreal_download/";
+    syncPath = rootPath + "/linkreal_sync/";
     maxTaskNum = 3;
     userName = QString();
     passwd = QString();
@@ -136,17 +135,18 @@ void NetConfig::saveAll()
 
 void NetConfig::creatDir()
 {
+    qDebug()<<downloadPath;
     QDir* dir = new QDir;
     if(!dir->exists(QCoreApplication::applicationDirPath()+"/conf"))
-        if(dir->mkdir(QCoreApplication::applicationDirPath()+"/conf"))
+        if(!dir->mkdir(QCoreApplication::applicationDirPath()+"/conf"))
         {
             qDebug("权限不足,请以管理员权限运行程序");
         }
 
-//    if(!dir->exists(downloadPath))
-//        dir->mkdir(downloadPath);
-//    if(!dir->exists(syncPath))
-//        dir->mkdir(syncPath);
+    if(!dir->exists(downloadPath))
+        dir->mkdir(downloadPath);
+    if(!dir->exists(syncPath))
+        dir->mkdir(syncPath);
 
     delete dir;
     return;
@@ -171,9 +171,14 @@ void NetConfig::creatDefaultConfig()
         delete pFile;
         //设置默认配置
 //        setDownloadPath(QDir(QCoreApplication::applicationDirPath()+"/LinkRealNetdiskDownload").absolutePath());
-        downloadPath = QString();
+        QString rootPath = QCoreApplication::applicationDirPath();
+        rootPath = rootPath.left(rootPath.indexOf(":")+1);
+        downloadPath = rootPath + "/linkreal_download/";
+        syncPath = rootPath + "/linkreal_sync/";
+
+//        downloadPath = QString();
         maxTaskNum = 3;
-        syncPath = QString();//QCoreApplication::applicationDirPath()+"/sync/";
+//        syncPath = QString();//QCoreApplication::applicationDirPath()+"/sync/";
         userName = QString();
         passwd = QString();
         remPasswd = false;

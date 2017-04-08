@@ -17,6 +17,7 @@ MainWidget::MainWidget(QWidget *parent) :
     wMoveable = false;
     fType = 0;
     isLogin = false;
+    isInited = false;
     ui->viewCut->setHidden(true);
 
     //网盘设置
@@ -46,7 +47,7 @@ MainWidget::~MainWidget()
 void MainWidget::initSearch()
 {
     QStringList l;
-    l<<"全部"<<"视频"<<"音频"<<"图片"<<"文档"<<"压缩文件"<<"其它";
+    l<<"全部"<<"图片"<<"视频"<<"文档";
     ui->searchFilter->addItems(l);
     ui->search->installEventFilter(this);
 }
@@ -115,6 +116,19 @@ void MainWidget::initFunctionList()
 
     connect(ui->functionList, SIGNAL(clicked(QModelIndex)), this, SLOT(functionBtnClicked(QModelIndex)));
     //    connect(ui->functionList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(founctionListClicked(QListWidgetItem*)));
+}
+
+void MainWidget::initTitleMenu()
+{
+//    QStringList l;
+//    l<<"打开默认下载目录"<<"打开主面板"<<"访问联瑞企业网盘网站"<<"设置"<<"注销"<<"退出";
+    ui->menu->addItem("访问联瑞企业网盘网站");
+    ui->menu->addItem("打开下载目录");
+    ui->menu->addItem("打开同步目录");
+    ui->menu->addItem("设置");
+    ui->menu->addItem("注销");
+    ui->menu->addItem("退出");
+    ui->menu->view()->setFixedWidth(150);
 }
 
 void MainWidget::hidePanel()
@@ -315,6 +329,10 @@ void MainWidget::openDiskConfig()
 
 void MainWidget::diskInit()
 {
+    if(isInited)
+        return;
+    isInited = true;
+
     QThread thread_t;
     qDebug()<<"diskInit"<<thread_t.stackSize();
 
@@ -329,6 +347,9 @@ void MainWidget::diskInit()
 
     //功能栏
     initFunctionList();
+
+    //标题栏菜单
+    initTitleMenu();
 
     //传输列表
     transList = new TransList(this);
@@ -490,7 +511,9 @@ void MainWidget::on_translist_toggled(bool checked)
 
 void MainWidget::searchTypeChanged(int i)
 {
-    fType = i;
+    char c[4] = {0,3,1,4};//"全部"<<"图片"<<"视频"<<"文档";
+    //l<<"全部"<<"视频"<<"音频"<<"图片"<<"文档"<<"压缩文件"<<"其它";
+    fType = c[i];
 }
 
 void MainWidget::on_searchBtn_clicked()
@@ -677,4 +700,59 @@ void MainWidget::on_functionList_clicked(const QModelIndex&)
 void MainWidget::on_syncStart_clicked()
 {
 
+}
+
+void MainWidget::menuOpenWebsite()
+{
+    QDesktopServices::openUrl(QUrl(netConf->getServerAddress()));
+}
+
+void MainWidget::menuOpenDownloadDir()
+{
+    QDesktopServices::openUrl(QUrl("file:///"+netConf->getDownloadPath()));
+}
+
+void MainWidget::menuOpenSyncDir()
+{
+    QDesktopServices::openUrl(QUrl("file:///"+netConf->getSyncPath()));
+}
+
+void MainWidget::menuOpenDiskSet()
+{
+    diskConfig->show();
+}
+
+void MainWidget::menuLogout()
+{
+    isLogin = false;
+    this->hide();
+    loginUi.logout();
+    loginUi.show();
+    setSysMenu();
+}
+
+void MainWidget::menuQuit()
+{
+    this->close();
+}
+
+void MainWidget::on_menu_activated(int index)
+{
+    switch(index)
+    {
+    case 0:
+        menuOpenWebsite();break;
+    case 1:
+        menuOpenDownloadDir();break;
+    case 2:
+        menuOpenSyncDir();break;
+    case 3:
+        menuOpenDiskSet();break;
+    case 4:
+        menuLogout();break;
+    case 5:
+        menuQuit();break;
+
+    default:break;
+    }
 }

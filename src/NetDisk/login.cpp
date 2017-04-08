@@ -109,6 +109,16 @@ void login::on_btn_close_clicked()
 
 void login::on_btn_login_clicked()
 {
+    if(ui->username->text().isEmpty())
+    {
+        ui->label_loginmsg->setText("请输入用户名");
+        return;
+    }
+    if(ui->passwd->text().isEmpty())
+    {
+        ui->label_loginmsg->setText("请输入密码");
+        return;
+    }
     if(netConf->getServerAddress().isEmpty())
     {
         ui->label_loginmsg->setText("请先配置服务器地址");

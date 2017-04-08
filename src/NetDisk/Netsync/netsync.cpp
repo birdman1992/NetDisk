@@ -22,7 +22,7 @@ void NetSync::setNetClient(NetHttp *cli)
     netClient = cli;
     syncT.setHttpClient(cli);
     connect(netClient, SIGNAL(syncUpdate(QList<syncInfo*>,QDateTime)), this, SLOT(syncInfoRecv(QList<syncInfo*>,QDateTime)));
-    connect(netClient, SIGNAL(loginStateChanged(bool)), this, SLOT(loginSync(bool)));
+    connect(netClient, SIGNAL(needSync()), this, SLOT(loginSync()));
     connect(netClient, SIGNAL(syncHostPoint(QDateTime)), this, SLOT(syncHostPointSave(QDateTime)));
 
     connect(&syncT, SIGNAL(hostSyncFinished()), this, SLOT(syncHostFinished()));
@@ -41,15 +41,14 @@ void NetSync::syncAll()
     netClient->netSync(SYNC_ID);
 }
 
-void NetSync::loginSync(bool isLogin)
+void NetSync::loginSync()
 {
-    if(isLogin)
-        netClient->netSync(SYNC_ID, syncT.syncTime);
+    netClient->netSync(SYNC_ID, syncT.syncTime);
 }
 
 void NetSync::syncHostFinished()
 {
-    qDebug("\n\n\n\n\n\n\n\n");
+    qDebug("asdfg\n\n\n\n\n\n\n\n");
     netClient->netSync(SYNC_ID, syncDate);
 }
 

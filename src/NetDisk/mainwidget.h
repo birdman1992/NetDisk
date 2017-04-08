@@ -70,10 +70,17 @@ private slots:
     void actLogout(bool);//注销
     void actQuit(bool);//退出
     void on_sliderbar_clicked(QModelIndex);
-
     void on_functionList_clicked(const QModelIndex &index);
-
     void on_syncStart_clicked();
+    //菜单槽
+    void menuOpenWebsite();
+    void menuOpenDownloadDir();
+    void menuOpenSyncDir();
+    void menuOpenDiskSet();
+    void menuLogout();
+    void menuQuit();
+
+    void on_menu_activated(int index);
 
 public slots:
     void historyEnabled(bool backEnable, bool aheadEnable);
@@ -105,6 +112,7 @@ private:
 //    NetSync* diskSync;
     bool wMoveable;
     bool isLogin;
+    bool isInited;
     QPoint dragPosition;
     int fType;
     //系统托盘菜单项
@@ -122,6 +130,7 @@ private:
     void initSysMenu();
     void initSilidebar();
     void initFunctionList();
+    void initTitleMenu();
     void hidePanel();
     void setSysMenu();
     void mousePressEvent(QMouseEvent *event);
