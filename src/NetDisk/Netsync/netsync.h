@@ -43,6 +43,7 @@ private:
     QList<netTrans*> taskUpload;
     int taskNum;
     int uptask;
+    bool isSyncing;//是否正在同步
 
     void initWatcher();
     void syncLocalGet();

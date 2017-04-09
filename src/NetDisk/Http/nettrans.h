@@ -54,6 +54,7 @@ public:
     void taskStart();
     QString getTaskSpeed();
     void setTaskInfo(double parentId);
+    void netPost(QNetworkRequest postRequest, QByteArray postData);
     ~netWork();
 
 
@@ -97,9 +98,11 @@ signals:
     void taskFinish(TaskInfo);
     void taskUpFinish(TaskInfo);
     void transReady();
+    void needPost(QNetworkRequest postRequest, QByteArray postData);
 
 private slots:
     void replyFinished(QNetworkReply* reply);
+    void uploadRelpy();
     void replyError(QNetworkReply::NetworkError errorCode);
     void getServerAddr();
     void fileRecv();
@@ -122,6 +125,7 @@ public:
     ~netTrans();
 public slots:
     void transReady();
+    void netPost(QNetworkRequest postRequest, QByteArray postData);
 
 signals:
     void taskFinished(TaskInfo);

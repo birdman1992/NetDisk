@@ -14,8 +14,8 @@ netWork::netWork(QObject *parent) :
     netState = 0;
     isupload = false;
     pFile = NULL;
-    manager = NULL;
-    managerUpload = NULL;
+    manager = netConf->manager;
+    managerUpload = netConf->manager;
     netReply = NULL;
     taskInfo.taskState = NO_STATE;
     taskInfo.taskSpeed = 0;
@@ -41,11 +41,12 @@ int netWork::netUpload(QString fileName, double pId, QString token)
     taskInfo.curSize = 0;
     transToken = token;
 
-    if(manager == NULL)
-    {
-        manager = new QNetworkAccessManager(this->parent());
-        connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
-    }
+//    if(manager == NULL)
+//    {
+//        manager = netConf->manager;
+//        manager = new QNetworkAccessManager(this->parent());
+//        connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
+//    }
 
     //打开文件
     pFile = new QFile(fileName, this->parent());
@@ -74,7 +75,7 @@ void netWork::netDownload(fileInfo info, QString downLoadPath, QString token)
     taskInfo.curSize = 0;
     isupload = false;
     transToken = token;
-    manager = new QNetworkAccessManager(this->parent());
+    manager = netConf->manager;//new QNetworkAccessManager(this->parent());
 //    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
     fileMd5 = QByteArray::fromHex(info.MD5.toLocal8Bit());
     taskInfo.fileName = info.FILE_NAME;
@@ -211,6 +212,13 @@ void netWork::setTaskInfo(double parentId)
     taskInfo.parentId = parentId;
 }
 
+void netWork::netPost(QNetworkRequest postRequest, QByteArray postData)
+{
+    qDebug()<<"up post1";
+    netReply = managerUpload->post(postRequest, postData);qDebug()<<"up post2";
+    connect(netReply, SIGNAL(finished()), this, SLOT(uploadRelpy()));
+}
+
 void netWork::md5Check()
 {
 //    quint64 bytesToWrite = fInfo.size();
@@ -241,9 +249,11 @@ void netWork::md5Check()
     QString nUrl = netConf->getServerAddress() + "/api/file/getFileByMd5";
     request.setUrl(nUrl);
     request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
-    manager->post(request, qba);
+    netReply = manager->post(request, qba);
+    connect(netReply, SIGNAL(finished()), this, SLOT(uploadRelpy()));
     qDebug()<<"post"<<nUrl<<qba;
 }
+
 
 QByteArray netWork::getMd5(QFile *f)
 {
@@ -288,8 +298,8 @@ int netWork::fileUpload(bool)
         if(pFile->isOpen())
             pFile->close();
         qDebug()<<"[netWork]:Upload finishi.";
-        taskInfo.taskState = FINISHI_STATE;
-        emit taskUpFinish(taskInfo);
+//        taskInfo.taskState = FINISHI_STATE;
+//        emit taskUpFinish(taskInfo);
         return 0;
     }
     qDebug("%d/%d",chunk,chunks);
@@ -353,7 +363,10 @@ int netWork::fileUpload(bool)
     qDebug()<<endBoundary;
     chunk++;
     bytesToLoad -= chunksize;
-    managerUpload->post(request, send);
+    emit needPost(request, send);
+//    qDebug()<<"up post1";
+//    netReply = managerUpload->post(request, send);qDebug()<<"up post2";
+//    connect(netReply, SIGNAL(finished()), this, SLOT(uploadRelpy()));
     return 0;
 }
 
@@ -412,11 +425,11 @@ void netWork::replyFinished(QNetworkReply *reply)
             }
             else if(code == "-200")//文件MD5不存在
             {
-                if(managerUpload == NULL)
-                {
-                    managerUpload = new QNetworkAccessManager(this);
-                    connect(managerUpload, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
-                }
+//                if(managerUpload == NULL)
+//                {
+//                    managerUpload = new QNetworkAccessManager(this);
+//                    connect(managerUpload, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
+//                }
                 pFile->open(QFile::ReadWrite);
                 qDebug("file not exit upload");
                 chunks = (fInfo.size()) / CHUNK_SIZE + ((fInfo.size() % CHUNK_SIZE) != 0);
@@ -451,6 +464,107 @@ void netWork::replyFinished(QNetworkReply *reply)
         pFile->write(qba);
     }
     reply->deleteLater();
+    return;
+}
+
+void netWork::uploadRelpy()
+{
+    QByteArray qba = netReply->readAll();
+    disconnect(netReply, SIGNAL(finished()), this, SLOT(uploadRelpy()));
+    qDebug()<<"up delete";
+    netReply->deleteLater();
+    qDebug()<<"upload reply"<<qba.size();
+    if(isupload)
+    {
+        QJsonDocument parseDoc;
+        QJsonParseError jError;
+        QJsonValue jval;
+        QJsonValue result;
+        QString code;
+        QString msg;
+        qDebug()<<"[reply]"<<qba;
+        parseDoc = QJsonDocument::fromJson(qba, &jError);
+
+        if(jError.error == QJsonParseError::NoError)
+        {
+            if(parseDoc.isObject())
+            {
+                QJsonObject obj = parseDoc.object();
+
+                if(obj.contains("code"))
+                {
+                    //解析返回的状态码
+                    jval = obj.take("code");
+                    code = jval.toString();
+                    qDebug()<<"code"<<code;
+                }
+                if(obj.contains("msg"))
+                {
+                    //解析返回的状态码
+                    jval = obj.take("msg");
+                    msg = jval.toString();
+                    qDebug()<<"msg"<<msg;
+                }
+                if(obj.contains("result"))
+                {
+                    //解析返回的状态码
+                    result = obj.take("result");
+                    qDebug()<<"result is null"<<result.isNull();
+                }
+            }
+        }
+
+        if(netState == 0)//接收MD5校验返回结果
+        {qDebug()<<"state:"<<netState;
+            if(code == "200")//文件MD5存在
+            {
+                taskInfo.taskState = FINISHI_STATE;
+                QJsonObject obj = result.toObject();
+                taskInfo.taskId = obj.take("ID").toDouble();
+                emit taskUpFinish(taskInfo);
+                qDebug()<<"file exit"<<taskInfo.taskId;
+            }
+            else if(code == "-200")//文件MD5不存在
+            {
+//                if(managerUpload == NULL)
+//                {
+//                    managerUpload = new QNetworkAccessManager(this);
+//                    connect(managerUpload, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
+//                }
+                pFile->open(QFile::ReadWrite);
+                qDebug("file not exit upload");
+                chunks = (fInfo.size()) / CHUNK_SIZE + ((fInfo.size() % CHUNK_SIZE) != 0);
+                chunk = 0;
+                bytesToLoad = fInfo.size();
+                fileSize = bytesToLoad;
+                qDebug()<<"fileSize"<<fileSize;
+                netState = 1;//进入上传文件状态
+                fileUpload(false);
+            }
+        }
+        else if(netState == 1)//接收文件上传返回结果
+        {
+            if(code == "200")//单片上传成功
+            {
+                taskInfo.taskSpeed += chunksize;
+                taskInfo.curSize += chunksize;
+                taskInfo.taskSpeed += chunksize;
+                fileUpload(false);
+            }
+            if(!result.isNull())
+            {qDebug()<<"[RESULT EMPTY]";
+                QJsonObject obj = result.toObject();
+                taskInfo.taskId = obj.take("ID").toDouble();
+                taskInfo.taskState = FINISHI_STATE;
+                emit taskUpFinish(taskInfo);
+            }
+        }
+    }
+    else
+    {
+        qDebug()<<"[down]:"<<qba.size();
+        pFile->write(qba);
+    }
     return;
 }
 
@@ -541,6 +655,7 @@ void netWork::fileRecvFinished()
     {
         pFile->close();
     }
+    netReply->deleteLater();
     qDebug()<<"[netTrans]:"<<pFile->fileName()<<"download finished.";
     if(getMd5(pFile) == fileMd5)
     {
@@ -564,7 +679,7 @@ netTrans::netTrans(QObject *parent):
     connect(work, SIGNAL(transReady()), this, SLOT(transReady()));
     connect(work, SIGNAL(taskFinish(TaskInfo)), this, SIGNAL(taskFinished(TaskInfo)));
     connect(work, SIGNAL(taskUpFinish(TaskInfo)), this, SIGNAL(taskUpFinished(TaskInfo)));
-    connect(work, SIGNAL(taskUpFinish(TaskInfo)), this, SLOT(test(TaskInfo)));
+    connect(work, SIGNAL(needPost(QNetworkRequest,QByteArray)), this, SLOT(netPost(QNetworkRequest,QByteArray)));
 }
 
 int netTrans::netUpload(QString fileName, double pId, QString token)
@@ -631,5 +746,10 @@ void netTrans::transReady()
         work->taskStart();
     else
         readyTrans = true;
+}
+
+void netTrans::netPost(QNetworkRequest postRequest, QByteArray postData)
+{
+    work->netPost(postRequest, postData);
 }
 

@@ -92,9 +92,9 @@ void NetHttp::netUpload(QString fileName, double pId)
 
 void NetHttp::netDownload(fileInfo info, QString downloadPath)
 {
-//    fTrans = new netTrans;
-//    fTrans->netDownload(info, downloadPath,token);
-//    emit newTask(fTrans);
+    fTrans = new netTrans;
+    fTrans->netDownload(info, downloadPath,token);
+    emit newTask(fTrans);
 }
 
 void NetHttp::netDelete(double fId)
@@ -224,7 +224,7 @@ void NetHttp::replySyncFinished(QNetworkReply *reply)
         qDebug()<<"Raw header SERVER_TIME not found.";
     }
     qDebug()<<"http SYNC recv:"<<nRecv.size();
-//    qDebug()<<nRecv;
+    qDebug()<<nRecv;
     syncInfoRecv(nRecv, serverTime);
 }
 

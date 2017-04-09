@@ -10,6 +10,7 @@ NetSync::NetSync(QObject *parent):
     syncDate = QDateTime();
     taskNum = 0;
     uptask = 0;
+    isSyncing = false;
 
     syncDateRead();
     initWatcher();
@@ -43,6 +44,9 @@ void NetSync::syncAll()
 
 void NetSync::loginSync()
 {
+    if(isSyncing)
+        return;
+    isSyncing = true;
     netClient->netSync(SYNC_ID, syncT.syncTime);
 }
 
@@ -126,7 +130,7 @@ void NetSync::syncLocalRead()
 
 void NetSync::syncLocalWrite(QList<syncLocalInfo *> l)
 {
-    QJsonDocument doc;
+//    QJsonDocument doc;
     syncT.isSyncing = true;
     QFile* f = new QFile(netConf->getSyncPath()+QString(FILE_SYNC));
     f->open(QFile::WriteOnly);
@@ -192,7 +196,7 @@ void NetSync::syncDirChanged(QString dir)
         return;
     syncLocalGet();
     syncT.creatSyncUploadList();
-    qDebug("Local dir changed!");
+    qDebug()<<"Local dir changed!"<<dir;
 }
 
 void NetSync::syncInfoRecv(QList<syncInfo *>sInfo, QDateTime sTime)
@@ -210,6 +214,7 @@ void NetSync::syncHostPointSave(QDateTime sTime)
         return;
     }
     syncDateWrite(sTime);
+    isSyncing = false;
     syncT.syncTime = sTime;
     syncT.syncHostToLocal();
     syncT.creatSyncUploadList();

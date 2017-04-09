@@ -127,7 +127,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>开启文件同步</string>
+    <string>文件自动同步</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_4">

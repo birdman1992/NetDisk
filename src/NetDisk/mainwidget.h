@@ -16,6 +16,7 @@
 #include "Translist/synclist.h"
 #include <qstackedlayout.h>
 #include <qstackedwidget.h>
+#include <qtimer.h>
 #include "Pathview/pathview.h"
 //#include "Netsync/netsync.h"
 #include "filespanel.h"
@@ -103,6 +104,7 @@ private:
     QLabel* page_info;
     QSystemTrayIcon* sysTray;
     QMenu* sysTrayMenu;
+    QTimer* syncTimer;
     FilesPanel* diskPanel;
     PathView* pathView;
     TransList* transList;

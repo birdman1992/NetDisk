@@ -9,12 +9,13 @@
 #include <QJsonArray>
 #include <QJsonParseError>
 #include <taesclass.h>
+#include <qnetworkaccessmanager.h>
 
 class NetConfig
 {
 public:
     NetConfig();
-
+    QNetworkAccessManager* manager;
     void setServerAddress(QString address);
     QString getServerAddress();
     void setDownloadPath(QString path);

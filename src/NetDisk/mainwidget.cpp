@@ -329,12 +329,16 @@ void MainWidget::openDiskConfig()
 
 void MainWidget::diskInit()
 {
+    if(netConf->autoSyncDir())
+        ui->syncStart->hide();
+    else
+        ui->syncStart->show();
+
     if(isInited)
         return;
     isInited = true;
 
-    QThread thread_t;
-    qDebug()<<"diskInit"<<thread_t.stackSize();
+    netConf->manager = new QNetworkAccessManager(this);
 
     //系统托盘图标
     initSysTray();
@@ -385,6 +389,12 @@ void MainWidget::diskInit()
     ui->frame_function->hide();
     diskPanel = new FilesPanel(this);
     diskPanel->httpClient->netInit(transList);
+
+    //文件同步时钟
+    syncTimer = new QTimer(this);
+    syncTimer->start(600000);//600s
+    connect(syncTimer, SIGNAL(timeout()), diskPanel->diskSync, SLOT(loginSync()));
+
     initPageWidgets();
     scrollFolder->setWidget(diskPanel);
     syncPanel->initTable(diskPanel->diskSync->getTable());

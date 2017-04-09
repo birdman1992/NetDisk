@@ -46,9 +46,9 @@ TransList::TransList(QWidget *parent) :
     tProgress.start(1000);
 }
 
-int TransList::download(DownloadInfo *info)
+int TransList::download(DownloadInfo*)
 {
-
+    return 0;
 }
 
 TransList::~TransList()
@@ -94,7 +94,7 @@ void TransList::progressCheck()
     }
 }
 
-void TransList::downloadFinish(DownloadInfo *info)
+void TransList::downloadFinish(DownloadInfo*)
 {
 
 }

@@ -145,6 +145,14 @@ void syncList::showList()
                 break;
             }
         }
+        for(int i=0; i<list_show.count(); i++)
+        {
+            if(list_show.at(i).fileName() == ".date")
+            {
+                list_show.removeAt(i);
+                break;
+            }
+        }
     }
     ui->tableWidget->clearContents();
     ui->tableWidget->setRowCount(list_show.count());
