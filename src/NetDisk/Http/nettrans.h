@@ -55,6 +55,7 @@ public:
     QString getTaskSpeed();
     void setTaskInfo(double parentId);
     void netPost(QNetworkRequest postRequest, QByteArray postData);
+    void netPost(QNetworkRequest postRequest, QHttpMultiPart* postData);
     ~netWork();
 
 
@@ -92,6 +93,7 @@ private:
     void md5Check();
     QByteArray getMd5(QFile* f);
     int fileUpload(bool reload);
+    int netFileUpload();
     QByteArray getSign(QStringList param);
     QByteArray getPost(QStringList param);
 signals:
@@ -99,6 +101,7 @@ signals:
     void taskUpFinish(TaskInfo);
     void transReady();
     void needPost(QNetworkRequest postRequest, QByteArray postData);
+    void needPost(QNetworkRequest postRequest, QHttpMultiPart* postData);
 
 private slots:
     void replyFinished(QNetworkReply* reply);
@@ -126,6 +129,7 @@ public:
 public slots:
     void transReady();
     void netPost(QNetworkRequest postRequest, QByteArray postData);
+    void netPost(QNetworkRequest postRequest, QHttpMultiPart* postData);
 
 signals:
     void taskFinished(TaskInfo);

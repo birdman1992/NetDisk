@@ -79,6 +79,8 @@ void NetSync::syncLocalGet()
         QFileInfo* info = new QFileInfo(iter.fileInfo());
         if(info->fileName() == ".sync")
             continue;
+        if(info->fileName() == ".date")
+            continue;
         syncT.list_loacl_real<<info;
 //        qDebug()<<info->fileName()<<info->absolutePath()<<info->absoluteFilePath();
     }

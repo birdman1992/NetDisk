@@ -3,12 +3,14 @@
 #include "netconfig.h"
 #include <qfiledialog.h>
 #include <QtDebug>
+#include <QSize>
 
 ConfigPanel::ConfigPanel(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::ConfigPanel)
 {
     ui->setupUi(this);
+    this->setWindowFlags(Qt::FramelessWindowHint);
     ui->downloadPath->setText(netConf->getDownloadPath());
     ui->syncPath->setText(netConf->getSyncPath());
     ui->autosync->setChecked(netConf->autoSyncDir());
@@ -21,6 +23,7 @@ ConfigPanel::ConfigPanel(QWidget *parent) :
     ui->maxTask->setCurrentIndex(netConf->getMaxTaskNum()-1);
     ui->warn_address->hide();
     configFinshed = configCheck();
+    initStack();
 }
 
 ConfigPanel::~ConfigPanel()
@@ -127,4 +130,26 @@ void ConfigPanel::on_finish_clicked()
 void ConfigPanel::on_serverAddr_editingFinished()
 {
     configCheck();
+}
+
+void ConfigPanel::initStack()
+{
+    QListWidgetItem* item;
+    item = new QListWidgetItem("基本");
+    item->setSizeHint(QSize(138,38));
+    item->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    ui->listWidget->addItem(item);
+
+    item = new QListWidgetItem("传输");
+    item->setSizeHint(QSize(138,38));
+    item->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    ui->listWidget->addItem(item);
+
+    ui->listWidget->setCurrentRow(0);
+    connect(ui->listWidget, SIGNAL(currentRowChanged(int)), ui->stackedPanel, SLOT(setCurrentIndex(int)));
+}
+
+void ConfigPanel::on_cancel_clicked()
+{
+    this->close();
 }

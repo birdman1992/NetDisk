@@ -5,6 +5,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <qthread.h>
+#include <QHttpMultiPart>
 #include "netconfig.h"
 
 netWork::netWork(QObject *parent) :
@@ -219,6 +220,13 @@ void netWork::netPost(QNetworkRequest postRequest, QByteArray postData)
     connect(netReply, SIGNAL(finished()), this, SLOT(uploadRelpy()));
 }
 
+void netWork::netPost(QNetworkRequest postRequest, QHttpMultiPart *postData)
+{
+    qDebug()<<"up post1";
+    netReply = managerUpload->post(postRequest, postData);qDebug()<<"up post2";
+    connect(netReply, SIGNAL(finished()), this, SLOT(uploadRelpy()));
+}
+
 void netWork::md5Check()
 {
 //    quint64 bytesToWrite = fInfo.size();
@@ -370,6 +378,105 @@ int netWork::fileUpload(bool)
     return 0;
 }
 
+int netWork::netFileUpload()
+{
+    quint64 ret = 0;
+    QString nUrl = netConf->getServerAddress() + "/api/file/upload";
+    QHttpMultiPart* multiSend = new QHttpMultiPart;
+    QNetworkRequest multiRequest(nUrl);
+    multiSend->setContentType(QHttpMultiPart::FormDataType);
+    multiSend->setBoundary(QByteArray("----WebKitFormBoundaryBPanjV2kGW1tw4ah"));
+
+    if(chunk >= chunks)
+    {
+        if(pFile->isOpen())
+            pFile->close();
+        qDebug()<<"[netWork]:Upload finishi.";
+//        taskInfo.taskState = FINISHI_STATE;
+//        emit taskUpFinish(taskInfo);
+        return 0;
+    }
+    qDebug("%d/%d",chunk,chunks);
+
+//    chunksize = qMin(bytesToLoad, CHUNK_SIZE);
+    chunksize = CHUNK_SIZE;
+
+    QByteArray bond;
+    QByteArray send;
+
+    QHttpPart chunksize_part;
+    chunksize_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"chunksize\""));
+    chunksize_part.setBody(QString::number(chunksize).toLocal8Bit());
+    multiSend->append(chunksize_part);
+
+    QHttpPart fileMd5_part;
+    fileMd5_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"md5\""));
+    fileMd5_part.setBody(fileMd5.toHex());
+    multiSend->append(fileMd5_part);
+
+    QHttpPart filePid_part;
+    filePid_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"pid\""));
+    filePid_part.setBody(QString::number(filepId).toLocal8Bit());
+    multiSend->append(filePid_part);
+
+//    QHttpPart path_part;
+//    path_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"path\""));
+//    multiSend->append(path_part);
+
+//    QHttpPart id_part;
+//    id_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"id\""));
+//    id_part.setBody(QByteArray("WU_FILE_0"));
+//    multiSend->append(id_part);
+
+//    QHttpPart filename_part;
+//    filename_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"name\""));
+//    filename_part.setBody(QFileInfo(*pFile).fileName().toUtf8());
+//    multiSend->append(filename_part);
+
+//    QHttpPart type_part;
+//    type_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"type\""));
+//    type_part.setBody(QByteArray("text/plain"));
+//    multiSend->append(type_part);
+
+//    QHttpPart date_part;
+//    date_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"lastModifiedDate\""));
+//    date_part.setBody(QByteArray("Tue Apr 11 2017 14:01:34 GMT+0800 (中国标准时间)"));
+//    multiSend->append(date_part);
+
+    QHttpPart token_part;
+    token_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"token\""));
+    token_part.setBody(transToken.toLocal8Bit());
+    multiSend->append(token_part);
+
+    QHttpPart chunk_part;
+    chunk_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"chunk\""));
+    chunk_part.setBody(QString::number(chunk).toLocal8Bit());
+    multiSend->append(chunk_part);
+
+    QHttpPart chunks_part;
+    chunks_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"chunks\""));
+    chunks_part.setBody(QString::number(chunks).toLocal8Bit());
+    multiSend->append(chunks_part);
+
+    QHttpPart fileSize_part;
+    fileSize_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"size\""));
+    fileSize_part.setBody(QString::number(fileSize).toLocal8Bit());
+    multiSend->append(fileSize_part);
+
+    QHttpPart file_part;
+    file_part.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/octet-stream"));
+    file_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(QString("name=\"file\";filename=\"%1\"").arg(QFileInfo(*pFile).fileName())));
+    QByteArray buffer = pFile->read(chunksize);
+    file_part.setBody(buffer);
+    multiSend->append(file_part);
+
+    chunk++;
+    bytesToLoad -= chunksize;
+    emit needPost(multiRequest, multiSend);
+
+    return 0;
+}
+
 void netWork::replyFinished(QNetworkReply *reply)
 {
     QByteArray qba = reply->readAll();
@@ -438,7 +545,8 @@ void netWork::replyFinished(QNetworkReply *reply)
                 fileSize = bytesToLoad;
                 qDebug()<<"fileSize"<<fileSize;
                 netState = 1;//进入上传文件状态
-                fileUpload(false);
+                //fileUpload(false);
+                netFileUpload();
             }
         }
         else if(netState == 1)//接收文件上传返回结果
@@ -448,7 +556,8 @@ void netWork::replyFinished(QNetworkReply *reply)
                 taskInfo.taskSpeed += chunksize;
                 taskInfo.curSize += chunksize;
                 taskInfo.taskSpeed += chunksize;
-                fileUpload(false);
+//                fileUpload(false);
+                netFileUpload();
             }
             if(!result.isNull())
             {
@@ -539,7 +648,8 @@ void netWork::uploadRelpy()
                 fileSize = bytesToLoad;
                 qDebug()<<"fileSize"<<fileSize;
                 netState = 1;//进入上传文件状态
-                fileUpload(false);
+//                fileUpload(false);
+                netFileUpload();
             }
         }
         else if(netState == 1)//接收文件上传返回结果
@@ -549,7 +659,8 @@ void netWork::uploadRelpy()
                 taskInfo.taskSpeed += chunksize;
                 taskInfo.curSize += chunksize;
                 taskInfo.taskSpeed += chunksize;
-                fileUpload(false);
+//                fileUpload(false);
+                netFileUpload();
             }
             if(!result.isNull())
             {qDebug()<<"[RESULT EMPTY]";
@@ -680,6 +791,7 @@ netTrans::netTrans(QObject *parent):
     connect(work, SIGNAL(taskFinish(TaskInfo)), this, SIGNAL(taskFinished(TaskInfo)));
     connect(work, SIGNAL(taskUpFinish(TaskInfo)), this, SIGNAL(taskUpFinished(TaskInfo)));
     connect(work, SIGNAL(needPost(QNetworkRequest,QByteArray)), this, SLOT(netPost(QNetworkRequest,QByteArray)));
+    connect(work, SIGNAL(needPost(QNetworkRequest,QHttpMultiPart*)), this, SLOT(netPost(QNetworkRequest,QHttpMultiPart*)));
 }
 
 int netTrans::netUpload(QString fileName, double pId, QString token)
@@ -749,6 +861,11 @@ void netTrans::transReady()
 }
 
 void netTrans::netPost(QNetworkRequest postRequest, QByteArray postData)
+{
+    work->netPost(postRequest, postData);
+}
+
+void netTrans::netPost(QNetworkRequest postRequest, QHttpMultiPart *postData)
 {
     work->netPost(postRequest, postData);
 }

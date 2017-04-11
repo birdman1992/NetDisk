@@ -646,14 +646,13 @@ border-bottom:1px;</string>
             </property>
             <property name="styleSheet">
              <string notr="true">#back{
-	image: url(:/imgs/function/Arrow-left.png);
 	margin:6px
 }
 #back:enabled{
-	color: rgb(85, 85, 85);
+	image: url(:/imgs/function/Arrow-left-active.png);
 }
 #back:disabled{
-	color: rgb(25, 25, 25);
+	image: url(:/imgs/function/Arrow-left.png);
 }</string>
             </property>
             <property name="text">
@@ -693,8 +692,13 @@ border-bottom:1px;</string>
             </property>
             <property name="styleSheet">
              <string notr="true">#forward{
-	border-image: url(:/imgs/function/Arrow-right.png);
 	margin:6px
+}
+#forward:enabled{
+	image: url(:/imgs/function/Arrow-right-active.png);
+}
+#forward:disabled{
+	image: url(:/imgs/function/Arrow-right.png);
 }</string>
             </property>
             <property name="text">
@@ -1119,10 +1123,16 @@ font: 9pt &quot;微软雅黑&quot;;
        <item>
         <widget class="QFrame" name="frame_sync">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>49</height>
+          </size>
          </property>
          <property name="maximumSize">
           <size>
@@ -1136,7 +1146,7 @@ font: 9pt &quot;微软雅黑&quot;;
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,200,20,0">
+         <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,1,1,1">
           <property name="spacing">
            <number>0</number>
           </property>
@@ -1153,45 +1163,134 @@ font: 9pt &quot;微软雅黑&quot;;
            <number>0</number>
           </property>
           <item>
-           <spacer name="horizontalSpacer_16">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Minimum</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>400</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QLabel" name="syncMsg">
+           <widget class="QFrame" name="frame_host">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
             <property name="minimumSize">
              <size>
-              <width>400</width>
-              <height>0</height>
+              <width>0</width>
+              <height>47</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>400</width>
+              <width>180</width>
               <height>47</height>
              </size>
             </property>
-            <property name="text">
-             <string/>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
             </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <widget class="QLabel" name="label">
+             <property name="geometry">
+              <rect>
+               <x>15</x>
+               <y>18</y>
+               <width>16</width>
+               <height>14</height>
+              </rect>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">border-image: url(:/imgs/cloudUpdate.png);</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+            <widget class="QLabel" name="msg_host">
+             <property name="geometry">
+              <rect>
+               <x>40</x>
+               <y>0</y>
+               <width>141</width>
+               <height>47</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
            </widget>
+          </item>
+          <item>
+           <widget class="QFrame" name="frame_local">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>47</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>180</width>
+              <height>47</height>
+             </size>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <widget class="QLabel" name="label_4">
+             <property name="geometry">
+              <rect>
+               <x>15</x>
+               <y>18</y>
+               <width>16</width>
+               <height>14</height>
+              </rect>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">border-image: url(:/imgs/localUpdate.png);</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+            <widget class="QLabel" name="msg_local">
+             <property name="geometry">
+              <rect>
+               <x>40</x>
+               <y>0</y>
+               <width>141</width>
+               <height>47</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_16">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Preferred</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>4</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
           <item>
            <widget class="QPushButton" name="syncStart">
@@ -1218,22 +1317,6 @@ color: rgb(255, 255, 255);</string>
              <string>同步</string>
             </property>
            </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_18">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Preferred</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>10</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
           </item>
          </layout>
         </widget>

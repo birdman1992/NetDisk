@@ -296,15 +296,38 @@ void MainWidget::historyEnabled(bool backEnable, bool aheadEnable)
 
 void MainWidget::getSyncNum(int upNum, int downNum)
 {
-    QString str = QString("云端更新文件%1个 本地更新文件%2个").arg(downNum).arg(upNum);
-    ui->syncMsg->setText(str);
-    sysTray->showMessage(QString("文件同步"), str,QSystemTrayIcon::Information);
+    QString strLocal = QString("本地更新文件%1个").arg(upNum);
+    QString strHost = QString("云端更新文件%1个").arg(downNum);
+    ui->msg_local->setText(strLocal);
+    ui->msg_host->setText(strHost);
+    if(!(upNum||downNum))
+    {
+        ui->frame_sync->hide();
+        sysTray->showMessage(QString("文件同步"), "本地文件已和云端同步",QSystemTrayIcon::Information);
+    }
+    else
+    {
+        if(ui->frame_sync->isHidden())
+        {
+            if(netConf->autoSyncDir())
+            {
+                ui->syncStart->setText("同步中");
+            }
+            else
+            {
+                ui->syncStart->setText("一键同步");
+//                ui->syncStart->setEnabled(true);
+            }
+            ui->frame_sync->show();
+            sysTray->showMessage(QString("文件同步"), strLocal+" "+strHost,QSystemTrayIcon::Information);
+        }
+    }
 }
 
 void MainWidget::getSyncNum(int upNum)
 {
     QString str = QString("本地更新文件%1个").arg(upNum);
-    ui->syncMsg->setText(str);
+//    ui->syncMsg->setText(str);
     sysTray->showMessage(QString("文件同步"), str,QSystemTrayIcon::Information);
 }
 
@@ -330,12 +353,21 @@ void MainWidget::openDiskConfig()
 void MainWidget::diskInit()
 {
     if(netConf->autoSyncDir())
-        ui->syncStart->hide();
+        syncEnable(false);
     else
         ui->syncStart->show();
 
     if(isInited)
+    {
+        scrollFolder->hide();
+        loadingUi.show();
+        syncPanel->hide();
+//        ui->frame_sync->hide();
+        ui->frame_function->hide();
+        diskPanel->panelRefresh();
         return;
+    }
+
     isInited = true;
 
     netConf->manager = new QNetworkAccessManager(this);
@@ -664,12 +696,16 @@ void MainWidget::actQuit(bool)
 
 void MainWidget::on_sliderbar_clicked(QModelIndex index)
 {
+    bool syncHidden = ui->frame_sync->isHidden();
     hidePanel();
+
     switch(index.row())
     {
     case 0://我的文件
         scrollFolder->show();
         pageWidget->show();
+        if(!syncHidden)
+            ui->frame_sync->show();
 //        ui->frame_function->show();
         diskPanel->pathRefresh();
         ui->searchBtn->setEnabled(true);
@@ -678,7 +714,8 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
         break;
     case 1://我的同步
         syncPanel->show();
-        ui->frame_sync->show();
+        if(!syncHidden)
+            ui->frame_sync->show();
         ui->searchBtn->setEnabled(false);
         ui->searchFilter->setEnabled(false);
         ui->search->setEnabled(false);

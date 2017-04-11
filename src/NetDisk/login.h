@@ -5,6 +5,7 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QString>
+#include <QShowEvent>
 #include "netconfig.h"
 #include "serverconfig.h"
 
@@ -32,6 +33,7 @@ private:
     void mousePressEvent(QMouseEvent*);
     void mouseReleaseEvent(QMouseEvent*);
     void mouseMoveEvent(QMouseEvent*);
+    void showEvent(QShowEvent* event);
 
 signals:
     void winClose();

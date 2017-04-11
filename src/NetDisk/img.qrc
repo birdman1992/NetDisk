@@ -95,5 +95,11 @@
         <file>imgs/32x32/锁定文件夹.png</file>
         <file>imgs/32x32/alert_warning.png</file>
         <file>imgs/32x32/green_ok_yes.png</file>
+        <file>imgs/function/Arrow-left-active.png</file>
+        <file>imgs/function/Arrow-right-active.png</file>
+        <file>imgs/function/cancel-btn.png</file>
+        <file>imgs/function/confirm-btn.png</file>
+        <file>imgs/cloudUpdate.png</file>
+        <file>imgs/localUpdate.png</file>
     </qresource>
 </RCC>

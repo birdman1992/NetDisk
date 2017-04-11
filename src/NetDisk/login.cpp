@@ -88,6 +88,20 @@ void login::mouseMoveEvent(QMouseEvent *event)
     }
 }
 
+void login::showEvent(QShowEvent* event)
+{qDebug("showEvent");
+    if(ui->username->text().isEmpty())
+    {qDebug("showEvent1");
+        ui->username->setFocus();
+        return QWidget::showEvent(event);
+    }
+    if(ui->passwd->text().isEmpty())
+    {qDebug("showEvent2");
+        ui->passwd->setFocus();
+        return QWidget::showEvent(event);
+    }
+}
+
 void login::mouseReleaseEvent(QMouseEvent*)
 {
     if(wMoveable)

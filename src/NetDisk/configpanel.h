@@ -30,12 +30,15 @@ private slots:
 
     void on_serverAddr_editingFinished();
 
+    void on_cancel_clicked();
+
 signals:
     void configOver();
 
 private:
     Ui::ConfigPanel *ui;
     bool configFinshed;
+    void initStack();
 };
 
 #endif // CONFIGPANEL_H
