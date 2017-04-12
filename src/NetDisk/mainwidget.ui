@@ -105,8 +105,20 @@
           </item>
           <item>
            <widget class="QWidget" name="logo" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>254</width>
+              <height>27</height>
+             </size>
+            </property>
             <property name="styleSheet">
-             <string notr="true">border-image: url(:/imgs/title/logo1.png);</string>
+             <string notr="true">border-image: url(:/imgs/logo.png);</string>
             </property>
            </widget>
           </item>
@@ -1295,26 +1307,49 @@ font: 9pt &quot;微软雅黑&quot;;
           <item>
            <widget class="QPushButton" name="syncStart">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+             <sizepolicy hsizetype="Fixed" vsizetype="Maximum">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="minimumSize">
+             <size>
+              <width>98</width>
+              <height>27</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
               <width>70</width>
-              <height>47</height>
+              <height>27</height>
              </size>
             </property>
             <property name="cursor">
              <cursorShape>PointingHandCursor</cursorShape>
             </property>
             <property name="styleSheet">
-             <string notr="true">border-image: url(:/imgs/Login/login_btn.png);
-color: rgb(255, 255, 255);</string>
+             <string notr="true">#syncStart:!checked{
+border-image: url(:/imgs/一键同步.png);
+color: rgb(255, 255, 255);
+}
+#syncStart:!checked:pressed{
+border-image: url(:/imgs/一键同步hover.png);
+color: rgb(255, 255, 255);
+}
+
+
+#syncStart:checked{
+border-image: url(:/imgs/同步中hover.png);
+}</string>
             </property>
             <property name="text">
-             <string>同步</string>
+             <string/>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
             </property>
            </widget>
           </item>

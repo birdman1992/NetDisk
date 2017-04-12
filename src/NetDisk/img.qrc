@@ -101,5 +101,10 @@
         <file>imgs/function/confirm-btn.png</file>
         <file>imgs/cloudUpdate.png</file>
         <file>imgs/localUpdate.png</file>
+        <file>imgs/logo.png</file>
+        <file>imgs/同步中.png</file>
+        <file>imgs/同步中hover.png</file>
+        <file>imgs/一键同步.png</file>
+        <file>imgs/一键同步hover.png</file>
     </qresource>
 </RCC>

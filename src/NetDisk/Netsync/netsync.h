@@ -65,10 +65,10 @@ private slots:
     void syncLocalUpdate();
     void taskDownloadFinished(TaskInfo info);
     void taskUploadFinished(TaskInfo info);
+    void syncfinish(bool);
 
 signals:
-    void uploadNum(int);
-    void downloadNum(int);
+
     void syncStateChanged(bool);
 };
 

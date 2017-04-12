@@ -823,10 +823,10 @@ void syncTable::syncHostToLocal()
     creatSyncDownloadList();
 }
 
-void syncTable::syncLocalToHost()
-{
-    creatSyncUploadList();
-}
+//void syncTable::syncLocalToHost()
+//{
+//    creatSyncUploadList();
+//}
 
 void syncTable::syncInfoInsert(QList<syncInfo *> info)
 {
@@ -864,6 +864,23 @@ syncInfo *syncTable::getHostInfoById(double Id)
     }
     qDebug()<<"id:"<<strId<<"name:"<<list_all.at(ret)->FILE_NAME;
     return list_all.at(ret);
+}
+
+bool syncTable::fileIsDownloading(QString name)
+{
+    int i = 0;
+    QString info;
+
+    for(i=0; i< list_download_task.count(); i++)
+    {
+        info = list_download_task.at(i);
+
+        if(info == name)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 double syncTable::getIdByName(QString name, bool* isChanged)
@@ -1093,7 +1110,7 @@ void syncTable::tempListToHostList()
 }
 
 void syncTable::creatSyncUploadList()
-{
+{qDebug()<<"[creatSyncUploadList]";
     //创建同步上传链表
     QFileInfo* localInfoReal;
     syncInfo* localInfo;
@@ -1111,19 +1128,21 @@ void syncTable::creatSyncUploadList()
     {
 
         localInfoReal = list_loacl_real.at(i);
-        if(localInfoReal->isDir())
+        if(localInfoReal->isDir()||fileIsDownloading(localInfoReal->absoluteFilePath()))
             continue;
         localInfo->PARENT_ID = getIdByName(localInfoReal->absolutePath());
         localInfo->ID = getIdByName(localInfoReal->absoluteFilePath(),&isUpdated);
         localInfo->FILE_NAME = localInfoReal->absoluteFilePath();//此处使用FILE_NAME保存待上传的本地文件路径
-//        qDebug()<<"isupdated"<<isUpdated;
+        qDebug()<<"isupdated"<<isUpdated;
         if(!isUpdated)
             continue;
         list_sync_upload<<localInfo;
         localInfo = new syncInfo;
     }
+    qDebug()<<"up list count"<<list_sync_upload.count();
     reportSyncNum();
-//    emit syncUpload();
+    if(netConf->autoSyncDir())
+        emit syncUpload();
 }
 
 void syncTable::creatSyncDownloadList()
@@ -1137,7 +1156,8 @@ void syncTable::creatSyncDownloadList()
         if(getPathById(sInfo->ID).isEmpty())
             list_sync_download<<sInfo;
     }
-    emit syncDownload();
+    if(netConf->autoSyncDir())
+        emit syncDownload();
 }
 
 void syncTable::clearSyncList()

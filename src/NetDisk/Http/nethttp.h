@@ -79,13 +79,14 @@ public:
     void setLocalList();
     void setHttpClient(NetHttp* client);
     void syncHostToLocal();
-    void syncLocalToHost();
+//    void syncLocalToHost();
     void syncInfoInsert(QList<syncInfo*> info);
     void syncNextDir();
     void updateParentDate(double id);
     void reportSyncNum();
     void creatSyncUploadList();
     syncInfo* getHostInfoById(double Id);
+    bool fileIsDownloading(QString name);//通过全路径查询文件是否在下载中
     double getIdByName(QString name, bool *isChanged=NULL);//从本地文件信息缓存中查询对应文件（夹）的ID
     QString getPathById(double Id);//从本地文件信息缓存中查询ID对应的路径
     QList<syncInfo*> getHostList();//获取服务端文件列表
@@ -94,6 +95,7 @@ public:
     QList<QFileInfo*> list_loacl_real;
     QList<syncInfo*> list_sync_download;//同步下载链表
     QList<syncInfo*> list_sync_upload;//同步上传链表
+    QStringList list_download_task;//正在下载文件列表
     QDateTime syncTime;
     bool isSyncing;//是否正在同步
 

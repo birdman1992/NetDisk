@@ -133,6 +133,7 @@ private:
     void initSilidebar();
     void initFunctionList();
     void initTitleMenu();
+    void setSyncState(bool isSyncing);
     void hidePanel();
     void setSysMenu();
     void mousePressEvent(QMouseEvent *event);

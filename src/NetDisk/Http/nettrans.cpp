@@ -216,14 +216,14 @@ void netWork::setTaskInfo(double parentId)
 void netWork::netPost(QNetworkRequest postRequest, QByteArray postData)
 {
     qDebug()<<"up post1";
-    netReply = managerUpload->post(postRequest, postData);qDebug()<<"up post2";
+    netReply = managerUpload->post(postRequest, postData);
     connect(netReply, SIGNAL(finished()), this, SLOT(uploadRelpy()));
 }
 
 void netWork::netPost(QNetworkRequest postRequest, QHttpMultiPart *postData)
 {
-    qDebug()<<"up post1";
-    netReply = managerUpload->post(postRequest, postData);qDebug()<<"up post2";
+    qDebug()<<"up post";
+    netReply = managerUpload->post(postRequest, postData);
     connect(netReply, SIGNAL(finished()), this, SLOT(uploadRelpy()));
 }
 
@@ -397,16 +397,15 @@ int netWork::netFileUpload()
         return 0;
     }
     qDebug("%d/%d",chunk,chunks);
-
-//    chunksize = qMin(bytesToLoad, CHUNK_SIZE);
-    chunksize = CHUNK_SIZE;
+    chunksize = qMin(bytesToLoad, CHUNK_SIZE);
+//    chunksize = CHUNK_SIZE;
 
     QByteArray bond;
     QByteArray send;
 
     QHttpPart chunksize_part;
     chunksize_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"chunksize\""));
-    chunksize_part.setBody(QString::number(chunksize).toLocal8Bit());
+    chunksize_part.setBody(QString::number(CHUNK_SIZE).toLocal8Bit());
     multiSend->append(chunksize_part);
 
     QHttpPart fileMd5_part;
@@ -465,7 +464,7 @@ int netWork::netFileUpload()
 
     QHttpPart file_part;
     file_part.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/octet-stream"));
-    file_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(QString("name=\"file\";filename=\"%1\"").arg(QFileInfo(*pFile).fileName())));
+    file_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(QString("form-data; name=\"file\";filename=\"%1\"").arg(QFileInfo(*pFile).fileName())));
     QByteArray buffer = pFile->read(chunksize);
     file_part.setBody(buffer);
     multiSend->append(file_part);
@@ -563,6 +562,7 @@ void netWork::replyFinished(QNetworkReply *reply)
             {
                 QJsonObject obj = result.toObject();
                 taskInfo.taskId = obj.take("ID").toDouble();
+                qDebug()<<"upload task over"<<taskInfo.taskId;
                 emit taskUpFinish(taskInfo);
             }
         }
@@ -580,9 +580,8 @@ void netWork::uploadRelpy()
 {
     QByteArray qba = netReply->readAll();
     disconnect(netReply, SIGNAL(finished()), this, SLOT(uploadRelpy()));
-    qDebug()<<"up delete";
     netReply->deleteLater();
-    qDebug()<<"upload reply"<<qba.size();
+
     if(isupload)
     {
         QJsonDocument parseDoc;
@@ -591,7 +590,7 @@ void netWork::uploadRelpy()
         QJsonValue result;
         QString code;
         QString msg;
-        qDebug()<<"[reply]"<<qba;
+        qDebug()<<"[upload reply]"<<qba;
         parseDoc = QJsonDocument::fromJson(qba, &jError);
 
         if(jError.error == QJsonParseError::NoError)
@@ -663,10 +662,13 @@ void netWork::uploadRelpy()
                 netFileUpload();
             }
             if(!result.isNull())
-            {qDebug()<<"[RESULT EMPTY]";
+            {
                 QJsonObject obj = result.toObject();
+                if(!obj.contains("ID"))
+                    return;
                 taskInfo.taskId = obj.take("ID").toDouble();
                 taskInfo.taskState = FINISHI_STATE;
+                qDebug()<<"[UPLOAD OVER]"<<taskInfo.taskId;
                 emit taskUpFinish(taskInfo);
             }
         }
@@ -733,7 +735,7 @@ void netWork::getServerAddr()
 
 void netWork::fileRecv()
 {
-    QByteArray qba = netReply->readAll();qDebug()<<"download:"<<qba.size();
+    QByteArray qba = netReply->readAll();//qDebug()<<"download:"<<qba.size();
 
     QJsonDocument parseDoc;
     QJsonParseError jError;

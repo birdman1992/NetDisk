@@ -61,7 +61,8 @@ void MainWidget::initSilidebar()
 {
     QSize isize = QSize(81,81);
     ui->sliderbar->setIconSize(QSize(36,36));
-    QListWidgetItem* item = new QListWidgetItem(QIcon(":/imgs/slidebar/我的文件.png"),"我的文件");
+    QListWidgetItem* item;
+    item = new QListWidgetItem(QIcon(":/imgs/slidebar/我的文件.png"),"我的文件");
     item->setTextAlignment(Qt::AlignHCenter);
     item->setSizeHint(isize);
     ui->sliderbar->addItem(item);
@@ -129,6 +130,20 @@ void MainWidget::initTitleMenu()
     ui->menu->addItem("注销");
     ui->menu->addItem("退出");
     ui->menu->view()->setFixedWidth(150);
+}
+
+void MainWidget::setSyncState(bool isSyncing)//isSyncing = checked
+{
+    if(isSyncing)
+    {
+        ui->syncStart->setEnabled(false);
+        ui->syncStart->setChecked(true);
+    }
+    else
+    {
+        ui->syncStart->setEnabled(true);
+        ui->syncStart->setChecked(false);
+    }
 }
 
 void MainWidget::hidePanel()
@@ -311,11 +326,13 @@ void MainWidget::getSyncNum(int upNum, int downNum)
         {
             if(netConf->autoSyncDir())
             {
-                ui->syncStart->setText("同步中");
+//                ui->syncStart->setText("同步中");
+                setSyncState(true);
             }
             else
             {
-                ui->syncStart->setText("一键同步");
+                setSyncState(false);
+//                ui->syncStart->setText("一键同步");
 //                ui->syncStart->setEnabled(true);
             }
             ui->frame_sync->show();
@@ -335,13 +352,15 @@ void MainWidget::syncEnable(bool enable)
 {
     if(enable)
     {
-        ui->syncStart->setEnabled(false);
-        ui->syncStart->setText("同步中");
+//        ui->syncStart->setEnabled(false);
+//        ui->syncStart->setText("同步中");
+        setSyncState(true);
     }
     else
     {
-        ui->syncStart->setEnabled(true);
-        ui->syncStart->setText("一键同步");
+        setSyncState(false);
+//        ui->syncStart->setEnabled(true);
+//        ui->syncStart->setText("一键同步");
     }
 }
 
@@ -353,9 +372,10 @@ void MainWidget::openDiskConfig()
 void MainWidget::diskInit()
 {
     if(netConf->autoSyncDir())
-        syncEnable(false);
+        syncEnable(true);
     else
-        ui->syncStart->show();
+        setSyncState(false);
+//        ui->syncStart->show();
 
     if(isInited)
     {
@@ -402,6 +422,10 @@ void MainWidget::diskInit()
 //    panelStack = new QStackedLayout(this);
     pageWidget = new QWidget(this);
 
+    //同步信息
+    ui->msg_local->setText("本地同步文件0个");
+    ui->msg_host->setText("云端同步文件0个");
+
     scrollFolder = new QScrollArea(this);
     scrollFolder->setFrameShape(QFrame::NoFrame);
     scrollFolder->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -438,6 +462,7 @@ void MainWidget::diskInit()
     connect(diskPanel, SIGNAL(isLoading(bool)), this, SLOT(isLoading(bool)));
     connect(diskPanel, SIGNAL(scrollValueChanged(int)), this, SLOT(scrollValueUpdate(int)));
     connect(ui->syncStart, SIGNAL(clicked()), diskPanel->diskSync, SLOT(syncTaskUpload()));
+    connect(ui->syncStart, SIGNAL(clicked()), diskPanel->diskSync, SLOT(syncTaskDownload()));
     connect(syncPanel, SIGNAL(pathChanged(QList<QFileInfo*>)), pathView, SLOT(pathChange(QList<QFileInfo*>)));
     connect(syncPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
     connect(syncPanel, SIGNAL(syncNumChanged(int,int)), this, SLOT(getSyncNum(int,int)));
@@ -626,9 +651,6 @@ void MainWidget::loginRst(bool isSucceed)
         diskPanel->panelCd((fileInfo*)NULL);
         isLogin = true;
         setSysMenu();
-//        QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::Information;
-
-//        sysTray->showMessage(QString("文件同步中"), QString("正在同步第2个文件，共17个文件"),QSystemTrayIcon::Information);
     }
     else
     {
