@@ -22,8 +22,8 @@ ConfigPanel::ConfigPanel(QWidget *parent) :
     ui->maxTask->addItem("5");
     ui->maxTask->setCurrentIndex(netConf->getMaxTaskNum()-1);
     ui->warn_address->hide();
-    configFinshed = configCheck();
     initStack();
+    configFinshed = configCheck();
 }
 
 ConfigPanel::~ConfigPanel()
@@ -54,6 +54,8 @@ bool ConfigPanel::configCheck()
     {
         ui->warn_address->setText("请配置服务器地址");
         ui->warn_address->show();
+        ui->listWidget->setCurrentRow(1);
+        return false;
     }
     QString pattern("http://*.*.*.*:*");
     QRegExp rx(pattern);
@@ -69,6 +71,7 @@ bool ConfigPanel::configCheck()
     {
         ui->warn_address->setText("地址格式错误");
         ui->warn_address->show();
+        ui->listWidget->setCurrentRow(1);
     }
     return false;
 }

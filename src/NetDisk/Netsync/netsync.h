@@ -9,6 +9,8 @@
 #include <QJsonArray>
 #include <QJsonParseError>
 #include <QList>
+#include <QFile>
+#include <QTimer>
 #include "netconfig.h"
 #include "Http/nethttp.h"
 #include "Http/nettrans.h"
@@ -34,6 +36,7 @@ public slots:
 
 private:
     QDateTime syncDate;
+    QTimer* syncTimer;
     QFileSystemWatcher netWatcher;
     QList<QFileInfo*> listLocalReal;
     QList<syncLocalInfo*> listLocal;
@@ -51,6 +54,7 @@ private:
     void syncLocalWrite(QList<syncLocalInfo *> l);
     void syncDateRead();
     void syncDateWrite(QDateTime date);
+    void hideFile(QFile* file);
     double getIdByPath(QString path);
     QString getLocalPath(QString path);
 
@@ -60,12 +64,14 @@ private:
 
 private slots:
     void syncDirChanged(QString dir);
+    void syncTimeOut();
     void syncInfoRecv(QList<syncInfo*>, QDateTime);
     void syncHostPointSave(QDateTime);
     void syncLocalUpdate();
     void taskDownloadFinished(TaskInfo info);
     void taskUploadFinished(TaskInfo info);
     void syncfinish(bool);
+
 
 signals:
 

@@ -106,5 +106,6 @@
         <file>imgs/同步中hover.png</file>
         <file>imgs/一键同步.png</file>
         <file>imgs/一键同步hover.png</file>
+        <file>imgs/gear.png</file>
     </qresource>
 </RCC>

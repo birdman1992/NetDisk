@@ -1,8 +1,9 @@
 #include "netsync.h"
-#include <QtDebug>
+#include <QDebug>
 #include <QString>
 #include <QDirIterator>
 #include <QDateTime>
+#include <QProcess>
 
 NetSync::NetSync(QObject *parent):
   QObject(parent)
@@ -11,6 +12,8 @@ NetSync::NetSync(QObject *parent):
     taskNum = 0;
     uptask = 0;
     isSyncing = false;
+    syncTimer = NULL;
+    connect(this, SIGNAL(syncStateChanged(bool)), this, SLOT(syncfinish(bool)));
 
     syncDateRead();
     initWatcher();
@@ -82,6 +85,9 @@ void NetSync::syncLocalGet()
         if(info->fileName() == ".date")
             continue;
         syncT.list_loacl_real<<info;
+        if(info->isDir())
+            syncT.list_local_real_dir<<info;
+//        qDebug()<<info->absoluteFilePath()<<info->isReadable()<<info->isWritable()<<info->size();
 //        qDebug()<<info->fileName()<<info->absolutePath()<<info->absoluteFilePath();
     }
 }
@@ -146,6 +152,13 @@ void NetSync::syncLocalWrite(QList<syncLocalInfo *> l)
     }
 
     f->close();
+
+    QFileInfo finfo(*f);
+
+    if(!finfo.isHidden())
+    {
+        hideFile(f);
+    }
     syncT.isSyncing = false;
     delete f;
 }
@@ -180,7 +193,18 @@ void NetSync::syncDateWrite(QDateTime date)
     qDebug()<<"[SYNC time write]"<<str;
     f->write(str.toLocal8Bit());
     f->close();
+
+    if(!QFileInfo(*f).isHidden())
+        hideFile(f);
     return;
+}
+
+void NetSync::hideFile(QFile *file)
+{
+    QString str = file->fileName().replace('/','\\').toLatin1();
+    QProcess process;
+    process.start("attrib", QStringList()<<"+h"<<str);
+    qDebug()<<str<<process.waitForFinished(1000);
 }
 
 QString NetSync::getLocalPath(QString path)
@@ -196,10 +220,29 @@ void NetSync::syncDirChanged(QString dir)
 {
     if(syncT.isSyncing)
         return;
+    qDebug()<<"Local dir changed!"<<dir;
+
+    if(syncTimer == NULL)
+    {
+        syncTimer = new QTimer;
+        syncTimer->start(10000);
+        connect(syncTimer, SIGNAL(timeout()), this, SLOT(syncTimeOut()));//20s
+    }
+    else
+    {
+        syncTimer->setInterval(10000);
+    }
+}
+
+void NetSync::syncTimeOut()
+{
+    disconnect(syncTimer, SIGNAL(timeout()), this, SLOT(syncTimeOut()));
+    delete syncTimer;
+    syncTimer = NULL;
     syncLocalGet();
     qDebug()<<"AAAA";
-    syncT.creatSyncUploadList();
-    qDebug()<<"Local dir changed!"<<dir;
+    syncT.syncMkDir();
+//    syncT.creatSyncUploadList();
 }
 
 void NetSync::syncInfoRecv(QList<syncInfo *>sInfo, QDateTime sTime)
@@ -216,12 +259,17 @@ void NetSync::syncHostPointSave(QDateTime sTime)
         syncT.syncNextDir();
         return;
     }
-//    syncDateWrite(sTime);
+
     isSyncing = false;
     syncT.syncTime = sTime;
     syncT.syncHostToLocal();
     qDebug()<<"BBBB";
-    syncT.creatSyncUploadList();
+    syncT.syncLocalToHost();
+
+    if((syncT.list_sync_download.count() == 0) && (syncT.list_sync_upload.count() == 0))
+    {
+        syncDateWrite(sTime);
+    }
 }
 
 void NetSync::syncLocalUpdate()
@@ -392,3 +440,4 @@ void NetSync::syncfinish(bool isSyncing)
     if(!isSyncing)
         syncDateWrite(syncT.syncTime);
 }
+

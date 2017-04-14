@@ -14,7 +14,7 @@
    <enum>Qt::NoFocus</enum>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>联瑞企业网盘</string>
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget#login{

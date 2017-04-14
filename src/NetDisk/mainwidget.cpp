@@ -487,6 +487,7 @@ void MainWidget::initSysTray()
     act_quit = new QAction("退出");
 
     sysTrayMenu = new QMenu(this);
+    titleMenu = new QMenu(ui->title);
     sysTray->setContextMenu(sysTrayMenu);
     sysTrayMenu->addAction(act_openPanel);
     sysTrayMenu->addAction(act_openWebsite);

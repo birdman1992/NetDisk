@@ -14,7 +14,7 @@
    <enum>Qt::ClickFocus</enum>
   </property>
   <property name="windowTitle">
-   <string>MainWidget</string>
+   <string>联瑞企业网盘</string>
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget#MainWidget{background-color: rgb(255, 255, 255);}</string>

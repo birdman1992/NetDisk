@@ -374,6 +374,8 @@ void QFolder::folderRename()
 void QFolder::folderOpen()
 {
     qDebug("open");
+    if(folderInfo.FILE_TYPE != 0)
+        return;
     FilesPanel* par = (FilesPanel*)parent();
     par->panelCd(&folderInfo);
 }

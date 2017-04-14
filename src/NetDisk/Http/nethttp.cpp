@@ -191,7 +191,7 @@ void NetHttp::replyFinished(QNetworkReply *reply)
 //    QString str = httpDateTran(reply->rawHeader("Date"));
 //    serverTime = QDateTime::fromString(str,"dd M yyyy hh:mm:ss");
     qDebug()<<"http recv:"<<nRecv.size();
-//    qDebug()<<nRecv;
+    qDebug()<<nRecv;
 
     switch(State)
     {
@@ -470,6 +470,7 @@ void NetHttp::loginRst(QByteArray rst)
             {
                 jval = obj.take("result");
                 token = jval.toString();
+                netConf->token = token;
                 qDebug()<<"[LOGIN TOKEN]"<<jval.toString();
             }
             if(obj.contains("code"))
@@ -823,10 +824,11 @@ void syncTable::syncHostToLocal()
     creatSyncDownloadList();
 }
 
-//void syncTable::syncLocalToHost()
-//{
-//    creatSyncUploadList();
-//}
+void syncTable::syncLocalToHost()
+{
+    syncMkDir();
+    creatSyncUploadList();
+}
 
 void syncTable::syncInfoInsert(QList<syncInfo *> info)
 {
@@ -1039,6 +1041,39 @@ void syncTable::syncFile()
     }
 }
 
+void syncTable::syncMkDir()
+{return;
+    qDebug()<<"[creatSyncUploadList]";
+    //创建同步上传链表
+    QFileInfo* localInfoReal;
+    double parentId;
+    QString dirName;
+
+
+    int i=0;
+    bool isUpdated;
+
+    for(i=0; i<list_loacl_real.count(); i++)
+    {
+
+        localInfoReal = list_loacl_real.at(i);
+        if(fileIsDownloading(localInfoReal->absoluteFilePath()))
+            continue;
+        if(localInfoReal->isDir())
+        {
+
+        }
+        parentId = getIdByName(localInfoReal->absolutePath());
+        getIdByName(localInfoReal->absoluteFilePath(),&isUpdated);
+        dirName = localInfoReal->fileName();//此处使用FILE_NAME保存待上传的本地文件路径
+//        qDebug()<<"isupdated"<<isUpdated;
+        if(!isUpdated)
+            continue;
+        mkdirInHost(parentId, dirName);
+        return;
+    }
+}
+
 void syncTable::syncNextDir()
 {
     if(list_task.isEmpty())
@@ -1106,8 +1141,104 @@ void syncTable::tempListToHostList()
         list_all<<info;
         list_index<<QString::number(info->ID);
     }
-//    qDebug()<<"all size"<<list_all.count()<<"index size"<<list_index.count();
+    //    qDebug()<<"all size"<<list_all.count()<<"index size"<<list_index.count();
 }
+
+void syncTable::mkdirInHost(double pId, QString dirName)
+{
+    qDebug()<<"mkdir"<<pId<<dirName;
+    QString nUrl;
+    QStringList params;
+//    nUrl = netConf->getServerAddress() + "api/file/createFolder?"+QString("pid=%1&name=%2").arg(pId).arg(QString(fileName.toUtf8().toPercentEncoding()).replace('%','\\x'));
+    nUrl = netConf->getServerAddress() + "/api/file/createFolder";
+    params<<QString("pid=%1&").arg(pId)<<QString("name=%1&").arg(dirName)<<QString(APP_ID)+"&";
+//    QByteArray qba = QString("pid=%1&name=").arg(pId).toLocal8Bit()+fileName.toUtf8();
+    QByteArray qba = getPost(params);
+    QNetworkRequest request(nUrl);
+    request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
+    reply = netConf->manager->post(request,qba);
+    connect(reply, SIGNAL(finished()), this, SLOT(recvMkdirRst()));
+}
+
+QByteArray syncTable::getPost(QStringList param)
+{
+    QByteArray postData = QByteArray();
+    qSort(param.begin(), param.end());
+    QString str = QString();
+    for(int i=0; i<param.count(); i++)
+    {
+        str += param.at(i);
+    }
+    str += QString("token=%1&").arg(netConf->token);
+    postData += str.toUtf8();
+    str += QString(APP_KEY);
+
+    QByteArray sign = QCryptographicHash::hash(str.toUtf8(), QCryptographicHash::Md5);
+    postData += QString("sign=%1").arg(QString(sign.toHex())).toLocal8Bit();
+    qDebug()<<"[post params]"<<postData;
+    return postData;
+}
+
+void syncTable::recvMkdirRst()
+{
+    disconnect(reply, SIGNAL(finished()), this, SLOT(recvMkdirRst()));
+    QByteArray qba = reply->readAll();
+    qDebug()<<qba;
+    syncLocalInfo* lInfo = new syncLocalInfo;
+    QJsonParseError jError;
+    QJsonValue jval;
+    QJsonDocument parseDoc = QJsonDocument::fromJson(qba, &jError);
+
+    if(jError.error == QJsonParseError::NoError)
+    {
+        if(parseDoc.isObject())
+        {
+            QJsonObject obj = parseDoc.object();
+
+            if(obj.contains("msg"))
+            {
+                jval = obj.take("msg");
+                qDebug()<<"[recvMkdirRst]"<<jval.toString();
+            }
+            if(obj.contains("code"))
+            {
+                jval = obj.take("code");
+                if(jval.toString() != "200")
+                    return;
+            }
+            if(obj.contains("result"))
+            {
+                jval = obj.take("result");
+                obj = jval.toObject();
+
+                if(obj.contains("FILE_NAME"))
+                {
+                    jval = obj.take("FILE_NAME");
+                    lInfo->fileName = jval.toString();
+                }
+                if(obj.contains("ID"))
+                {
+                    jval = obj.take("ID");
+                    lInfo->fileId = jval.toDouble();
+                }
+                if(obj.contains("PARENT_ID"))
+                {
+                    jval = obj.take("PARENT_ID");
+                    lInfo->parentId = jval.toDouble();
+                }
+                lInfo->isDir = 1;
+                lInfo->fileMd5 = QString();
+                lInfo->fileSize = 0;
+                lInfo->syncPath = getPathById(lInfo->parentId)+"/"+lInfo->fileName;
+                qDebug()<<"recv"<<lInfo->syncPath;
+                list_local<<lInfo;
+
+            }
+        }
+    }
+
+}
+
 
 void syncTable::creatSyncUploadList()
 {qDebug()<<"[creatSyncUploadList]";
@@ -1128,12 +1259,16 @@ void syncTable::creatSyncUploadList()
     {
 
         localInfoReal = list_loacl_real.at(i);
-        if(localInfoReal->isDir()||fileIsDownloading(localInfoReal->absoluteFilePath()))
+        if(fileIsDownloading(localInfoReal->absoluteFilePath()))
             continue;
+        if(localInfoReal->isDir())
+        {
+
+        }
         localInfo->PARENT_ID = getIdByName(localInfoReal->absolutePath());
         localInfo->ID = getIdByName(localInfoReal->absoluteFilePath(),&isUpdated);
         localInfo->FILE_NAME = localInfoReal->absoluteFilePath();//此处使用FILE_NAME保存待上传的本地文件路径
-        qDebug()<<"isupdated"<<isUpdated;
+//        qDebug()<<"isupdated"<<isUpdated;
         if(!isUpdated)
             continue;
         list_sync_upload<<localInfo;

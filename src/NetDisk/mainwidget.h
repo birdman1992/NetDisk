@@ -104,6 +104,7 @@ private:
     QLabel* page_info;
     QSystemTrayIcon* sysTray;
     QMenu* sysTrayMenu;
+    QMenu* titleMenu;
     QTimer* syncTimer;
     FilesPanel* diskPanel;
     PathView* pathView;

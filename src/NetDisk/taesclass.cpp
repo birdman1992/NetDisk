@@ -1,4 +1,5 @@
 #include "TAesClass.h"
+#include <QDebug>
 
 static unsigned char AesSbox[16*16]=
 {// populate the Sbox matrix
@@ -95,7 +96,6 @@ void Aes::SetNbNkNr(int keySize)
 
 void Aes::KeyExpansion()
 {
-
     memset(w,0,16*15);
     for(int row=0;row<Nk;row++) //拷贝seed 密钥
     {
@@ -130,7 +130,6 @@ void Aes::KeyExpansion()
         w[4*row+2] = (byte) ( (int) w[4*(row-Nk)+2] ^ (int)temp[2] );
         w[4*row+3] = (byte) ( (int) w[4*(row-Nk)+3] ^ (int)temp[3] );
     } // for loop
-
 }
 
 //密钥移位函数

@@ -23,7 +23,7 @@ NetConfig::NetConfig()
     autoLogin = false;
     autoSync = false;
     serverAddress = QString();
-    netAes.InitializePrivateKey(18,(UCHAR*)"Linkrealby@Birdman");
+    netAes.InitializePrivateKey(16,(UCHAR*)"Linkrealby@Birdman");
     creatDir();
     creatDefaultConfig();
     readConfig();

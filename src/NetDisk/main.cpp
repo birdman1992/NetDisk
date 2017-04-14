@@ -6,25 +6,42 @@
 #include <QMutex>
 #include <QDateTime>
 #include <QMessageLogContext>
+#include <QMessageBox>
 #include <qdebug.h>
+#include <QSharedMemory>
 #include "netconfig.h"
 
+
 void outputMessage(QtMsgType type, const QMessageLogContext &context, const QString &msg);
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-//    qInstallMessageHandler(outputMessage); //注册MsgHandler回调函数
+    qInstallMessageHandler(outputMessage); //注册MsgHandler回调函数
     qDebug("Netdisk start");
     QFont font;
     font.setFamily("微软雅黑");
     font.setPointSize(9);
     a.setFont(font);
-    netConf = new NetConfig;
-    MainWidget w;
-//    w.show();
 
-    return a.exec();
+
+    QSharedMemory shared_memory;
+    shared_memory.setKey(QString("main_window"));
+    if(shared_memory.attach())
+    {
+//        QMessageBox::about(NULL, "联瑞企业网盘","联瑞企业网盘已启动");
+        return 0;
+    }
+
+    if(shared_memory.create(1))
+    {
+        netConf = new NetConfig;
+        MainWidget w;
+    //    w.show();
+
+        return a.exec();
+    }
 }
 
 void outputMessage(QtMsgType type, const QMessageLogContext &context, const QString &msg)
@@ -65,4 +82,26 @@ void outputMessage(QtMsgType type, const QMessageLogContext &context, const QStr
 
     mutex.unlock();
 }
+
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+  {
+      QByteArray localMsg = msg.toLocal8Bit();
+      switch (type) {
+      case QtDebugMsg:
+          fprintf(stderr, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+          break;
+      case QtInfoMsg:
+          fprintf(stderr, "Info: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+          break;
+      case QtWarningMsg:
+          fprintf(stderr, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+          break;
+      case QtCriticalMsg:
+          fprintf(stderr, "Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+          break;
+      case QtFatalMsg:
+          fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+          abort();
+      }
+  }
 

@@ -79,12 +79,13 @@ public:
     void setLocalList();
     void setHttpClient(NetHttp* client);
     void syncHostToLocal();
-//    void syncLocalToHost();
+    void syncLocalToHost();
     void syncInfoInsert(QList<syncInfo*> info);
     void syncNextDir();
     void updateParentDate(double id);
     void reportSyncNum();
     void creatSyncUploadList();
+    void syncMkDir();
     syncInfo* getHostInfoById(double Id);
     bool fileIsDownloading(QString name);//通过全路径查询文件是否在下载中
     double getIdByName(QString name, bool *isChanged=NULL);//从本地文件信息缓存中查询对应文件（夹）的ID
@@ -93,6 +94,7 @@ public:
     QList<syncInfo*> list_task;//遍历任务链表
     QList<syncLocalInfo*> list_local;
     QList<QFileInfo*> list_loacl_real;
+    QList<QFileInfo*> list_local_real_dir;
     QList<syncInfo*> list_sync_download;//同步下载链表
     QList<syncInfo*> list_sync_upload;//同步上传链表
     QStringList list_download_task;//正在下载文件列表
@@ -108,6 +110,7 @@ private:
     QStringList list_index;//host端所有更新文件的id，和list_all一一对应
     QStringList list_local_index;//本地所有文件id，和list_local一一对应
     QStringList list_path;//同步路径表
+    QNetworkReply* reply;
     QString cur_path;
     NetHttp* syncClient;
     bool syncAll;//是否遍历同步所有目录
@@ -119,9 +122,15 @@ private:
     void nextTask();
     void recvListClear();
     void tempListToHostList();
+    void mkdirInHost(double pId, QString dirName);
 
     void creatSyncDownloadList();
     void clearSyncList();
+    QByteArray getPost(QStringList param);
+
+private slots:
+    void recvMkdirRst();
+
 signals:
     void localListChanged();
     void hostSyncFinished();

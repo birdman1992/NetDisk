@@ -16,6 +16,7 @@ class NetConfig
 public:
     NetConfig();
     QNetworkAccessManager* manager;
+    QString token;
     void setServerAddress(QString address);
     QString getServerAddress();
     void setDownloadPath(QString path);
