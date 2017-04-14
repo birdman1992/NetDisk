@@ -57,7 +57,7 @@ void NetHttp::netList(double pId, int cPage, int pageSize, int showdelete, QStri
     if(!name.isEmpty())
         param<<QString("name=%1&").arg(name);
     if(!fileType.isEmpty())
-        param<<QString("fileType=%1&").arg(fileType);
+        param<<QString("type=%1&").arg(fileType);
 
     QByteArray qba = getPost(param);
 
@@ -712,9 +712,9 @@ QByteArray NetHttp::getPost(QStringList param)
     str += QString("token=%1&").arg(token);
     postData += str.toUtf8();
     str += QString(APP_KEY);
-//    qDebug()<<"[sign params]"<<str;
+    qDebug()<<"[sign params]"<<str;
     QByteArray sign = QCryptographicHash::hash(str.toUtf8(), QCryptographicHash::Md5);
-//    qDebug()<<sign.toHex();
+    qDebug()<<sign.toHex();
     postData += QString("sign=%1").arg(QString(sign.toHex())).toLocal8Bit();
     qDebug()<<"[post params]"<<postData;
     return postData;
@@ -1232,7 +1232,7 @@ void syncTable::recvMkdirRst()
                 lInfo->syncPath = getPathById(lInfo->parentId)+"/"+lInfo->fileName;
                 qDebug()<<"recv"<<lInfo->syncPath;
                 list_local<<lInfo;
-
+                emit localListChanged();
             }
         }
     }
