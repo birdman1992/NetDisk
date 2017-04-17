@@ -37,7 +37,11 @@ image: url(:/imgs/Login/loginBG.png);
 	border: 1px solid rgb(218, 218, 218);
 	border-left-width: 0px;
 	border-right-width: 1px;
+	font: 5 15px &quot;微软雅黑&quot;;
 }</string>
+   </property>
+   <property name="text">
+    <string/>
    </property>
   </widget>
   <widget class="QLineEdit" name="passwd">
@@ -75,7 +79,9 @@ image: url(:/imgs/Login/loginBG.png);
    </property>
    <property name="styleSheet">
     <string notr="true">QCheckBox::indicator{color: rgb(50, 169, 253);}
-QCheckBox{color: rgb(102, 102, 102)}</string>
+QCheckBox{color: rgb(102, 102, 102)}
+QCheckBox{font: 9pt &quot;微软雅黑&quot;;}
+</string>
    </property>
    <property name="text">
     <string>记住密码</string>
@@ -95,7 +101,8 @@ QCheckBox{color: rgb(102, 102, 102)}</string>
    </property>
    <property name="styleSheet">
     <string notr="true">QCheckBox::indicator{color: rgb(50, 169, 253);}
-QCheckBox{color: rgb(102, 102, 102)}</string>
+QCheckBox{color: rgb(102, 102, 102)}
+QCheckBox{font: 9pt &quot;微软雅黑&quot;;}</string>
    </property>
    <property name="text">
     <string>自动登录</string>
@@ -116,6 +123,7 @@ QCheckBox{color: rgb(102, 102, 102)}</string>
    <property name="styleSheet">
     <string notr="true">QPushButton{border:0px;color:rgb(67,122,232)}
 QPushButton:hover{text-decoration: underline}
+QPushButton{font: 13px &quot;微软雅黑&quot;;}
 
 
 
@@ -139,7 +147,7 @@ QPushButton:hover{text-decoration: underline}
    </property>
    <property name="styleSheet">
     <string notr="true">border-image: url(:/imgs/Login/login_btn.png);
-font: 75 13pt &quot;微软雅黑&quot;;
+font: 75 20px &quot;微软雅黑&quot;;
 color: rgb(255, 255, 255);</string>
    </property>
    <property name="text">
@@ -161,7 +169,7 @@ color: rgb(255, 255, 255);</string>
    <property name="styleSheet">
     <string notr="true">QPushButton{border:0px;color:rgb(67,122,232)}
 QPushButton:hover{text-decoration: underline}
-</string>
+QPushButton{font: 13px &quot;微软雅黑&quot;;}</string>
    </property>
    <property name="text">
     <string>忘记密码？</string>
@@ -172,7 +180,7 @@ QPushButton:hover{text-decoration: underline}
     <rect>
      <x>313</x>
      <y>300</y>
-     <width>31</width>
+     <width>32</width>
      <height>23</height>
     </rect>
    </property>
@@ -182,7 +190,7 @@ QPushButton:hover{text-decoration: underline}
    <property name="styleSheet">
     <string notr="true">QPushButton{border:0px;color:rgb(67,122,232)}
 QPushButton:hover{text-decoration: underline}
-</string>
+QPushButton{font: 13px &quot;微软雅黑&quot;;}</string>
    </property>
    <property name="text">
     <string>注册</string>

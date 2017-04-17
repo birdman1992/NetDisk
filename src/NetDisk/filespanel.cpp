@@ -46,6 +46,7 @@ FilesPanel::FilesPanel(QWidget *parent) :
     ui->listView->horizontalHeaderItem(2)->setTextAlignment(Qt::ElideLeft);
     ui->listView->horizontalHeaderItem(3)->setTextAlignment(Qt::ElideLeft);
     ui->listView->horizontalHeaderItem(4)->setTextAlignment(Qt::ElideLeft);
+    ui->listView->hide();
 
     //列表视图槽
     connect(ui->listView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(listViewCd(QModelIndex)));

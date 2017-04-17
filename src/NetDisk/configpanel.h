@@ -2,6 +2,8 @@
 #define CONFIGPANEL_H
 
 #include <QWidget>
+#include <QPaintEvent>
+#include <QPainter>
 
 namespace Ui {
 class ConfigPanel;
@@ -39,6 +41,7 @@ private:
     Ui::ConfigPanel *ui;
     bool configFinshed;
     void initStack();
+    void paintEvent(QPaintEvent *);
 };
 
 #endif // CONFIGPANEL_H

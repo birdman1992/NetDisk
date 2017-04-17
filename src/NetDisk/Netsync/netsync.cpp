@@ -221,6 +221,7 @@ void NetSync::syncDirChanged(QString dir)
     if(syncT.isSyncing)
         return;
     qDebug()<<"Local dir changed!"<<dir;
+    syncLocalGet();
 
     if(syncTimer == NULL)
     {
@@ -242,7 +243,7 @@ void NetSync::syncTimeOut()
     syncLocalGet();
     qDebug()<<"AAAA";
     syncT.syncMkDir();
-//    syncT.creatSyncUploadList();
+    syncT.creatSyncUploadList();
 }
 
 void NetSync::syncInfoRecv(QList<syncInfo *>sInfo, QDateTime sTime)
@@ -328,7 +329,7 @@ void NetSync::syncTaskUpload()
         trans = new netTrans;
         info = syncT.list_sync_upload.takeFirst();
         qDebug()<<"[sync up]"<<info->PARENT_ID<<syncT.getPathById(info->PARENT_ID)<<info->FILE_NAME;
-        trans->netUpload(info->FILE_NAME, info->PARENT_ID, netClient->netToken());
+        trans->netUpload(info->FILE_NAME, info->PARENT_ID, netClient->netToken(), info->ID);
         connect(trans, SIGNAL(taskUpFinished(TaskInfo)), this, SLOT(taskUploadFinished(TaskInfo)));
         taskUpload<<trans;
         trans->taskStart();
@@ -370,7 +371,8 @@ void NetSync::taskDownloadFinished(TaskInfo info)
             sInfo->parentId = info.parentId;
             sInfo->syncPath = info.filePath;
             sInfo->lastDate = QFileInfo(sInfo->syncPath).lastModified();
-            syncT.list_local<<sInfo;
+//            syncT.list_local<<sInfo;
+            syncT.addSyncLocalInfo(sInfo);
             syncT.updateParentDate(sInfo->parentId);
             delete trans;
             syncLocalWrite(syncT.list_local);
@@ -414,7 +416,9 @@ void NetSync::taskUploadFinished(TaskInfo info)
             sInfo->parentId = info.parentId;
             sInfo->syncPath = info.filePath;
             sInfo->lastDate = QFileInfo(sInfo->syncPath).lastModified();
-            syncT.list_local<<sInfo;
+//            syncT.list_local<<sInfo;
+            syncT.addSyncLocalInfo(sInfo);
+//            qDebug()<<sInfo->fileName;
             delete trans;
             syncLocalWrite(syncT.list_local);
             syncTaskUpload();

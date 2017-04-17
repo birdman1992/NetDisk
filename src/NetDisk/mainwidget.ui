@@ -17,23 +17,27 @@
    <string>联瑞企业网盘</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget#MainWidget{background-color: rgb(255, 255, 255);}</string>
+   <string notr="true">#MainWidget{
+	background-color: rgb(255, 255, 255);
+	border:1px solid gray;
+}
+</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2" stretch="36,290">
    <property name="spacing">
     <number>0</number>
    </property>
    <property name="leftMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="topMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="rightMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <property name="bottomMargin">
-    <number>0</number>
+    <number>1</number>
    </property>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -598,15 +602,15 @@ background:rgb(0, 131, 196);
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">background-color: rgb(244, 244, 244);
+          <string notr="true">background-color: rgb(255, 255, 255);
 border:1px solid rgb(234, 234, 234);
 border-top:0px;
 border-left:0px;
-border-right:0px;
+border-right:1px;
 border-bottom:1px;</string>
          </property>
          <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
+          <enum>QFrame::Panel</enum>
          </property>
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
@@ -940,6 +944,9 @@ border-bottom:1px;</string>
            <height>49</height>
           </size>
          </property>
+         <property name="styleSheet">
+          <string notr="true">border-right:1px;</string>
+         </property>
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
          </property>
@@ -1152,6 +1159,12 @@ font: 9pt &quot;微软雅黑&quot;;
            <width>16777215</width>
            <height>49</height>
           </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">#frame_sync{
+border-top: 1px solid rgb(234, 234, 234);;
+border-bottom: 1px solid rgb(234, 234, 234);;
+}</string>
          </property>
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>

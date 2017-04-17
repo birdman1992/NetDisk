@@ -12,6 +12,7 @@
 #include <Translist/translist.h>
 #include <QLayout>
 #include <QPushButton>
+#include <QPaintEvent>
 #include <QLabel>
 #include "Translist/synclist.h"
 #include <qstackedlayout.h>
@@ -141,6 +142,7 @@ private:
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     bool eventFilter(QObject *watched, QEvent *event);
+    void paintEvent(QPaintEvent *);
 };
 
 #endif // MAINWIDGET_H

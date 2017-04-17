@@ -59,6 +59,8 @@ void NetHttp::netList(double pId, int cPage, int pageSize, int showdelete, QStri
     if(!fileType.isEmpty())
         param<<QString("type=%1&").arg(fileType);
 
+    param<<QString("token=%1&").arg(token);
+
     QByteArray qba = getPost(param);
 
     qDebug()<<"LIST"<<nUrl<<qba;
@@ -76,6 +78,7 @@ void NetHttp::netMkdir(double pId, QString fileName)
     nUrl = netConf->getServerAddress() + "/api/file/createFolder";
     params<<QString("pid=%1&").arg(pId)<<QString("name=%1&").arg(fileName)<<QString(APP_ID)+"&";
 //    QByteArray qba = QString("pid=%1&name=").arg(pId).toLocal8Bit()+fileName.toUtf8();
+    params<<QString("token=%1&").arg(token);
     QByteArray qba = getPost(params);
     State = H_NEW;
     QNetworkRequest request(nUrl);
@@ -141,6 +144,7 @@ void NetHttp::netSync(double pId, QDateTime lastSyncTime)
     if(!lastTime.isNull())
         param<<QString("syncTime=%1&").arg(lastTime);
 
+    param<<QString("token=%1&").arg(token);
     QByteArray qba = getPost(param);
     lastSyncId = pId;
 
@@ -709,7 +713,7 @@ QByteArray NetHttp::getPost(QStringList param)
     {
         str += param.at(i);
     }
-    str += QString("token=%1&").arg(token);
+//    str += QString("token=%1&").arg(token);
     postData += str.toUtf8();
     str += QString(APP_KEY);
     qDebug()<<"[sign params]"<<str;
@@ -1074,6 +1078,23 @@ void syncTable::syncMkDir()
     }
 }
 
+void syncTable::addSyncLocalInfo(syncLocalInfo *info)
+{
+    int i=0;
+    syncLocalInfo* lInfo;
+    for(i=0; i<list_local.count(); i++)
+    {
+        if(info->fileId == list_local.at(i)->fileId)
+        {
+            lInfo = list_local.takeAt(i);
+            delete lInfo;
+            list_local.insert(i, info);
+            return;
+        }
+    }
+    list_local<<info;
+}
+
 void syncTable::syncNextDir()
 {
     if(list_task.isEmpty())
@@ -1263,7 +1284,7 @@ void syncTable::creatSyncUploadList()
             continue;
         if(localInfoReal->isDir())
         {
-
+            continue;
         }
         localInfo->PARENT_ID = getIdByName(localInfoReal->absolutePath());
         localInfo->ID = getIdByName(localInfoReal->absoluteFilePath(),&isUpdated);

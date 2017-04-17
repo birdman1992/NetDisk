@@ -35,9 +35,9 @@ netWork::~netWork()
 {
 }
 
-int netWork::netUpload(QString fileName, double pId, QString token)
+int netWork::netUpload(QString fileName, double pId, QString token, double fId)
 {
-    qDebug()<<fileName<<pId;
+    qDebug()<<fileName<<pId<<fId;
     netState = 0;
     taskInfo.curSize = 0;
     transToken = token;
@@ -62,8 +62,9 @@ int netWork::netUpload(QString fileName, double pId, QString token)
     taskInfo.taskState = NO_STATE;
     taskInfo.fileName = fInfo.fileName();
     taskInfo.fileSize = pFile->size();
-    taskInfo.taskId = pId;
+    taskInfo.parentId = pId;
     taskInfo.filePath = fileName;
+    taskInfo.taskId = fId;
     pFile->close();
 
     emit transReady();
@@ -400,9 +401,6 @@ int netWork::netFileUpload()
     chunksize = qMin(bytesToLoad, CHUNK_SIZE);
 //    chunksize = CHUNK_SIZE;
 
-    QByteArray bond;
-    QByteArray send;
-
     QHttpPart chunksize_part;
     chunksize_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"chunksize\""));
     chunksize_part.setBody(QString::number(CHUNK_SIZE).toLocal8Bit());
@@ -417,6 +415,14 @@ int netWork::netFileUpload()
     filePid_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"pid\""));
     filePid_part.setBody(QString::number(filepId).toLocal8Bit());
     multiSend->append(filePid_part);
+
+    if(taskInfo.taskId)
+    {
+        QHttpPart fileId_part;
+        fileId_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"fid\""));
+        fileId_part.setBody(QString::number(taskInfo.taskId).toLocal8Bit());
+        multiSend->append(fileId_part);
+    }
 
 //    QHttpPart path_part;
 //    path_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"path\""));
@@ -632,7 +638,7 @@ void netWork::uploadRelpy()
                 emit taskUpFinish(taskInfo);
                 qDebug()<<"file exit"<<taskInfo.taskId;
             }
-            else if(code == "-200")//文件MD5不存在
+            else //if(code == "-200")//文件MD5不存在
             {
 //                if(managerUpload == NULL)
 //                {
@@ -666,6 +672,16 @@ void netWork::uploadRelpy()
                 QJsonObject obj = result.toObject();
                 if(!obj.contains("ID"))
                     return;
+                if(obj.contains("FILE_NAME"))
+                    taskInfo.fileName = obj.take("FILE_NAME").toString();
+                qDebug()<<pFile->fileName()<<taskinfo().fileName;
+                QFileInfo upfileInfo(*pFile);
+                if(upfileInfo.fileName() != taskInfo.fileName)
+                {
+                    pFile->rename(upfileInfo.absolutePath()+"/"+taskInfo.fileName);
+                }
+                qDebug()<<pFile->fileName()<<taskinfo().fileName;
+                taskInfo.filePath = QFileInfo(*pFile).absoluteFilePath();
                 taskInfo.taskId = obj.take("ID").toDouble();
                 taskInfo.taskState = FINISHI_STATE;
                 qDebug()<<"[UPLOAD OVER]"<<taskInfo.taskId;
@@ -796,9 +812,12 @@ netTrans::netTrans(QObject *parent):
     connect(work, SIGNAL(needPost(QNetworkRequest,QHttpMultiPart*)), this, SLOT(netPost(QNetworkRequest,QHttpMultiPart*)));
 }
 
-int netTrans::netUpload(QString fileName, double pId, QString token)
+int netTrans::netUpload(QString fileName, double pId, QString token, double fId)
 {
-    work->netUpload(fileName, pId, token);
+    if(fId == 0)
+        work->netUpload(fileName, pId, token);
+    else
+        work->netUpload(fileName, pId, token, fId);
     return 0;
 }
 

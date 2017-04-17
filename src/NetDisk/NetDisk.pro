@@ -10,8 +10,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = LinkRealNetDisk
 TEMPLATE = app
-RC_ICONS =app.ico
-RC_FILE = LinkRealNetDisk.rc
+#RC_ICONS =app.ico
+win32:RC_FILE = LinkRealNetDisk.rc
+#RC_FILE = resources.rc
 
 #LIBS += D:\Qt\Qt5.7.1\5.7\mingw53_32\bin\Qt5Ftp.dll
 

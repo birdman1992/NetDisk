@@ -49,7 +49,7 @@ class netWork : public QObject
 public:
     explicit netWork(QObject *parent = 0);
     void netDownload(fileInfo info, QString downLoadPath, QString token);
-    int netUpload(QString fileName, double pId, QString token);
+    int netUpload(QString fileName, double pId, QString token, double fId=0);
     TaskInfo taskinfo();
     void taskStart();
     QString getTaskSpeed();
@@ -118,7 +118,7 @@ class netTrans : public QObject
     Q_OBJECT
 public:
     explicit netTrans(QObject *parent = 0);
-    int netUpload(QString fileName, double pId, QString token);
+    int netUpload(QString fileName, double pId, QString token, double fId=0);
     void netDownload(fileInfo info, QString downLoadPath, QString token);
     void netDownload(syncInfo info, QString downLoadPath, QString token);
     void taskStart();

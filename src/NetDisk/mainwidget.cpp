@@ -44,6 +44,14 @@ MainWidget::~MainWidget()
 //    delete diskConfig;
 }
 
+void MainWidget::paintEvent(QPaintEvent*)
+{
+    QStyleOption opt;
+    opt.init(this);
+    QPainter p(this);
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
+}
+
 void MainWidget::initSearch()
 {
     QStringList l;
@@ -141,7 +149,7 @@ void MainWidget::setSyncState(bool isSyncing)//isSyncing = checked
     }
     else
     {
-        ui->syncStart->setEnabled(true);
+        ui->syncStart->setEnabled(true);qDebug()<<"settrue";
         ui->syncStart->setChecked(false);
     }
 }
@@ -153,7 +161,7 @@ void MainWidget::hidePanel()
     loadingUi.hide();
     pageWidget->hide();
     syncPanel->hide();
-    ui->frame_sync->hide();
+//    ui->frame_sync->hide();
     ui->frame_function->hide();
 }
 
@@ -317,13 +325,15 @@ void MainWidget::getSyncNum(int upNum, int downNum)
     ui->msg_host->setText(strHost);
     if(!(upNum||downNum))
     {
-        ui->frame_sync->hide();
+//        ui->frame_sync->hide();
         sysTray->showMessage(QString("文件同步"), "本地文件已和云端同步",QSystemTrayIcon::Information);
+        setSyncState(false);
+        ui->syncStart->setEnabled(false);qDebug()<<"setfalse";
     }
     else
     {
-        if(ui->frame_sync->isHidden())
-        {
+//        if(ui->frame_sync->isHidden())
+//        {
             if(netConf->autoSyncDir())
             {
 //                ui->syncStart->setText("同步中");
@@ -337,7 +347,7 @@ void MainWidget::getSyncNum(int upNum, int downNum)
             }
             ui->frame_sync->show();
             sysTray->showMessage(QString("文件同步"), strLocal+" "+strHost,QSystemTrayIcon::Information);
-        }
+//        }
     }
 }
 
@@ -359,7 +369,7 @@ void MainWidget::syncEnable(bool enable)
     else
     {
         setSyncState(false);
-//        ui->syncStart->setEnabled(true);
+        ui->syncStart->setEnabled(false);
 //        ui->syncStart->setText("一键同步");
     }
 }
@@ -372,10 +382,10 @@ void MainWidget::openDiskConfig()
 void MainWidget::diskInit()
 {
     if(netConf->autoSyncDir())
-        syncEnable(true);
+        syncEnable(false);
     else
         setSyncState(false);
-//        ui->syncStart->show();
+
 
     if(isInited)
     {
@@ -441,7 +451,7 @@ void MainWidget::diskInit()
     scrollFolder->hide();
     loadingUi.show();
     syncPanel->hide();
-    ui->frame_sync->hide();
+//    ui->frame_sync->hide();
     ui->frame_function->hide();
     diskPanel = new FilesPanel(this);
     diskPanel->httpClient->netInit(transList);
@@ -719,7 +729,7 @@ void MainWidget::actQuit(bool)
 
 void MainWidget::on_sliderbar_clicked(QModelIndex index)
 {
-    bool syncHidden = ui->frame_sync->isHidden();
+//    bool syncHidden = ui->frame_sync->isHidden();
     hidePanel();
 
     switch(index.row())
@@ -727,8 +737,11 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
     case 0://我的文件
         scrollFolder->show();
         pageWidget->show();
-        if(!syncHidden)
-            ui->frame_sync->show();
+//        if(!syncHidden)
+//        {
+//            ui->frame_sync->show();
+//            ui->syncStart->setEnabled(true);
+//        }
 //        ui->frame_function->show();
         diskPanel->pathRefresh();
         ui->searchBtn->setEnabled(true);
@@ -737,8 +750,11 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
         break;
     case 1://我的同步
         syncPanel->show();
-        if(!syncHidden)
-            ui->frame_sync->show();
+//        if(!syncHidden)
+//        {
+//            ui->frame_sync->show();
+//            ui->syncStart->setEnabled(true);
+//        }
         ui->searchBtn->setEnabled(false);
         ui->searchFilter->setEnabled(false);
         ui->search->setEnabled(false);

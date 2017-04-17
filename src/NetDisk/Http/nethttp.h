@@ -86,6 +86,7 @@ public:
     void reportSyncNum();
     void creatSyncUploadList();
     void syncMkDir();
+    void addSyncLocalInfo(syncLocalInfo*);
     syncInfo* getHostInfoById(double Id);
     bool fileIsDownloading(QString name);//通过全路径查询文件是否在下载中
     double getIdByName(QString name, bool *isChanged=NULL);//从本地文件信息缓存中查询对应文件（夹）的ID

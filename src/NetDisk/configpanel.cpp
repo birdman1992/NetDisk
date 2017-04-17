@@ -31,6 +31,14 @@ ConfigPanel::~ConfigPanel()
     delete ui;
 }
 
+void ConfigPanel::paintEvent(QPaintEvent*)
+{
+    QStyleOption opt;
+    opt.init(this);
+    QPainter p(this);
+    style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
+}
+
 bool ConfigPanel::configCheck()
 {
     if(netConf->getDownloadPath().isEmpty())
