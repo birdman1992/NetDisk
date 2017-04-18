@@ -543,6 +543,21 @@ void NetHttp::syncListCreat(QJsonArray info, QDateTime syncTime)
         QJsonValue value = info.at(i++);
         QJsonObject obj = value.toObject();
         syncInfo* sInfo = new syncInfo;
+
+        if(obj.contains("STATUS"))
+        {
+            jval = obj.take("STATUS");
+            sInfo->STATUS = jval.toInt();
+            qDebug()<<sInfo->STATUS;
+            if(sInfo->STATUS != 0)
+            {
+                delete sInfo;
+                continue;
+            }
+
+        }
+        else
+            goto syncListCreatError;
         if(obj.contains("LAST_MOD_TIME"))
         {
             jval = obj.take("LAST_MOD_TIME");
@@ -582,13 +597,6 @@ void NetHttp::syncListCreat(QJsonArray info, QDateTime syncTime)
         {
             jval = obj.take("EXT");
             sInfo->EXT = jval.toString();
-        }
-        else
-            goto syncListCreatError;
-        if(obj.contains("STATUS"))
-        {
-            jval = obj.take("STATUS");
-            sInfo->STATUS = jval.toInt();
         }
         else
             goto syncListCreatError;
@@ -843,6 +851,11 @@ void syncTable::syncInfoInsert(QList<syncInfo *> info)
     //创建数据链表
     for(i=0; i<info.count(); i++)
     {
+        qDebug()<<info.at(i)->ID;
+        if(list_index.indexOf(QString::number(info.at(i)->ID)) != -1)
+        {qDebug("repeat");
+            continue;
+        }
         syncInfo* nInfo = new syncInfo(info.at(i));qDebug()<<"[SYNC from host]"<<nInfo->FILE_NAME<<"id:"<<nInfo->ID;
         list_temp<<nInfo;
         if(nInfo->TYPE == 0)
@@ -870,6 +883,21 @@ syncInfo *syncTable::getHostInfoById(double Id)
     }
     qDebug()<<"id:"<<strId<<"name:"<<list_all.at(ret)->FILE_NAME;
     return list_all.at(ret);
+}
+
+int syncTable::getLocalInfoIndexByName(QString filename)
+{
+    double fId = getIdByName(filename);
+    if(fId == 0)
+        return NULL;
+
+    int ret = list_local_index.indexOf(QString::number(fId));
+    if(ret == -1)
+    {
+        qDebug()<<"[getLocalInfoByName]:"<<fId<<filename<<"not found.";
+        return NULL;
+    }
+    return ret;
 }
 
 bool syncTable::fileIsDownloading(QString name)
@@ -1057,10 +1085,10 @@ void syncTable::syncMkDir()
     int i=0;
     bool isUpdated;
 
-    for(i=0; i<list_loacl_real.count(); i++)
+    for(i=0; i<list_local_real.count(); i++)
     {
 
-        localInfoReal = list_loacl_real.at(i);
+        localInfoReal = list_local_real.at(i);
         if(fileIsDownloading(localInfoReal->absoluteFilePath()))
             continue;
         if(localInfoReal->isDir())
@@ -1075,6 +1103,51 @@ void syncTable::syncMkDir()
             continue;
         mkdirInHost(parentId, dirName);
         return;
+    }
+}
+
+void syncTable::syncDelete(QString file)
+{
+    QString nUrl;
+    QStringList params;
+    double fId = getIdByName(file);
+
+    params<<QString("fid=%1&").arg(fId)<<QString("token=%1&").arg(netConf->token)<<QString(APP_ID)+"&";
+    QByteArray sign = getSign(params);
+    nUrl = netConf->getServerAddress() + QString("/api/file/deleteFile?fid=%1&token=%2&sign=%3&").arg(fId).arg(netConf->token).arg(QString(sign.toHex()))+APP_ID+"&";
+    qDebug()<<"DELETE"<<nUrl;
+    netConf->manager->get(QNetworkRequest(QUrl(nUrl)));
+}
+
+void syncTable::localDelete(QFileInfo deleteFileInfo)
+{
+    if(deleteFileInfo.isFile())
+    {
+        QFile file(deleteFileInfo.absoluteFilePath());
+        if(file.exists())
+            file.remove();
+    }
+    else
+    {
+        int i = list_local_real.count()-1;
+        QString deleteDir = deleteFileInfo.absoluteFilePath();
+        QString str;
+
+        for(; i>=0; i--)
+        {
+            str = list_local_real.at(i)->absoluteFilePath();
+            qDebug()<<"delete ready"<<str;
+            if(str.size() < deleteDir.size())
+                continue;
+            if(deleteDir == str.left(deleteDir.size()))
+            {
+                if(list_local_real.at(i)->isDir())
+                    qDebug()<<"deletedir"<<str<<QDir().rmdir(str);
+                else
+                    qDebug()<<"deletefile"<<str<<QFile().remove(str);
+            }
+        }
+//        list_local_real.at()
     }
 }
 
@@ -1200,6 +1273,23 @@ QByteArray syncTable::getPost(QStringList param)
     return postData;
 }
 
+QByteArray syncTable::getSign(QStringList param)
+{
+    qSort(param.begin(), param.end());
+    QString str = QString();
+    for(int i=0; i<param.count(); i++)
+    {
+        str += param.at(i);
+    }
+
+    str += QString(APP_KEY);
+    qDebug()<<str;
+
+    QByteArray qba = QCryptographicHash::hash(str.toLocal8Bit(), QCryptographicHash::Md5);
+    qDebug()<<qba.toHex();
+    return qba;
+}
+
 void syncTable::recvMkdirRst()
 {
     disconnect(reply, SIGNAL(finished()), this, SLOT(recvMkdirRst()));
@@ -1276,10 +1366,10 @@ void syncTable::creatSyncUploadList()
     }
 
     localInfo = new syncInfo;
-    for(i=0; i<list_loacl_real.count(); i++)
+    for(i=0; i<list_local_real.count(); i++)
     {
 
-        localInfoReal = list_loacl_real.at(i);
+        localInfoReal = list_local_real.at(i);
         if(fileIsDownloading(localInfoReal->absoluteFilePath()))
             continue;
         if(localInfoReal->isDir())
@@ -1305,6 +1395,7 @@ void syncTable::creatSyncDownloadList()
 {
     int i = 0;
     syncInfo* sInfo;
+    syncLocalInfo* lInfo;
 
     for(i=0; i<list_file.count(); i++)
     {
@@ -1312,6 +1403,27 @@ void syncTable::creatSyncDownloadList()
         if(getPathById(sInfo->ID).isEmpty())
             list_sync_download<<sInfo;
     }
+
+    for(i=0; i<list_local.count(); i++)
+    {
+        lInfo = list_local.at(i);
+        if((lInfo->isDir)&&(!QFileInfo(lInfo->syncPath).isDir()))
+        {
+            QDir dir;
+            dir.mkdir(lInfo->syncPath);
+            lInfo->lastDate = QFileInfo(lInfo->syncPath).lastModified();
+        }
+        else if((!lInfo->isDir)&&(!QFileInfo(lInfo->syncPath).isFile()))
+        {
+            sInfo = new syncInfo;
+            sInfo->FILE_NAME = lInfo->fileName;
+            sInfo->MD5 = lInfo->fileMd5;
+            sInfo->ID = lInfo->fileId;
+            sInfo->PARENT_ID = lInfo->parentId;
+            list_sync_download<<sInfo;
+        }
+    }
+
     if(netConf->autoSyncDir())
         emit syncDownload();
 }

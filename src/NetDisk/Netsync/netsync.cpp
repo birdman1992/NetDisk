@@ -70,9 +70,9 @@ void NetSync::syncLocalGet()
     QDirIterator iter(netConf->getSyncPath(),QDir::Dirs | QDir::Files | QDir::NoSymLinks | QDir::NoDot | QDir::NoDotDot,
                       QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
 
-    while(!syncT.list_loacl_real.isEmpty())
+    while(!syncT.list_local_real.isEmpty())
     {
-        QFileInfo *info = syncT.list_loacl_real.takeFirst();
+        QFileInfo *info = syncT.list_local_real.takeFirst();
         delete info;
     }
 
@@ -84,7 +84,7 @@ void NetSync::syncLocalGet()
             continue;
         if(info->fileName() == ".date")
             continue;
-        syncT.list_loacl_real<<info;
+        syncT.list_local_real<<info;
         if(info->isDir())
             syncT.list_local_real_dir<<info;
 //        qDebug()<<info->absoluteFilePath()<<info->isReadable()<<info->isWritable()<<info->size();
@@ -243,6 +243,7 @@ void NetSync::syncTimeOut()
     syncLocalGet();
     qDebug()<<"AAAA";
     syncT.syncMkDir();
+    syncT.creatSyncDownloadList();
     syncT.creatSyncUploadList();
 }
 
@@ -389,7 +390,10 @@ void NetSync::taskDownloadFinished(TaskInfo info)
     syncT.setLocalList();
     syncT.reportSyncNum();
     if((syncT.list_sync_download.count() == 0) && (syncT.list_sync_upload.count() == 0))
+    {
+        syncLocalGet();
         emit syncStateChanged(false);
+    }
     qDebug()<<"[taskDownload]"<<taskDownload.count()<<syncT.list_local.count();
 }
 

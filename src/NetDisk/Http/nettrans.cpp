@@ -381,7 +381,7 @@ int netWork::fileUpload(bool)
 
 int netWork::netFileUpload()
 {
-    quint64 ret = 0;
+//    quint64 ret = 0;
     QString nUrl = netConf->getServerAddress() + "/api/file/upload";
     QHttpMultiPart* multiSend = new QHttpMultiPart;
     QNetworkRequest multiRequest(nUrl);

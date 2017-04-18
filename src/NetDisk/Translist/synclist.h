@@ -9,6 +9,11 @@
 #include <QFileInfoList>
 #include <QStyledItemDelegate>
 #include <QShowEvent>
+#include <QMenu>
+#include <QAction>
+#include <QContextMenuEvent>
+#include <QTableWidgetSelectionRange>
+#include <QPoint>
 
 namespace Ui {
 class syncList;
@@ -33,10 +38,15 @@ public slots:
 
 private slots:
     void on_tableWidget_doubleClicked(const QModelIndex &index);
+    void act_delete_triggered();
 
 private:
     Ui::syncList *ui;
+//    QList<QTableWidgetSelectionRange> selectList;
+    QModelIndexList selectList;
     syncTable* checkTable;
+    QMenu* syncMenu;
+    QAction* act_delete;
     QString currentDir;
     int currentIndex;
     int downloadNum;
@@ -45,6 +55,7 @@ private:
     QFileInfoList list_show;
     QList<QFileInfo*> list_path;
     void showEvent(QShowEvent* event);
+    void contextMenuEvent(QContextMenuEvent *event);
 
     void showList();
 

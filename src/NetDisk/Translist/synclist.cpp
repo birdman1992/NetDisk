@@ -4,6 +4,7 @@
 #include <qfileiconprovider.h>
 #include <QDebug>
 #include <QIcon>
+#include <QMessageBox>
 //#include <shellapi.h>
 //#include <Windows.h>
 #include <qdesktopservices.h>
@@ -27,6 +28,13 @@ syncList::syncList(QWidget *parent) :
     ui->tableWidget->setColumnWidth(2, 180);
     ui->tableWidget->setColumnWidth(3, 150);
     ui->tableWidget->setColumnWidth(4, 90);
+
+    syncMenu = new QMenu(this);
+    act_delete = new QAction(this);
+
+    act_delete->setText("删除");
+
+    connect(act_delete, SIGNAL(triggered()), this, SLOT(act_delete_triggered()));
 
     checkTable = NULL;
     currentIndex = 0;
@@ -244,6 +252,30 @@ void syncList::on_tableWidget_doubleClicked(const QModelIndex &index)
 
 }
 
+void syncList::act_delete_triggered()
+{
+    qDebug()<<"delete";
+
+    QMessageBox message(QMessageBox::Warning,"确认删除","删除操作将同步到服务器，是否继续？",QMessageBox::Yes|QMessageBox::No,NULL);
+    if (message.exec()==QMessageBox::Yes)
+    {
+        int i=0;
+        QFileInfo info;
+        for(i=0; i<selectList.count(); i++)
+        {
+            info = list_show.at(selectList.at(i).row());
+            checkTable->syncDelete(info.absoluteFilePath());
+            checkTable->localDelete(info);
+//            qDebug()<<str;
+        }
+        syncRefresh();
+    }
+    else
+    {
+        qDebug()<<"clicked no\n";
+    }
+}
+
 void syncList::showEvent(QShowEvent* event)
 {
     qDebug()<<"showevent"<<currentIndex;
@@ -264,6 +296,19 @@ void syncList::showEvent(QShowEvent* event)
     }
     showList();
     QWidget::showEvent(event);
+}
+
+void syncList::contextMenuEvent(QContextMenuEvent *event)
+{
+    QItemSelectionModel *selections = ui->tableWidget->selectionModel();
+    selectList = selections->selectedRows();
+    if(selectList.isEmpty())
+        return;
+
+
+    syncMenu->clear(); //清除原有菜单
+    syncMenu->addAction(act_delete);
+    syncMenu->exec(QCursor::pos());
 }
 
 /************
