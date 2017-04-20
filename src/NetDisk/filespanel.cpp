@@ -318,7 +318,12 @@ void FilesPanel::panelAhead()
 
 void FilesPanel::panelSearch(int searchType, QString name)
 {
-    httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder, name, QString::number(searchType));
+    if(searchType == 0)
+    {
+        httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder, name, QString());
+    }
+    else
+        httpClient->netList(curDirId, pageNum, pageSize, showDeleteFolder, name, QString::number(searchType));
 }
 
 //创建分享链接

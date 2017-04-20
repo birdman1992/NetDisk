@@ -44,6 +44,16 @@ QFolder::QFolder(QWidget *parent,fileInfo* info) :
     act_paste = new QAction(tr("粘贴"),this);
     act_rename = new QAction(tr("重命名"),this);
 
+    act_copy->setEnabled(false);
+    act_cut->setEnabled(false);
+    act_paste->setEnabled(false);
+    act_rename->setEnabled(false);
+
+    if(isDir)
+        act_download->setEnabled(false);
+    else
+        act_open->setEnabled(false);
+
     act_copy->setShortcut(QKeySequence::Copy);
     act_paste->setShortcut(QKeySequence::Paste);
 

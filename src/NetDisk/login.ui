@@ -73,15 +73,14 @@ image: url(:/imgs/Login/loginBG.png);
     <rect>
      <x>19</x>
      <y>198</y>
-     <width>71</width>
+     <width>91</width>
      <height>16</height>
     </rect>
    </property>
    <property name="styleSheet">
     <string notr="true">QCheckBox::indicator{color: rgb(50, 169, 253);}
 QCheckBox{color: rgb(102, 102, 102)}
-QCheckBox{font: 9pt &quot;微软雅黑&quot;;}
-</string>
+QCheckBox{font: 9pt &quot;微软雅黑&quot;;}</string>
    </property>
    <property name="text">
     <string>记住密码</string>
@@ -95,7 +94,7 @@ QCheckBox{font: 9pt &quot;微软雅黑&quot;;}
     <rect>
      <x>115</x>
      <y>198</y>
-     <width>71</width>
+     <width>91</width>
      <height>16</height>
     </rect>
    </property>

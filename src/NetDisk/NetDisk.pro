@@ -37,7 +37,8 @@ SOURCES += main.cpp\
     Netsync/netsync.cpp \
     Translist/synclist.cpp \
     serverconfig.cpp \
-    Http/netdonwloader.cpp
+    Http/netdonwloader.cpp \
+    userinfopanel.cpp
 
 HEADERS  += mainwidget.h \
     QFolder/qfolder.h \
@@ -59,7 +60,8 @@ HEADERS  += mainwidget.h \
     Netsync/netsync.h \
     Translist/synclist.h \
     serverconfig.h \
-    Http/netdonwloader.h
+    Http/netdonwloader.h \
+    userinfopanel.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \
@@ -70,7 +72,8 @@ FORMS    += mainwidget.ui \
     loading.ui \
     login.ui \
     Translist/synclist.ui \
-    serverconfig.ui
+    serverconfig.ui \
+    userinfopanel.ui
 
 RESOURCES += \
     img.qrc

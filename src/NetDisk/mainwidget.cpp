@@ -18,6 +18,7 @@ MainWidget::MainWidget(QWidget *parent) :
     fType = 0;
     isLogin = false;
     isInited = false;
+    syncMsgState = false;
     ui->viewCut->setHidden(true);
 
     //网盘设置
@@ -25,6 +26,12 @@ MainWidget::MainWidget(QWidget *parent) :
 
     if(diskConfig->configIsFinished())
         diskInit();
+
+    //用户信息
+    userInfo = new UserInfoPanel();
+    userInfo->hide();
+    userInfo->installEventFilter(this);
+    ui->userinfo->installEventFilter(this);
 
     //信号槽
     connect(&loginUi, SIGNAL(netLogin()), this, SLOT(netLogin()));
@@ -144,12 +151,12 @@ void MainWidget::setSyncState(bool isSyncing)//isSyncing = checked
 {
     if(isSyncing)
     {
-        ui->syncStart->setEnabled(false);
+        ui->syncStart->setEnabled(false);qDebug()<<"setfalse1";
         ui->syncStart->setChecked(true);
     }
     else
     {
-        ui->syncStart->setEnabled(true);qDebug()<<"settrue";
+        ui->syncStart->setEnabled(true);qDebug()<<"settrue1";
         ui->syncStart->setChecked(false);
     }
 }
@@ -249,6 +256,18 @@ bool MainWidget::eventFilter(QObject *watched, QEvent *event)
         }
 
     }
+    else if((watched == ui->userinfo) || (watched == userInfo))
+    {
+        if(event->type() == QEvent::Enter)
+        {
+            userInfo->move(this->geometry().x()+ui->userinfo->geometry().x(),this->geometry().y()+ui->userinfo->geometry().y()+ui->userinfo->geometry().height());
+            userInfo->show();
+        }
+        if(event->type() == QEvent::Leave)
+        {
+            userInfo->hide();
+        }
+    }
 
     return QWidget::eventFilter(watched,event);
 }
@@ -326,14 +345,17 @@ void MainWidget::getSyncNum(int upNum, int downNum)
     if(!(upNum||downNum))
     {
 //        ui->frame_sync->hide();
-        sysTray->showMessage(QString("文件同步"), "本地文件已和云端同步",QSystemTrayIcon::Information);
+        if(syncMsgState)
+            sysTray->showMessage(QString("文件同步"), "本地文件已和云端同步",QSystemTrayIcon::Information);
         setSyncState(false);
-        ui->syncStart->setEnabled(false);qDebug()<<"setfalse";
+        ui->syncStart->setEnabled(false);
+        syncMsgState = false;
     }
     else
     {
 //        if(ui->frame_sync->isHidden())
 //        {
+            syncMsgState = true;
             if(netConf->autoSyncDir())
             {
 //                ui->syncStart->setText("同步中");
@@ -385,7 +407,7 @@ void MainWidget::diskInit()
         syncEnable(false);
     else
         setSyncState(false);
-
+    ui->syncStart->setEnabled(false);
 
     if(isInited)
     {

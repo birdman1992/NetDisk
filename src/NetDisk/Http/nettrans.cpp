@@ -96,12 +96,12 @@ void netWork::netDownload(fileInfo info, QString downLoadPath, QString token)
         pFile = new QFile(downLoadPath + "/" + info.FILE_NAME, this->parent());
         taskInfo.filePath = downLoadPath + "/" + info.FILE_NAME;
     }
-    if(!pFile->open(QFile::ReadWrite))
-    {
-        qDebug()<<"[File download]:"<<"file open error.";
-        return;
-    }
-    pFile->close();
+//    if(!pFile->open(QFile::ReadWrite))
+//    {
+//        qDebug()<<"[File download]:"<<"file open error.";
+//        return;
+//    }
+//    pFile->close();
 
     paramList<<QString("fid=%1&").arg(info.ID)<<QString("token=%1&").arg(token)<<QString(APP_ID)+"&";
     sign = getSign(paramList);
@@ -172,7 +172,11 @@ void netWork::taskStart()
         }
         else
         {
-                pFile->open(QFile::ReadWrite);
+                if(!pFile->open(QFile::ReadWrite))
+                {
+                    qDebug()<<"[File download]:"<<"file open error.";
+                    return;
+                }
                 taskInfo.taskState = DOWNLOAD_STATE;
                 netReply = manager->get(QNetworkRequest(QUrl(nUrl)));
                 qDebug()<<"[download]:"<<nUrl;
@@ -542,7 +546,11 @@ void netWork::replyFinished(QNetworkReply *reply)
 //                    managerUpload = new QNetworkAccessManager(this);
 //                    connect(managerUpload, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
 //                }
-                pFile->open(QFile::ReadWrite);
+                    if(!pFile->open(QFile::ReadWrite))
+                    {
+                        qDebug()<<"[File download]:"<<"file open error.";
+                        return;
+                    }
                 qDebug("file not exit upload");
                 chunks = (fInfo.size()) / CHUNK_SIZE + ((fInfo.size() % CHUNK_SIZE) != 0);
                 chunk = 0;
@@ -645,7 +653,11 @@ void netWork::uploadRelpy()
 //                    managerUpload = new QNetworkAccessManager(this);
 //                    connect(managerUpload, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
 //                }
-                pFile->open(QFile::ReadWrite);
+                if(!pFile->open(QFile::ReadWrite))
+                {
+                    qDebug()<<"[File download]:"<<"file open error.";
+                    return;
+                }
                 qDebug("file not exit upload");
                 chunks = (fInfo.size()) / CHUNK_SIZE + ((fInfo.size() % CHUNK_SIZE) != 0);
                 chunk = 0;
@@ -709,7 +721,7 @@ void netWork::replyError(QNetworkReply::NetworkError errorCode)
 }
 
 void netWork::getServerAddr()
-{qDebug()<<"getServerAddr";
+{
     QJsonDocument parseDoc;
     QJsonParseError jError;
 
@@ -743,6 +755,15 @@ void netWork::getServerAddr()
                 QJsonValue value = obj.take("msg");
                 QString msg = value.toString();
                 qDebug()<<"msg"<<msg;
+            }
+            if(obj.contains("code"))
+            {
+                QJsonValue value = obj.take("code");
+                if(value.toString() == "-200")
+                {
+                    taskInfo.taskState = ERROR_STATE;
+                    return;
+                }
             }
         }
     }

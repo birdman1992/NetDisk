@@ -801,6 +801,7 @@ syncTable::syncTable()
 {
     cur_path = netConf->getSyncPath();
     isSyncing = false;
+    syncInfoNeedUpdate = true;
     syncLocalInfo* info = new syncLocalInfo;
     info->fileId = SYNC_ID;
     info->syncPath = netConf->getSyncPath();
@@ -888,14 +889,15 @@ syncInfo *syncTable::getHostInfoById(double Id)
 int syncTable::getLocalInfoIndexByName(QString filename)
 {
     double fId = getIdByName(filename);
+    qDebug()<<"find id"<<fId<<filename;
     if(fId == 0)
-        return NULL;
+        return -1;
 
     int ret = list_local_index.indexOf(QString::number(fId));
     if(ret == -1)
     {
         qDebug()<<"[getLocalInfoByName]:"<<fId<<filename<<"not found.";
-        return NULL;
+        return -1;
     }
     return ret;
 }
@@ -1116,16 +1118,29 @@ void syncTable::syncDelete(QString file)
     QByteArray sign = getSign(params);
     nUrl = netConf->getServerAddress() + QString("/api/file/deleteFile?fid=%1&token=%2&sign=%3&").arg(fId).arg(netConf->token).arg(QString(sign.toHex()))+APP_ID+"&";
     qDebug()<<"DELETE"<<nUrl;
+    syncInfoNeedUpdate = true;
     netConf->manager->get(QNetworkRequest(QUrl(nUrl)));
 }
 
 void syncTable::localDelete(QFileInfo deleteFileInfo)
 {
+    bool isdeleted = false;
+    int index = 0;
     if(deleteFileInfo.isFile())
     {
         QFile file(deleteFileInfo.absoluteFilePath());
         if(file.exists())
-            file.remove();
+            isdeleted = file.remove();
+        if(isdeleted)
+        {
+            index = getLocalInfoIndexByName(deleteFileInfo.absoluteFilePath());
+            if(index>=0)
+            {qDebug()<<"remove"<<index;
+                list_local.removeAt(index);
+                list_local_index.removeAt(index);
+                emit localListChanged();
+            }
+        }
     }
     else
     {
@@ -1136,15 +1151,32 @@ void syncTable::localDelete(QFileInfo deleteFileInfo)
         for(; i>=0; i--)
         {
             str = list_local_real.at(i)->absoluteFilePath();
-            qDebug()<<"delete ready"<<str;
+            qDebug()<<"delete ready"<<deleteDir;
             if(str.size() < deleteDir.size())
                 continue;
             if(deleteDir == str.left(deleteDir.size()))
             {
                 if(list_local_real.at(i)->isDir())
-                    qDebug()<<"deletedir"<<str<<QDir().rmdir(str);
+                {
+                    isdeleted = QDir().rmdir(str);
+                    qDebug()<<"deletedir"<<deleteDir<<isdeleted;
+                }
                 else
-                    qDebug()<<"deletefile"<<str<<QFile().remove(str);
+                {
+                    isdeleted = QFile().remove(str);
+                    qDebug()<<"deletefile"<<str<<isdeleted;
+                }
+                if(isdeleted)
+                {
+                    index = getLocalInfoIndexByName(str);
+
+                    if(index>=0)
+                    {
+                        list_local.removeAt(index);
+                        list_local_index.removeAt(index);
+                        emit localListChanged();
+                    }
+                }
             }
         }
 //        list_local_real.at()
@@ -1166,6 +1198,24 @@ void syncTable::addSyncLocalInfo(syncLocalInfo *info)
         }
     }
     list_local<<info;
+}
+
+void syncTable::addSyncDownloadInfo(syncInfo *info)
+{
+    int i=0;
+//    syncInfo* lInfo;
+    for(i=0; i<list_sync_download.count(); i++)
+    {
+        if(info->ID == list_sync_download.at(i)->ID)
+        {qDebug()<<"repeat"<<info->ID;
+//            delete info;
+//            lInfo = list_sync_download.takeAt(i);
+//            delete lInfo;
+//            list_sync_download.insert(i, info);
+            return;
+        }
+    }
+    list_sync_download<<info;
 }
 
 void syncTable::syncNextDir()
@@ -1352,7 +1402,10 @@ void syncTable::recvMkdirRst()
 
 
 void syncTable::creatSyncUploadList()
-{qDebug()<<"[creatSyncUploadList]";
+{
+    if(syncInfoNeedUpdate)
+        return;
+    qDebug()<<"[creatSyncUploadList]";
     //创建同步上传链表
     QFileInfo* localInfoReal;
     syncInfo* localInfo;
@@ -1393,15 +1446,17 @@ void syncTable::creatSyncUploadList()
 
 void syncTable::creatSyncDownloadList()
 {
+    if(syncInfoNeedUpdate)
+        return;
     int i = 0;
     syncInfo* sInfo;
     syncLocalInfo* lInfo;
-
+    qDebug()<<"[creatSyncDownloadList]";
     for(i=0; i<list_file.count(); i++)
     {
         sInfo = list_file.at(i);
         if(getPathById(sInfo->ID).isEmpty())
-            list_sync_download<<sInfo;
+            addSyncDownloadInfo(sInfo);
     }
 
     for(i=0; i<list_local.count(); i++)
@@ -1420,10 +1475,10 @@ void syncTable::creatSyncDownloadList()
             sInfo->MD5 = lInfo->fileMd5;
             sInfo->ID = lInfo->fileId;
             sInfo->PARENT_ID = lInfo->parentId;
-            list_sync_download<<sInfo;
+            addSyncDownloadInfo(sInfo);
         }
     }
-
+    qDebug()<<"down list count"<<list_sync_download.count();
     if(netConf->autoSyncDir())
         emit syncDownload();
 }

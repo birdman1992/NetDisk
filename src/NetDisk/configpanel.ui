@@ -177,7 +177,7 @@ QLineEdit{
         <enum>QFrame::NoFrame</enum>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="page_3">
         <widget class="QComboBox" name="maxTask">
@@ -333,7 +333,7 @@ QLineEdit{
           <rect>
            <x>180</x>
            <y>55</y>
-           <width>111</width>
+           <width>150</width>
            <height>21</height>
           </rect>
          </property>
@@ -351,7 +351,7 @@ font: 12px &quot;微软雅黑&quot;;
           <rect>
            <x>160</x>
            <y>120</y>
-           <width>111</width>
+           <width>150</width>
            <height>31</height>
           </rect>
          </property>
@@ -402,7 +402,7 @@ font: 12px &quot;微软雅黑&quot;;
           <rect>
            <x>60</x>
            <y>200</y>
-           <width>91</width>
+           <width>120</width>
            <height>21</height>
           </rect>
          </property>
@@ -447,7 +447,7 @@ font: 12px &quot;微软雅黑&quot;;
           <rect>
            <x>140</x>
            <y>50</y>
-           <width>111</width>
+           <width>150</width>
            <height>31</height>
           </rect>
          </property>

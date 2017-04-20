@@ -160,7 +160,7 @@ void NetConfig::creatConfig()
 void NetConfig::creatDefaultConfig()
 {
     QFile* pFile = new QFile(QCoreApplication::applicationDirPath()+"/conf/"+QString(CONF_FILENAME));
-
+    qDebug()<<"[config path]"<<QCoreApplication::applicationDirPath()+"/conf/"+QString(CONF_FILENAME);
     if(pFile->exists())
     {
         delete pFile;
@@ -175,7 +175,7 @@ void NetConfig::creatDefaultConfig()
         rootPath = rootPath.left(rootPath.indexOf(":")+1);
         downloadPath = rootPath + "/linkreal_download/";
         syncPath = rootPath + "/linkreal_sync/";
-
+        qDebug()<<"[creatDefaultConfig]"<<"download path"<<downloadPath<<"sync path"<<syncPath;
 //        downloadPath = QString();
         maxTaskNum = 3;
 //        syncPath = QString();//QCoreApplication::applicationDirPath()+"/sync/";

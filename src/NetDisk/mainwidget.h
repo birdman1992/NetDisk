@@ -24,6 +24,7 @@
 #include "loading.h"
 #include "login.h"
 #include "configpanel.h"
+#include "userinfopanel.h"
 
 namespace Ui {
 class MainWidget;
@@ -97,6 +98,7 @@ private:
     Ui::MainWidget *ui;
     loading loadingUi;
     login loginUi;
+    UserInfoPanel* userInfo;
     QScrollArea* scrollFolder;
     QStackedLayout* panelStack;
     QHBoxLayout* pageLayout;
@@ -117,6 +119,7 @@ private:
     bool wMoveable;
     bool isLogin;
     bool isInited;
+    bool syncMsgState;
     QPoint dragPosition;
     int fType;
     //系统托盘菜单项

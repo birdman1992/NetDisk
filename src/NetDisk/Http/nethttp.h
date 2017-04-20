@@ -89,6 +89,7 @@ public:
     void syncMkDir();
     void syncDelete(QString file);
     void addSyncLocalInfo(syncLocalInfo*);
+    void addSyncDownloadInfo(syncInfo*);
     void localDelete(QFileInfo deleteFileInfo);
     syncInfo* getHostInfoById(double Id);
     int getLocalInfoIndexByName(QString filename);
@@ -106,6 +107,7 @@ public:
     QStringList list_download_task;//正在下载文件列表
     QDateTime syncTime;
     bool isSyncing;//是否正在同步
+    bool syncInfoNeedUpdate;//同步信息发生改变，需要更新
 
 private:
     QList<syncInfo*> list_all;//host端所有更新文件

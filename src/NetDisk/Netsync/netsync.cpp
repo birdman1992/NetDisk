@@ -250,6 +250,7 @@ void NetSync::syncTimeOut()
 void NetSync::syncInfoRecv(QList<syncInfo *>sInfo, QDateTime sTime)
 {
     qDebug("syncInfoRecv");
+    syncT.syncInfoNeedUpdate = false;
     syncDate = sTime;
     syncT.syncInfoInsert(sInfo);
 }
@@ -291,10 +292,10 @@ void NetSync::syncTaskDownload()
     qDebug()<<"download:"<<syncT.list_sync_download.count();
     while((!syncT.list_sync_download.isEmpty()) && taskDownload.count()<=netConf->getMaxTaskNum())
     {
-        trans = new netTrans;
-        info = syncT.list_sync_download.takeFirst();
-        downloadPath = syncT.getPathById(info->PARENT_ID);
-        qDebug()<<"[sync down]"<<info->PARENT_ID<<downloadPath<<info->FILE_NAME;
+        trans = new netTrans;qDebug("1");
+        info = syncT.list_sync_download.takeFirst();qDebug("2");
+        downloadPath = syncT.getPathById(info->PARENT_ID);qDebug("3");
+        qDebug()<<"[sync down]"<<info->PARENT_ID<<downloadPath<<info->FILE_NAME;qDebug("4");
         trans->netDownload(info, downloadPath,netClient->netToken());
         trans->taskStart();
         connect(trans, SIGNAL(taskFinished(TaskInfo)), this, SLOT(taskDownloadFinished(TaskInfo)));
