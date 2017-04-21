@@ -834,13 +834,12 @@ void syncTable::setHttpClient(NetHttp *client)
 void syncTable::syncHostToLocal()
 {
     syncDir();
-    creatSyncDownloadList();
 }
 
 void syncTable::syncLocalToHost()
 {
     syncMkDir();
-    creatSyncUploadList();
+//    creatSyncUploadList();
 }
 
 void syncTable::syncInfoInsert(QList<syncInfo *> info)
@@ -1048,6 +1047,7 @@ void syncTable::syncDir()
     }
     isSyncing = false;
     setLocalList();
+    creatSyncDownloadList();
 }
 
 void syncTable::syncFile()
@@ -1076,8 +1076,8 @@ void syncTable::syncFile()
 }
 
 void syncTable::syncMkDir()
-{return;
-    qDebug()<<"[creatSyncUploadList]";
+{
+    qDebug()<<"[syncMkDir]";
     //创建同步上传链表
     QFileInfo* localInfoReal;
     double parentId;
@@ -1091,11 +1091,11 @@ void syncTable::syncMkDir()
     {
 
         localInfoReal = list_local_real.at(i);
-        if(fileIsDownloading(localInfoReal->absoluteFilePath()))
-            continue;
-        if(localInfoReal->isDir())
+//        if(fileIsDownloading(localInfoReal->absoluteFilePath()))
+//            continue;
+        if(!localInfoReal->isDir())
         {
-
+            continue;
         }
         parentId = getIdByName(localInfoReal->absolutePath());
         getIdByName(localInfoReal->absoluteFilePath(),&isUpdated);
@@ -1103,9 +1103,12 @@ void syncTable::syncMkDir()
 //        qDebug()<<"isupdated"<<isUpdated;
         if(!isUpdated)
             continue;
+        qDebug()<<"[mkdirInHost]"<<parentId<<dirName;
         mkdirInHost(parentId, dirName);
         return;
     }
+    //文件夹同步完成，创建上传列表
+    creatSyncUploadList();
 }
 
 void syncTable::syncDelete(QString file)
@@ -1198,6 +1201,7 @@ void syncTable::addSyncLocalInfo(syncLocalInfo *info)
         }
     }
     list_local<<info;
+    list_local_index<<QString::number(info->fileId);
 }
 
 void syncTable::addSyncDownloadInfo(syncInfo *info)
@@ -1391,13 +1395,15 @@ void syncTable::recvMkdirRst()
                 lInfo->fileMd5 = QString();
                 lInfo->fileSize = 0;
                 lInfo->syncPath = getPathById(lInfo->parentId)+"/"+lInfo->fileName;
+                lInfo->lastDate = QFileInfo(lInfo->syncPath).lastModified();
                 qDebug()<<"recv"<<lInfo->syncPath;
                 list_local<<lInfo;
+                list_local_index<<QString::number(lInfo->fileId);
                 emit localListChanged();
             }
         }
     }
-
+    syncMkDir();
 }
 
 
@@ -1440,8 +1446,8 @@ void syncTable::creatSyncUploadList()
     }
     qDebug()<<"up list count"<<list_sync_upload.count();
     reportSyncNum();
-    if(netConf->autoSyncDir())
-        emit syncUpload();
+//    if(netConf->autoSyncDir())
+    emit syncUpload();
 }
 
 void syncTable::creatSyncDownloadList()
@@ -1479,8 +1485,77 @@ void syncTable::creatSyncDownloadList()
         }
     }
     qDebug()<<"down list count"<<list_sync_download.count();
-    if(netConf->autoSyncDir())
-        emit syncDownload();
+    emit syncDownload();
+}
+
+int syncTable::getUploadTaskNum()
+{
+    if(syncInfoNeedUpdate)
+        return -1;
+    qDebug()<<"[getUploadTaskNum]";
+    //创建同步上传链表
+    QFileInfo* localInfoReal;
+    int i=0;
+    bool isUpdated;
+    uploadTaskNum = 0;
+
+    for(i=0; i<list_local_real.count(); i++)
+    {
+
+        localInfoReal = list_local_real.at(i);
+        if(fileIsDownloading(localInfoReal->absoluteFilePath()))
+            continue;
+        if(localInfoReal->isDir())
+        {
+            continue;
+        }
+        getIdByName(localInfoReal->absoluteFilePath(),&isUpdated);
+        if(!isUpdated)
+            continue;
+        uploadTaskNum++;
+    }
+    qDebug()<<"up list count"<<uploadTaskNum;
+    emit syncUploadChanged(uploadTaskNum);
+    return uploadTaskNum;
+}
+
+int syncTable::getDownloadTaskNum()
+{
+    if(syncInfoNeedUpdate)
+        return -1;
+    int i = 0;
+    syncInfo* sInfo;
+    syncLocalInfo* lInfo;
+    qDebug()<<"[getDownloadTaskNum]";
+
+    downloadTaskNum = 0;
+
+    for(i=0; i<list_file.count(); i++)
+    {
+        sInfo = list_file.at(i);
+        if(getPathById(sInfo->ID).isEmpty())
+            downloadTaskNum++;
+    }
+
+    for(i=0; i<list_local.count(); i++)
+    {
+        lInfo = list_local.at(i);
+        if((!lInfo->isDir)&&(!QFileInfo(lInfo->syncPath).isFile()))
+        {
+//            sInfo = new syncInfo;
+//            sInfo->FILE_NAME = lInfo->fileName;
+//            sInfo->MD5 = lInfo->fileMd5;
+//            sInfo->ID = lInfo->fileId;
+//            sInfo->PARENT_ID = lInfo->parentId;
+//            addSyncDownloadInfo(sInfo);
+            downloadTaskNum++;
+        }
+    }
+    qDebug()<<"down list count"<<downloadTaskNum;
+    emit syncDownloadChanged(downloadTaskNum);
+//    if(netConf->autoSyncDir())
+//        emit syncDownload();
+    return downloadTaskNum;
 }
 
 void syncTable::clearSyncList()

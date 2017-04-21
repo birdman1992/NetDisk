@@ -74,7 +74,6 @@ private slots:
     void actQuit(bool);//退出
     void on_sliderbar_clicked(QModelIndex);
     void on_functionList_clicked(const QModelIndex &index);
-    void on_syncStart_clicked();
     //菜单槽
     void menuOpenWebsite();
     void menuOpenDownloadDir();
@@ -85,13 +84,15 @@ private slots:
 
     void on_menu_activated(int index);
 
+    void on_syncStart_clicked();
+
 public slots:
     void historyEnabled(bool backEnable, bool aheadEnable);
     void getSyncNum(int upNum, int downNum);
     void getSyncNum(int upNum);
-    void syncEnable(bool);
     void openDiskConfig();
     void diskInit();
+    void setSyncState(int state);
 
 
 private:
@@ -122,6 +123,7 @@ private:
     bool syncMsgState;
     QPoint dragPosition;
     int fType;
+    int syncState;//0:无同步,1:同步中,2:可同步,3:自动同步
     //系统托盘菜单项
     QAction* act_openPanel;//打开主面板
     QAction* act_openWebsite;//打开企业网盘网站
@@ -138,7 +140,7 @@ private:
     void initSilidebar();
     void initFunctionList();
     void initTitleMenu();
-    void setSyncState(bool isSyncing);
+//    void setSyncState(bool isSyncing);
     void hidePanel();
     void setSysMenu();
     void mousePressEvent(QMouseEvent *event);

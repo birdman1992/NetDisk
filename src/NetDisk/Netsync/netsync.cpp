@@ -30,9 +30,9 @@ void NetSync::setNetClient(NetHttp *cli)
     connect(netClient, SIGNAL(syncHostPoint(QDateTime)), this, SLOT(syncHostPointSave(QDateTime)));
 
     connect(&syncT, SIGNAL(hostSyncFinished()), this, SLOT(syncHostFinished()));
-    connect(&syncT, SIGNAL(localListChanged()), this, SLOT(syncLocalUpdate()));
-    connect(&syncT, SIGNAL(syncDownload()), this, SLOT(syncTaskDownload()));
-    connect(&syncT, SIGNAL(syncUpload()), this, SLOT(syncTaskUpload()));
+    connect(&syncT, SIGNAL(localListChanged()), this, SLOT(syncLocalUpdate()),Qt::DirectConnection);
+    connect(&syncT, SIGNAL(syncDownload()), this, SLOT(syncDownloadStart()));
+    connect(&syncT, SIGNAL(syncUpload()), this, SLOT(syncUploadStart()));
 }
 
 syncTable *NetSync::getTable()
@@ -199,6 +199,75 @@ void NetSync::syncDateWrite(QDateTime date)
     return;
 }
 
+void NetSync::syncUploadStart()
+{
+    netTrans* trans = new netTrans;
+    syncInfo* info;
+    int i = 0;
+    uptask = 0;
+    emit syncStateChanged(true);
+    qDebug()<<"upload:"<<syncT.list_sync_upload.count();
+
+    while((!syncT.list_sync_upload.isEmpty()) && taskUpload.count()<=netConf->getMaxTaskNum())
+    {
+        trans = new netTrans;
+        info = syncT.list_sync_upload.takeFirst();
+        qDebug()<<"[sync up]"<<info->PARENT_ID<<syncT.getPathById(info->PARENT_ID)<<info->FILE_NAME;
+        trans->netUpload(info->FILE_NAME, info->PARENT_ID, netClient->netToken(), info->ID);
+        connect(trans, SIGNAL(taskUpFinished(TaskInfo)), this, SLOT(taskUploadFinished(TaskInfo)));
+        taskUpload<<trans;
+        trans->taskStart();
+    }
+
+//    for(i=0; i<syncT.list_sync_upload.count(); i++)
+//    {
+//        trans = new netTrans;
+//        info = syncT.list_sync_upload.at(i);
+//        qDebug()<<"[sync up]"<<info->PARENT_ID<<syncT.getPathById(info->PARENT_ID)<<info->FILE_NAME;
+//        trans->netUpload(info->FILE_NAME, info->PARENT_ID, netClient->netToken());
+//        connect(trans, SIGNAL(taskUpFinished(TaskInfo)), this, SLOT(taskUploadFinished(TaskInfo)));
+//        taskUpload<<trans;
+//        trans->taskStart();
+    //    }
+}
+
+void NetSync::syncDownloadStart()
+{
+    netTrans* trans;
+    syncInfo* info;
+    QString downloadPath;
+//    int i = 0;
+    taskNum = 0;
+    emit syncStateChanged(true);
+//    syncT.isSyncing = true;
+    qDebug()<<"download:"<<syncT.list_sync_download.count();
+    while((!syncT.list_sync_download.isEmpty()) && taskDownload.count()<=netConf->getMaxTaskNum())
+    {
+        trans = new netTrans;qDebug("1");
+        info = syncT.list_sync_download.takeFirst();qDebug("2");
+        downloadPath = syncT.getPathById(info->PARENT_ID);qDebug("3");
+        qDebug()<<"[sync down]"<<info->PARENT_ID<<downloadPath<<info->FILE_NAME;qDebug("4");
+        trans->netDownload(info, downloadPath,netClient->netToken());
+        trans->taskStart();
+        connect(trans, SIGNAL(taskFinished(TaskInfo)), this, SLOT(taskDownloadFinished(TaskInfo)));
+        taskDownload<<trans;
+        syncT.list_download_task<<downloadPath+"/"+info->FILE_NAME;
+    }
+//    for(i=0; i<syncT.list_sync_download.count(); i++)
+//    {
+//        trans = new netTrans;
+//        info = syncT.list_sync_download.at(i);
+//        qDebug()<<"[sync down]"<<info->PARENT_ID<<syncT.getPathById(info->PARENT_ID)<<info->FILE_NAME;
+//        trans->netDownload(info, syncT.getPathById(info->PARENT_ID),netClient->netToken());
+//        connect(trans, SIGNAL(taskFinished(TaskInfo)), this, SLOT(taskDownloadFinished(TaskInfo)));
+//        taskDownload<<trans;
+//    }
+//    while((taskNum < 3) && (taskNum<taskDownload.count()))
+//    {
+//        taskDownload.at(taskNum++)->taskStart();
+//    }
+}
+
 void NetSync::hideFile(QFile *file)
 {
     QString str = file->fileName().replace('/','\\').toLatin1();
@@ -242,9 +311,11 @@ void NetSync::syncTimeOut()
     syncTimer = NULL;
     syncLocalGet();
     qDebug()<<"AAAA";
-    syncT.syncMkDir();
-    syncT.creatSyncDownloadList();
-    syncT.creatSyncUploadList();
+    syncT.getDownloadTaskNum();
+    syncT.getUploadTaskNum();
+//    syncT.syncMkDir();
+//    syncT.creatSyncDownloadList();
+//    syncT.creatSyncUploadList();
 }
 
 void NetSync::syncInfoRecv(QList<syncInfo *>sInfo, QDateTime sTime)
@@ -265,9 +336,17 @@ void NetSync::syncHostPointSave(QDateTime sTime)
 
     isSyncing = false;
     syncT.syncTime = sTime;
-    syncT.syncHostToLocal();
-    qDebug()<<"BBBB";
-    syncT.syncLocalToHost();
+
+    if(syncT.getDownloadTaskNum() || syncT.getUploadTaskNum())
+    {
+        syncDateWrite(sTime);
+    }
+
+    if(netConf->autoSyncDir())
+    {
+        syncT.syncHostToLocal();
+        syncT.syncLocalToHost();
+    }
 
     if((syncT.list_sync_download.count() == 0) && (syncT.list_sync_upload.count() == 0))
     {
@@ -282,71 +361,12 @@ void NetSync::syncLocalUpdate()
 
 void NetSync::syncTaskDownload()
 {
-    netTrans* trans;
-    syncInfo* info;
-    QString downloadPath;
-//    int i = 0;
-    taskNum = 0;
-    emit syncStateChanged(true);
-//    syncT.isSyncing = true;
-    qDebug()<<"download:"<<syncT.list_sync_download.count();
-    while((!syncT.list_sync_download.isEmpty()) && taskDownload.count()<=netConf->getMaxTaskNum())
-    {
-        trans = new netTrans;qDebug("1");
-        info = syncT.list_sync_download.takeFirst();qDebug("2");
-        downloadPath = syncT.getPathById(info->PARENT_ID);qDebug("3");
-        qDebug()<<"[sync down]"<<info->PARENT_ID<<downloadPath<<info->FILE_NAME;qDebug("4");
-        trans->netDownload(info, downloadPath,netClient->netToken());
-        trans->taskStart();
-        connect(trans, SIGNAL(taskFinished(TaskInfo)), this, SLOT(taskDownloadFinished(TaskInfo)));
-        taskDownload<<trans;
-        syncT.list_download_task<<downloadPath+"/"+info->FILE_NAME;
-    }
-//    for(i=0; i<syncT.list_sync_download.count(); i++)
-//    {
-//        trans = new netTrans;
-//        info = syncT.list_sync_download.at(i);
-//        qDebug()<<"[sync down]"<<info->PARENT_ID<<syncT.getPathById(info->PARENT_ID)<<info->FILE_NAME;
-//        trans->netDownload(info, syncT.getPathById(info->PARENT_ID),netClient->netToken());
-//        connect(trans, SIGNAL(taskFinished(TaskInfo)), this, SLOT(taskDownloadFinished(TaskInfo)));
-//        taskDownload<<trans;
-//    }
-//    while((taskNum < 3) && (taskNum<taskDownload.count()))
-//    {
-//        taskDownload.at(taskNum++)->taskStart();
-//    }
+    syncT.syncDir();
 }
 
 void NetSync::syncTaskUpload()
 {
-    netTrans* trans = new netTrans;
-    syncInfo* info;
-    int i = 0;
-    uptask = 0;
-    emit syncStateChanged(true);
-    qDebug()<<"upload:"<<syncT.list_sync_upload.count();
-
-    while((!syncT.list_sync_upload.isEmpty()) && taskUpload.count()<=netConf->getMaxTaskNum())
-    {
-        trans = new netTrans;
-        info = syncT.list_sync_upload.takeFirst();
-        qDebug()<<"[sync up]"<<info->PARENT_ID<<syncT.getPathById(info->PARENT_ID)<<info->FILE_NAME;
-        trans->netUpload(info->FILE_NAME, info->PARENT_ID, netClient->netToken(), info->ID);
-        connect(trans, SIGNAL(taskUpFinished(TaskInfo)), this, SLOT(taskUploadFinished(TaskInfo)));
-        taskUpload<<trans;
-        trans->taskStart();
-    }
-
-//    for(i=0; i<syncT.list_sync_upload.count(); i++)
-//    {
-//        trans = new netTrans;
-//        info = syncT.list_sync_upload.at(i);
-//        qDebug()<<"[sync up]"<<info->PARENT_ID<<syncT.getPathById(info->PARENT_ID)<<info->FILE_NAME;
-//        trans->netUpload(info->FILE_NAME, info->PARENT_ID, netClient->netToken());
-//        connect(trans, SIGNAL(taskUpFinished(TaskInfo)), this, SLOT(taskUploadFinished(TaskInfo)));
-//        taskUpload<<trans;
-//        trans->taskStart();
-//    }
+    syncT.syncMkDir();
 }
 
 void NetSync::taskDownloadFinished(TaskInfo info)
@@ -426,7 +446,7 @@ void NetSync::taskUploadFinished(TaskInfo info)
 //            qDebug()<<sInfo->fileName;
             delete trans;
             syncLocalWrite(syncT.list_local);
-            syncTaskUpload();
+            syncUploadStart();
             break;
         }
     }

@@ -86,6 +86,9 @@ public:
     void reportSyncNum();
     void creatSyncUploadList();
     void creatSyncDownloadList();
+    int getUploadTaskNum();
+    int getDownloadTaskNum();
+    void syncDir();
     void syncMkDir();
     void syncDelete(QString file);
     void addSyncLocalInfo(syncLocalInfo*);
@@ -114,6 +117,8 @@ private:
     QList<syncInfo*> list_temp;//host端单层目录所有更新文件
     QList<syncInfo*> list_dir;//host端所有更新目录
     QList<syncInfo*> list_file;//host端所有更新文件
+    int uploadTaskNum;//上传任务数
+    int downloadTaskNum;//下载任务数
 
     QStringList list_index;//host端所有更新文件的id，和list_all一一对应
     QStringList list_local_index;//本地所有文件id，和list_local一一对应
@@ -125,7 +130,7 @@ private:
     void setSyncAll(bool syncAllDir);
     void setCurPath(double Id);
     QString getDirPath(double Id);
-    void syncDir();
+
     void syncFile();
     void nextTask();
     void recvListClear();
@@ -146,7 +151,7 @@ signals:
     void syncUpload();
     void syncDownload();
     void syncUploadChanged(int uploadNum);
-    void syncDownloadChanged(int uploadNum);
+    void syncDownloadChanged(int downloadNum);
 };
 
 class fileInfo

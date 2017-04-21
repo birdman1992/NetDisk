@@ -147,18 +147,41 @@ void MainWidget::initTitleMenu()
     ui->menu->view()->setFixedWidth(150);
 }
 
-void MainWidget::setSyncState(bool isSyncing)//isSyncing = checked
+void MainWidget::setSyncState(int state)//isSyncing = checked
 {
-    if(isSyncing)
+    syncState = state;
+    ui->syncMsg->clear();
+    switch(state)
     {
-        ui->syncStart->setEnabled(false);qDebug()<<"setfalse1";
-        ui->syncStart->setChecked(true);
+    case 0://无同步
+        ui->syncStart->setStyleSheet("#syncStart:!checked{\border-image: url(:/imgs/一键同步.png);color: rgb(255, 255, 255);}\
+                                     #syncStart:!checked:pressed{\border-image: url(:/imgs/一键同步hover.png);color: rgb(255, 255, 255);}");
+        break;
+    case 1://同步中
+        ui->syncStart->setStyleSheet("#syncStart:!checked{\border-image: url(:/imgs/同步中.png);color: rgb(255, 255, 255);}\
+                                     #syncStart:!checked:pressed{\border-image: url(:/imgs/同步中hover.png);color: rgb(255, 255, 255);}");
+        break;
+    case 2://可同步
+        ui->syncStart->setStyleSheet("#syncStart:!checked{\border-image: url(:/imgs/一键同步.png);color: rgb(255, 255, 255);}\
+                                     #syncStart:!checked:pressed{\border-image: url(:/imgs/一键同步hover.png);color: rgb(255, 255, 255);}");
+        break;
+    case 3://自动同步
+        ui->syncStart->setStyleSheet("#syncStart:!checked{\border-image: url(:/imgs/一键同步.png);color: rgb(255, 255, 255);}\
+                                     #syncStart:!checked:pressed{\border-image: url(:/imgs/一键同步hover.png);color: rgb(255, 255, 255);}");
+        break;
+    default:
+        break;
     }
-    else
-    {
-        ui->syncStart->setEnabled(true);qDebug()<<"settrue1";
-        ui->syncStart->setChecked(false);
-    }
+//    if(state)
+//    {
+//        ui->syncStart->setEnabled(false);qDebug()<<"setfalse1";
+//        ui->syncStart->setChecked(true);
+//    }
+//    else
+//    {
+//        ui->syncStart->setEnabled(true);qDebug()<<"settrue1";
+//        ui->syncStart->setChecked(false);
+//    }
 }
 
 void MainWidget::hidePanel()
@@ -345,30 +368,26 @@ void MainWidget::getSyncNum(int upNum, int downNum)
     if(!(upNum||downNum))
     {
 //        ui->frame_sync->hide();
-        if(syncMsgState)
+        if(syncMsgState)//同步状态发生跳变
             sysTray->showMessage(QString("文件同步"), "本地文件已和云端同步",QSystemTrayIcon::Information);
-        setSyncState(false);
+        setSyncState(0);
         ui->syncStart->setEnabled(false);
         syncMsgState = false;
     }
     else
     {
-//        if(ui->frame_sync->isHidden())
-//        {
             syncMsgState = true;
             if(netConf->autoSyncDir())
             {
-//                ui->syncStart->setText("同步中");
-                setSyncState(true);
+                setSyncState(1);//变更为同步中
             }
             else
             {
-                setSyncState(false);
-//                ui->syncStart->setText("一键同步");
-//                ui->syncStart->setEnabled(true);
+                setSyncState(2);//变更为可同步状态
             }
             ui->frame_sync->show();
-            sysTray->showMessage(QString("文件同步"), strLocal+" "+strHost,QSystemTrayIcon::Information);
+            if(!syncMsgState)//同步状态发生跳变
+                sysTray->showMessage(QString("文件同步"), strHost+" "+strLocal,QSystemTrayIcon::Information);
 //        }
     }
 }
@@ -380,22 +399,6 @@ void MainWidget::getSyncNum(int upNum)
     sysTray->showMessage(QString("文件同步"), str,QSystemTrayIcon::Information);
 }
 
-void MainWidget::syncEnable(bool enable)
-{
-    if(enable)
-    {
-//        ui->syncStart->setEnabled(false);
-//        ui->syncStart->setText("同步中");
-        setSyncState(true);
-    }
-    else
-    {
-        setSyncState(false);
-        ui->syncStart->setEnabled(false);
-//        ui->syncStart->setText("一键同步");
-    }
-}
-
 void MainWidget::openDiskConfig()
 {
     diskConfig->show();
@@ -404,9 +407,11 @@ void MainWidget::openDiskConfig()
 void MainWidget::diskInit()
 {
     if(netConf->autoSyncDir())
-        syncEnable(false);
+        setSyncState(3);
+    else if(syncMsgState)
+        setSyncState(1);
     else
-        setSyncState(false);
+        setSyncState(0);
     ui->syncStart->setEnabled(false);
 
     if(isInited)
@@ -493,12 +498,12 @@ void MainWidget::diskInit()
     connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
     connect(diskPanel, SIGNAL(isLoading(bool)), this, SLOT(isLoading(bool)));
     connect(diskPanel, SIGNAL(scrollValueChanged(int)), this, SLOT(scrollValueUpdate(int)));
-    connect(ui->syncStart, SIGNAL(clicked()), diskPanel->diskSync, SLOT(syncTaskUpload()));
-    connect(ui->syncStart, SIGNAL(clicked()), diskPanel->diskSync, SLOT(syncTaskDownload()));
+//    connect(ui->syncStart, SIGNAL(clicked()), diskPanel->diskSync, SLOT(syncTaskUpload()));
+//    connect(ui->syncStart, SIGNAL(clicked()), diskPanel->diskSync, SLOT(syncTaskDownload()));
     connect(syncPanel, SIGNAL(pathChanged(QList<QFileInfo*>)), pathView, SLOT(pathChange(QList<QFileInfo*>)));
     connect(syncPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
     connect(syncPanel, SIGNAL(syncNumChanged(int,int)), this, SLOT(getSyncNum(int,int)));
-    connect(diskPanel->diskSync, SIGNAL(syncStateChanged(bool)), this, SLOT(syncEnable(bool)));
+//    connect(diskPanel->diskSync, SIGNAL(syncStateChanged(bool)), this, SLOT(syncEnable(bool)));
     connect(ui->showDelete, SIGNAL(toggled(bool)), diskPanel, SLOT(showDelete(bool)));
     connect(pathView, SIGNAL(cdRequest(double)), diskPanel, SLOT(cmdCd(double)));
     connect(pathView, SIGNAL(cdRequest(int)), syncPanel, SLOT(cmdCd(int)));
@@ -805,11 +810,6 @@ void MainWidget::on_functionList_clicked(const QModelIndex&)
 
 }
 
-void MainWidget::on_syncStart_clicked()
-{
-
-}
-
 void MainWidget::menuOpenWebsite()
 {
     QDesktopServices::openUrl(QUrl(netConf->getServerAddress()));
@@ -862,5 +862,26 @@ void MainWidget::on_menu_activated(int index)
         menuQuit();break;
 
     default:break;
+    }
+}
+
+void MainWidget::on_syncStart_clicked()
+{
+    switch(syncState)
+    {
+    case 0://无同步
+        ui->syncMsg->setText("没有文件需要同步");
+        break;
+    case 1://同步中
+        ui->syncMsg->setText("正在同步中");
+        break;
+    case 2://可同步
+        setSyncState(1);
+        diskPanel->diskSync->syncTaskDownload();
+        diskPanel->diskSync->syncTaskUpload();
+        break;
+    case 3://自动同步
+        ui->syncMsg->setText("自动同步无需手动操作");
+        break;
     }
 }

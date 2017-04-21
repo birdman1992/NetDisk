@@ -33,6 +33,8 @@ public slots:
     void syncHostFinished();
     void syncTaskDownload();
     void syncTaskUpload();
+    void syncUploadStart();
+    void syncDownloadStart();
 
 private:
     QDateTime syncDate;

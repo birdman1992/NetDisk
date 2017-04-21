@@ -1185,7 +1185,7 @@ border-bottom: 1px solid rgb(234, 234, 234);;
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,1,1,1">
+         <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,1,1,0,1">
           <property name="spacing">
            <number>0</number>
           </property>
@@ -1330,6 +1330,28 @@ border-bottom: 1px solid rgb(234, 234, 234);;
              </size>
             </property>
            </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="syncMsg">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>200</width>
+              <height>47</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: rgb(255, 0, 0);</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QPushButton" name="syncStart">
