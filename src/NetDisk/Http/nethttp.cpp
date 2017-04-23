@@ -801,7 +801,7 @@ syncTable::syncTable()
 {
     cur_path = netConf->getSyncPath();
     isSyncing = false;
-    syncInfoNeedUpdate = true;
+    syncInfoNeedUpdate = false;
     syncLocalInfo* info = new syncLocalInfo;
     info->fileId = SYNC_ID;
     info->syncPath = netConf->getSyncPath();
@@ -1246,7 +1246,7 @@ void syncTable::updateParentDate(double id)
         index = list_local_index.indexOf(QString::number(pId));
         if(index == -1)
             return;
-        info = list_local.takeAt(index);
+        info = list_local.at(index);
         qDebug()<<"[updateParentDate]"<<info->lastDate.toString("yyyy/MM/dd hh:mm:ss")<<QFileInfo(info->syncPath).lastModified().toString("yyyy/MM/dd hh:mm:ss");
         info->lastDate = QFileInfo(info->syncPath).lastModified();
         pId = info->parentId;
@@ -1501,7 +1501,6 @@ int syncTable::getUploadTaskNum()
 
     for(i=0; i<list_local_real.count(); i++)
     {
-
         localInfoReal = list_local_real.at(i);
         if(fileIsDownloading(localInfoReal->absoluteFilePath()))
             continue;
@@ -1549,6 +1548,12 @@ int syncTable::getDownloadTaskNum()
 //            sInfo->PARENT_ID = lInfo->parentId;
 //            addSyncDownloadInfo(sInfo);
             downloadTaskNum++;
+        }
+        else if((lInfo->isDir)&&(!QFileInfo(lInfo->syncPath).isDir()))
+        {
+            QDir dir;
+            dir.mkdir(lInfo->syncPath);
+            lInfo->lastDate = QFileInfo(lInfo->syncPath).lastModified();
         }
     }
     qDebug()<<"down list count"<<downloadTaskNum;

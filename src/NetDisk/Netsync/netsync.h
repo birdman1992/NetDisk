@@ -73,6 +73,7 @@ private slots:
     void taskDownloadFinished(TaskInfo info);
     void taskUploadFinished(TaskInfo info);
     void syncfinish(bool);
+    void dateFileUpdate();//刷新.date的修改时间，让.date文件作为同步文件夹的更新时间参照
 
 
 signals:

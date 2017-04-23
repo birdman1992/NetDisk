@@ -149,25 +149,26 @@ void MainWidget::initTitleMenu()
 
 void MainWidget::setSyncState(int state)//isSyncing = checked
 {
+    qDebug()<<"sync state"<<state;
     syncState = state;
     ui->syncMsg->clear();
     switch(state)
     {
     case 0://无同步
-        ui->syncStart->setStyleSheet("#syncStart:!checked{\border-image: url(:/imgs/一键同步.png);color: rgb(255, 255, 255);}\
-                                     #syncStart:!checked:pressed{\border-image: url(:/imgs/一键同步hover.png);color: rgb(255, 255, 255);}");
+        ui->syncStart->setStyleSheet("#syncStart{border-image: url(:/imgs/一键同步.png);color: rgb(255, 255, 255);}\
+                                     #syncStart:pressed{border-image: url(:/imgs/一键同步hover.png);color: rgb(255, 255, 255);}");
         break;
     case 1://同步中
-        ui->syncStart->setStyleSheet("#syncStart:!checked{\border-image: url(:/imgs/同步中.png);color: rgb(255, 255, 255);}\
-                                     #syncStart:!checked:pressed{\border-image: url(:/imgs/同步中hover.png);color: rgb(255, 255, 255);}");
+        ui->syncStart->setStyleSheet("#syncStart{border-image: url(:/imgs/同步中.png);color: rgb(255, 255, 255);}\
+                                     #syncStart:pressed{border-image: url(:/imgs/同步中hover.png);color: rgb(255, 255, 255);}");
         break;
     case 2://可同步
-        ui->syncStart->setStyleSheet("#syncStart:!checked{\border-image: url(:/imgs/一键同步.png);color: rgb(255, 255, 255);}\
-                                     #syncStart:!checked:pressed{\border-image: url(:/imgs/一键同步hover.png);color: rgb(255, 255, 255);}");
+        ui->syncStart->setStyleSheet("#syncStart{border-image: url(:/imgs/一键同步.png);color: rgb(255, 255, 255);}\
+                                     #syncStart:pressed{border-image: url(:/imgs/一键同步hover.png);color: rgb(255, 255, 255);}");
         break;
     case 3://自动同步
-        ui->syncStart->setStyleSheet("#syncStart:!checked{\border-image: url(:/imgs/一键同步.png);color: rgb(255, 255, 255);}\
-                                     #syncStart:!checked:pressed{\border-image: url(:/imgs/一键同步hover.png);color: rgb(255, 255, 255);}");
+        ui->syncStart->setStyleSheet("#syncStart{border-image: url(:/imgs/一键同步.png);color: rgb(255, 255, 255);}\
+                                     #syncStart:pressed{border-image: url(:/imgs/一键同步hover.png);color: rgb(255, 255, 255);}");
         break;
     default:
         break;
@@ -371,23 +372,23 @@ void MainWidget::getSyncNum(int upNum, int downNum)
         if(syncMsgState)//同步状态发生跳变
             sysTray->showMessage(QString("文件同步"), "本地文件已和云端同步",QSystemTrayIcon::Information);
         setSyncState(0);
-        ui->syncStart->setEnabled(false);
+//        ui->syncStart->setEnabled(false);
         syncMsgState = false;
     }
     else
     {
-            syncMsgState = true;
-            if(netConf->autoSyncDir())
+            if(syncState == 2)//可同步
             {
                 setSyncState(1);//变更为同步中
             }
-            else
+            else if(syncState == 0)//无同步
             {
                 setSyncState(2);//变更为可同步状态
             }
-            ui->frame_sync->show();
+//            ui->frame_sync->show();
             if(!syncMsgState)//同步状态发生跳变
                 sysTray->showMessage(QString("文件同步"), strHost+" "+strLocal,QSystemTrayIcon::Information);
+            syncMsgState = true;
 //        }
     }
 }
@@ -412,7 +413,6 @@ void MainWidget::diskInit()
         setSyncState(1);
     else
         setSyncState(0);
-    ui->syncStart->setEnabled(false);
 
     if(isInited)
     {

@@ -33,6 +33,7 @@ void NetSync::setNetClient(NetHttp *cli)
     connect(&syncT, SIGNAL(localListChanged()), this, SLOT(syncLocalUpdate()),Qt::DirectConnection);
     connect(&syncT, SIGNAL(syncDownload()), this, SLOT(syncDownloadStart()));
     connect(&syncT, SIGNAL(syncUpload()), this, SLOT(syncUploadStart()));
+    connect(&syncT, SIGNAL(needUpdateDate()), this, SLOT(dateFileUpdate()));
 }
 
 syncTable *NetSync::getTable()
@@ -337,7 +338,7 @@ void NetSync::syncHostPointSave(QDateTime sTime)
     isSyncing = false;
     syncT.syncTime = sTime;
 
-    if(syncT.getDownloadTaskNum() || syncT.getUploadTaskNum())
+    if(!(syncT.getDownloadTaskNum() || syncT.getUploadTaskNum()))
     {
         syncDateWrite(sTime);
     }
@@ -468,5 +469,10 @@ void NetSync::syncfinish(bool isSyncing)
 {
     if(!isSyncing)
         syncDateWrite(syncT.syncTime);
+}
+
+void NetSync::dateFileUpdate()
+{
+    syncDateWrite(syncT.syncTime);
 }
 

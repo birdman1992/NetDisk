@@ -152,6 +152,7 @@ signals:
     void syncDownload();
     void syncUploadChanged(int uploadNum);
     void syncDownloadChanged(int downloadNum);
+    void needUpdateDate();
 };
 
 class fileInfo
