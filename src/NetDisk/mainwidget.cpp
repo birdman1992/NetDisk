@@ -155,6 +155,7 @@ void MainWidget::setSyncState(int state)//isSyncing = checked
     switch(state)
     {
     case 0://无同步
+        ui->syncMsg->setText("没有文件需要同步");
         ui->syncStart->setStyleSheet("#syncStart{border-image: url(:/imgs/一键同步.png);color: rgb(255, 255, 255);}\
                                      #syncStart:pressed{border-image: url(:/imgs/一键同步hover.png);color: rgb(255, 255, 255);}");
         break;
@@ -870,7 +871,11 @@ void MainWidget::on_syncStart_clicked()
     switch(syncState)
     {
     case 0://无同步
-        ui->syncMsg->setText("没有文件需要同步");
+        setSyncState(4);
+        ui->syncMsg->setText("正在检查同步");
+        diskPanel->diskSync->loginSync();
+//        if(diskPanel->diskSync->syncLocalCheck())//检查本地同步
+
         break;
     case 1://同步中
         ui->syncMsg->setText("正在同步中");
@@ -882,6 +887,8 @@ void MainWidget::on_syncStart_clicked()
         break;
     case 3://自动同步
         ui->syncMsg->setText("自动同步无需手动操作");
+    case 4://同步检测中
+        ui->syncMsg->setText("正在检查同步");
         break;
     }
 }

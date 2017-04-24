@@ -522,7 +522,7 @@ void NetHttp::syncInfoRecv(QByteArray info, QDateTime syncTime)
             {
                 jval = obj.take("result");
                 QJsonArray syncArray = jval.toArray();
-                if(syncArray.isEmpty())
+                if(syncArray.isEmpty() && (lastSyncId == -1))
                 {qDebug("SYNC over!!");
                     emit syncHostPoint(syncTime);
                     return;
@@ -963,7 +963,7 @@ double syncTable::getIdByName(QString name, bool* isChanged)
 QString syncTable::getPathById(double Id)
 {
     int index = list_local_index.indexOf(QString::number(Id));
-
+//    qDebug()<<"[getPathById] index"<<index<<">>"<<list_local.count()<<list_local_index.count();
     if(index == -1)
         return QString();
 
@@ -1040,11 +1040,13 @@ void syncTable::syncDir()
                 lInfo->isDir = 1;
                 lInfo->parentId = info->PARENT_ID;
                 lInfo->lastDate = QFileInfo(cur_path+dirPath).lastModified();
-                list_local<<lInfo;
+                addSyncLocalInfo(lInfo);
+//                list_local<<lInfo;
                 emit localListChanged();
             }
         }
     }
+
     isSyncing = false;
     setLocalList();
     creatSyncDownloadList();
@@ -1081,6 +1083,7 @@ void syncTable::syncMkDir()
     //创建同步上传链表
     QFileInfo* localInfoReal;
     double parentId;
+    double retId;
     QString dirName;
 
 
@@ -1098,10 +1101,12 @@ void syncTable::syncMkDir()
             continue;
         }
         parentId = getIdByName(localInfoReal->absolutePath());
-        getIdByName(localInfoReal->absoluteFilePath(),&isUpdated);
+        retId = getIdByName(localInfoReal->absoluteFilePath(),&isUpdated);
         dirName = localInfoReal->fileName();//此处使用FILE_NAME保存待上传的本地文件路径
 //        qDebug()<<"isupdated"<<isUpdated;
-        if(!isUpdated)
+//        if(isUpdated)
+//            updateFileDate(retId);
+        if(retId)
             continue;
         qDebug()<<"[mkdirInHost]"<<parentId<<dirName;
         mkdirInHost(parentId, dirName);
@@ -1193,14 +1198,15 @@ void syncTable::addSyncLocalInfo(syncLocalInfo *info)
     for(i=0; i<list_local.count(); i++)
     {
         if(info->fileId == list_local.at(i)->fileId)
-        {
+        {//qDebug()<<"[addSyncLocalInfo]"<<"repeat"<<info->fileId<<list_local.count();
             lInfo = list_local.takeAt(i);
             delete lInfo;
             list_local.insert(i, info);
+           // qDebug()<<list_local.count();
             return;
         }
     }
-    list_local<<info;
+    list_local<<info;//qDebug()<<"[addSyncLocalInfo]"<<info->syncPath;
     list_local_index<<QString::number(info->fileId);
 }
 
@@ -1211,11 +1217,7 @@ void syncTable::addSyncDownloadInfo(syncInfo *info)
     for(i=0; i<list_sync_download.count(); i++)
     {
         if(info->ID == list_sync_download.at(i)->ID)
-        {qDebug()<<"repeat"<<info->ID;
-//            delete info;
-//            lInfo = list_sync_download.takeAt(i);
-//            delete lInfo;
-//            list_sync_download.insert(i, info);
+        {//qDebug()<<"repeat"<<info->ID;
             return;
         }
     }
@@ -1246,12 +1248,29 @@ void syncTable::updateParentDate(double id)
         index = list_local_index.indexOf(QString::number(pId));
         if(index == -1)
             return;
-        info = list_local.at(index);
+        info = list_local.takeAt(index);
         qDebug()<<"[updateParentDate]"<<info->lastDate.toString("yyyy/MM/dd hh:mm:ss")<<QFileInfo(info->syncPath).lastModified().toString("yyyy/MM/dd hh:mm:ss");
         info->lastDate = QFileInfo(info->syncPath).lastModified();
         pId = info->parentId;
         list_local.insert(index, info);
     }
+}
+
+void syncTable::updateFileDate(double id)
+{
+    int pId = id;
+    int index = 0;
+    syncLocalInfo* info;
+
+    index = list_local_index.indexOf(QString::number(pId));
+    if(index == -1)
+        return;
+    info = list_local.takeAt(index);
+    qDebug()<<"[updateParentDate]"<<info->lastDate.toString("yyyy/MM/dd hh:mm:ss")<<QFileInfo(info->syncPath).lastModified().toString("yyyy/MM/dd hh:mm:ss");
+    info->lastDate = QFileInfo(info->syncPath).lastModified();
+    pId = info->parentId;
+    list_local.insert(index, info);
+
 }
 
 void syncTable::reportSyncNum()
@@ -1302,6 +1321,7 @@ void syncTable::mkdirInHost(double pId, QString dirName)
     params<<QString("pid=%1&").arg(pId)<<QString("name=%1&").arg(dirName)<<QString(APP_ID)+"&";
 //    QByteArray qba = QString("pid=%1&name=").arg(pId).toLocal8Bit()+fileName.toUtf8();
     QByteArray qba = getPost(params);
+    qDebug()<<"[MKDIR]"<<qba;
     QNetworkRequest request(nUrl);
     request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
     reply = netConf->manager->post(request,qba);
@@ -1397,8 +1417,9 @@ void syncTable::recvMkdirRst()
                 lInfo->syncPath = getPathById(lInfo->parentId)+"/"+lInfo->fileName;
                 lInfo->lastDate = QFileInfo(lInfo->syncPath).lastModified();
                 qDebug()<<"recv"<<lInfo->syncPath;
-                list_local<<lInfo;
-                list_local_index<<QString::number(lInfo->fileId);
+                addSyncLocalInfo(lInfo);
+//                list_local<<lInfo;
+//                list_local_index<<QString::number(lInfo->fileId);
                 emit localListChanged();
             }
         }
@@ -1433,6 +1454,7 @@ void syncTable::creatSyncUploadList()
             continue;
         if(localInfoReal->isDir())
         {
+
             continue;
         }
         localInfo->PARENT_ID = getIdByName(localInfoReal->absolutePath());

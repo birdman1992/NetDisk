@@ -123,7 +123,7 @@ private:
     bool syncMsgState;
     QPoint dragPosition;
     int fType;
-    int syncState;//0:无同步,1:同步中,2:可同步,3:自动同步
+    int syncState;//0:无同步,1:同步中,2:可同步,3:自动同步,4:同步检查中
     //系统托盘菜单项
     QAction* act_openPanel;//打开主面板
     QAction* act_openWebsite;//打开企业网盘网站

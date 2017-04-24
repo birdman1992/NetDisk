@@ -26,6 +26,7 @@ public:
     NetSync(QObject *parent = 0);
     void setNetClient(NetHttp* cli);
     syncTable* getTable();
+    bool syncLocalCheck();
 
 public slots:
     void syncAll();
@@ -39,6 +40,7 @@ public slots:
 private:
     QDateTime syncDate;
     QTimer* syncTimer;
+    QTimer* checkTimer;
     QFileSystemWatcher netWatcher;
     QList<QFileInfo*> listLocalReal;
     QList<syncLocalInfo*> listLocal;
@@ -56,6 +58,7 @@ private:
     void syncLocalWrite(QList<syncLocalInfo *> l);
     void syncDateRead();
     void syncDateWrite(QDateTime date);
+    QDateTime getSyncDate();
     void hideFile(QFile* file);
     double getIdByPath(QString path);
     QString getLocalPath(QString path);
@@ -67,6 +70,7 @@ private:
 private slots:
     void syncDirChanged(QString dir);
     void syncTimeOut();
+    void checkTimeOut();
     void syncInfoRecv(QList<syncInfo*>, QDateTime);
     void syncHostPointSave(QDateTime);
     void syncLocalUpdate();

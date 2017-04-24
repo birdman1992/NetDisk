@@ -83,6 +83,7 @@ public:
     void syncInfoInsert(QList<syncInfo*> info);
     void syncNextDir();
     void updateParentDate(double id);
+    void updateFileDate(double id);
     void reportSyncNum();
     void creatSyncUploadList();
     void creatSyncDownloadList();

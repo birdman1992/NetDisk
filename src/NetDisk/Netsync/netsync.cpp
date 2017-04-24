@@ -13,6 +13,7 @@ NetSync::NetSync(QObject *parent):
     uptask = 0;
     isSyncing = false;
     syncTimer = NULL;
+    checkTimer = new QTimer(this);
     connect(this, SIGNAL(syncStateChanged(bool)), this, SLOT(syncfinish(bool)));
 
     syncDateRead();
@@ -25,6 +26,9 @@ void NetSync::setNetClient(NetHttp *cli)
 {
     netClient = cli;
     syncT.setHttpClient(cli);
+    checkTimer->start(60000);//60s
+    connect(checkTimer, SIGNAL(timeout()), this, SLOT(checkTimeOut()));
+
     connect(netClient, SIGNAL(syncUpdate(QList<syncInfo*>,QDateTime)), this, SLOT(syncInfoRecv(QList<syncInfo*>,QDateTime)));
     connect(netClient, SIGNAL(needSync()), this, SLOT(loginSync()));
     connect(netClient, SIGNAL(syncHostPoint(QDateTime)), this, SLOT(syncHostPointSave(QDateTime)));
@@ -39,6 +43,41 @@ void NetSync::setNetClient(NetHttp *cli)
 syncTable *NetSync::getTable()
 {
     return &syncT;
+}
+
+bool NetSync::syncLocalCheck()
+{
+    QDirIterator iter(netConf->getSyncPath(),QDir::Dirs | QDir::NoSymLinks | QDir::NoDot | QDir::NoDotDot,
+                      QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
+
+    bool ret = false;
+    QDateTime checkTime = getSyncDate();
+
+    while(!syncT.list_local_real.isEmpty())
+    {
+        QFileInfo *info = syncT.list_local_real.takeFirst();
+        delete info;
+    }
+
+    while (iter.hasNext())
+    {
+        iter.next();
+        QFileInfo* info = new QFileInfo(iter.fileInfo());
+        if(info->fileName() == ".sync")
+            continue;
+        if(info->fileName() == ".date")
+            continue;
+        if(info->lastModified().toMSecsSinceEpoch() > checkTime.toMSecsSinceEpoch())
+        {
+            ret = true;
+        }
+//        syncT.list_local_real<<info;
+//        if(info->isDir())
+//            syncT.list_local_real_dir<<info;
+//        qDebug()<<info->absoluteFilePath()<<info->isReadable()<<info->isWritable()<<info->size();
+//        qDebug()<<info->fileName()<<info->absolutePath()<<info->absoluteFilePath();
+    }
+    return ret;
 }
 
 void NetSync::syncAll()
@@ -166,16 +205,7 @@ void NetSync::syncLocalWrite(QList<syncLocalInfo *> l)
 
 void NetSync::syncDateRead()
 {
-    QFile* f = new QFile(netConf->getSyncPath()+QString(FILE_SYNC_DATE));
-    if(!f->exists())
-    {
-        syncT.syncTime = QDateTime();
-        return;
-    }
-    else
-        f->open(QFile::ReadOnly);
-
-    syncT.syncTime = QDateTime::fromString(QString(f->readAll()),"yyyy-MM-dd hh:mm:ss");
+    syncT.syncTime = getSyncDate();
     qDebug()<<"[SYNC time read]"<<syncT.syncTime.toString("yyyy-MM-dd hh:mm:ss");
 }
 
@@ -198,6 +228,20 @@ void NetSync::syncDateWrite(QDateTime date)
     if(!QFileInfo(*f).isHidden())
         hideFile(f);
     return;
+}
+
+QDateTime NetSync::getSyncDate()
+{
+    QFile* f = new QFile(netConf->getSyncPath()+QString(FILE_SYNC_DATE));
+    if(!f->exists())
+    {
+        syncT.syncTime = QDateTime();
+        return QDateTime();
+    }
+    else
+        f->open(QFile::ReadOnly);
+
+    return QDateTime::fromString(QString(f->readAll()),"yyyy-MM-dd hh:mm:ss");
 }
 
 void NetSync::syncUploadStart()
@@ -316,7 +360,12 @@ void NetSync::syncTimeOut()
     syncT.getUploadTaskNum();
 //    syncT.syncMkDir();
 //    syncT.creatSyncDownloadList();
-//    syncT.creatSyncUploadList();
+    //    syncT.creatSyncUploadList();
+}
+
+void NetSync::checkTimeOut()
+{
+    syncLocalCheck();
 }
 
 void NetSync::syncInfoRecv(QList<syncInfo *>sInfo, QDateTime sTime)
@@ -337,6 +386,7 @@ void NetSync::syncHostPointSave(QDateTime sTime)
 
     isSyncing = false;
     syncT.syncTime = sTime;
+    syncLocalGet();
 
     if(!(syncT.getDownloadTaskNum() || syncT.getUploadTaskNum()))
     {
@@ -347,11 +397,10 @@ void NetSync::syncHostPointSave(QDateTime sTime)
     {
         syncT.syncHostToLocal();
         syncT.syncLocalToHost();
-    }
-
-    if((syncT.list_sync_download.count() == 0) && (syncT.list_sync_upload.count() == 0))
-    {
-        syncDateWrite(sTime);
+        if((syncT.list_sync_download.count() == 0) && (syncT.list_sync_upload.count() == 0))
+        {
+            syncDateWrite(sTime);
+        }
     }
 }
 
@@ -399,9 +448,7 @@ void NetSync::taskDownloadFinished(TaskInfo info)
             syncT.updateParentDate(sInfo->parentId);
             delete trans;
             syncLocalWrite(syncT.list_local);
-
             syncTaskDownload();
-
             break;
         }
     }
