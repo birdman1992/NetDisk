@@ -220,8 +220,6 @@ void NetSync::syncDateWrite(QDateTime date)
         return;
     }
 
-    syncT.recvListClear();
-
     QString str = date.toString("yyyy-MM-dd hh:mm:ss");
     qDebug()<<"[SYNC time write]"<<str;
     f->write(str.toLocal8Bit());
@@ -286,14 +284,15 @@ void NetSync::syncDownloadStart()
 //    int i = 0;
     taskNum = 0;
     emit syncStateChanged(true);
-//    syncT.isSyncing = true;
+    if(syncT.list_sync_download.count())
+        syncT.isSyncing = true;
     qDebug()<<"download:"<<syncT.list_sync_download.count();
     while((!syncT.list_sync_download.isEmpty()) && taskDownload.count()<=netConf->getMaxTaskNum())
     {
-        trans = new netTrans;qDebug("1");
-        info = syncT.list_sync_download.takeFirst();qDebug("2");
-        downloadPath = syncT.getPathById(info->PARENT_ID);qDebug("3");
-        qDebug()<<"[sync down]"<<info->PARENT_ID<<downloadPath<<info->FILE_NAME;qDebug("4");
+        trans = new netTrans;
+        info = syncT.list_sync_download.takeFirst();
+        downloadPath = syncT.getPathById(info->PARENT_ID);
+        qDebug()<<"[sync down]"<<info->PARENT_ID<<downloadPath<<info->FILE_NAME;
         trans->netDownload(info, downloadPath,netClient->netToken());
         trans->taskStart();
         connect(trans, SIGNAL(taskFinished(TaskInfo)), this, SLOT(taskDownloadFinished(TaskInfo)));
@@ -335,7 +334,11 @@ QString NetSync::getLocalPath(QString path)
 void NetSync::syncDirChanged(QString dir)
 {
     if(syncT.isSyncing)
+    {
+        qDebug()<<"Local dir changed but issyncing!";
         return;
+    }
+
     qDebug()<<"Local dir changed!"<<dir;
     syncLocalGet();
 
@@ -393,6 +396,7 @@ void NetSync::syncHostPointSave(QDateTime sTime)
     if(!(syncT.getDownloadTaskNum() || syncT.getUploadTaskNum()))
     {
         syncDateWrite(sTime);
+        syncT.recvListClear();
     }
 
     if(netConf->autoSyncDir())
@@ -456,12 +460,13 @@ void NetSync::taskDownloadFinished(TaskInfo info)
     }
     i=0;
 
-//    syncT.isSyncing = false;
+
 //    syncT.creatSyncUploadList();
     syncT.setLocalList();
     syncT.reportSyncNum();
     if((syncT.list_sync_download.count() == 0) && (syncT.list_sync_upload.count() == 0))
     {
+        syncT.isSyncing = false;
         syncLocalGet();
         emit syncStateChanged(false);
     }

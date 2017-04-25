@@ -1359,7 +1359,7 @@ void syncTable::recvListClear()
 {qDebug()<<"[recvListClear]";
     list_dir.clear();
     list_file.clear();
-
+    list_index.clear();
     qDeleteAll(list_all.begin(), list_all.end());
     list_all.clear();
 
