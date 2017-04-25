@@ -220,6 +220,8 @@ void NetSync::syncDateWrite(QDateTime date)
         return;
     }
 
+    syncT.recvListClear();
+
     QString str = date.toString("yyyy-MM-dd hh:mm:ss");
     qDebug()<<"[SYNC time write]"<<str;
     f->write(str.toLocal8Bit());

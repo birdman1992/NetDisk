@@ -78,6 +78,7 @@ public:
     syncTable();
     void setLocalList();
     void setHttpClient(NetHttp* client);
+    void recvListClear();
     void syncHostToLocal();
     void syncLocalToHost();
     void syncInfoInsert(QList<syncInfo*> info);
@@ -95,6 +96,7 @@ public:
     void addSyncLocalInfo(syncLocalInfo*);
     void addSyncDownloadInfo(syncInfo*);
     void localDelete(QFileInfo deleteFileInfo);
+    void localDelete(double deleteFileId);
     syncInfo* getHostInfoById(double Id);
     int getLocalInfoIndexByName(QString filename);
     bool fileIsDownloading(QString name);//通过全路径查询文件是否在下载中
@@ -134,7 +136,6 @@ private:
 
     void syncFile();
     void nextTask();
-    void recvListClear();
     void tempListToHostList();
     void mkdirInHost(double pId, QString dirName);
 

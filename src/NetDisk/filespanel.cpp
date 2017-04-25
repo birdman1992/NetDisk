@@ -529,6 +529,7 @@ void FilesPanel::fileNew()
 
 void FilesPanel::fileRefresh()
 {
+    httpClient->netSync(SYNC_ID, diskSync->getTable()->syncTime);
     panelRefresh();
 }
 

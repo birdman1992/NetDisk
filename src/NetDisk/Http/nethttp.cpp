@@ -549,12 +549,11 @@ void NetHttp::syncListCreat(QJsonArray info, QDateTime syncTime)
             jval = obj.take("STATUS");
             sInfo->STATUS = jval.toInt();
             qDebug()<<sInfo->STATUS;
-            if(sInfo->STATUS != 0)
-            {
-                delete sInfo;
-                continue;
-            }
-
+//            if(sInfo->STATUS != 0)
+//            {
+//                delete sInfo;
+//                continue;
+//            }
         }
         else
             goto syncListCreatError;
@@ -854,6 +853,12 @@ void syncTable::syncInfoInsert(QList<syncInfo *> info)
         qDebug()<<info.at(i)->ID;
         if(list_index.indexOf(QString::number(info.at(i)->ID)) != -1)
         {qDebug("repeat");
+            continue;
+        }
+        if(info.at(i)->STATUS)
+        {
+            qDebug()<<"[delete sync]"<<info.at(i)->ID;
+            localDelete(info.at(i)->ID);
             continue;
         }
         syncInfo* nInfo = new syncInfo(info.at(i));qDebug()<<"[SYNC from host]"<<nInfo->FILE_NAME<<"id:"<<nInfo->ID;
@@ -1191,6 +1196,77 @@ void syncTable::localDelete(QFileInfo deleteFileInfo)
     }
 }
 
+void syncTable::localDelete(double deleteFileId)
+{
+    bool isdeleted = false;
+
+    //获取本地文件信息
+    int index = list_local_index.indexOf(QString::number(deleteFileId));
+    if(index == -1)
+        qDebug()<<"[localDelete]:can't find local file"<<deleteFileId;
+
+    syncLocalInfo* lInfo = list_local.at(index);
+
+    if(!lInfo->isDir)
+    {
+        QFile file(lInfo->syncPath);
+        if(file.exists())
+            isdeleted = file.remove();
+        if(!isdeleted)
+        {
+            index = getLocalInfoIndexByName(lInfo->syncPath);
+            if(index>=0)
+            {//qDebug()<<"remove"<<index;
+                lInfo = list_local.takeAt(index);
+                list_local_index.removeAt(index);
+                delete lInfo;
+                emit localListChanged();
+            }
+        }
+    }
+    else
+    {
+        int i = list_local_real.count()-1;
+        QString deleteDir = lInfo->syncPath;
+        QString str;
+
+        for(; i>=0; i--)
+        {
+            if(!list_local_real.at(i)->exists())
+                continue;
+            str = list_local_real.at(i)->absoluteFilePath();
+            qDebug()<<"delete ready"<<deleteDir;
+            if(str.size() < deleteDir.size())
+                continue;
+            if(deleteDir == str.left(deleteDir.size()))
+            {
+                if(list_local_real.at(i)->isDir())
+                {
+                    isdeleted = QDir().rmdir(str);
+                    qDebug()<<"deletedir"<<deleteDir<<isdeleted;
+                }
+                else if(list_local_real.at(i)->isFile())
+                {
+                    isdeleted = QFile().remove(str);
+                    qDebug()<<"deletefile"<<str<<isdeleted;
+                }
+                if(isdeleted)
+                {
+                    index = getLocalInfoIndexByName(str);
+
+                    if(index>=0)
+                    {
+                        list_local.removeAt(index);
+                        list_local_index.removeAt(index);
+                        emit localListChanged();
+                    }
+                }
+            }
+        }
+//        list_local_real.at()
+    }
+}
+
 void syncTable::addSyncLocalInfo(syncLocalInfo *info)
 {
     int i=0;
@@ -1280,22 +1356,19 @@ void syncTable::reportSyncNum()
 }
 
 void syncTable::recvListClear()
-{
-//    while(!list_temp.isEmpty())
+{qDebug()<<"[recvListClear]";
+    list_dir.clear();
+    list_file.clear();
+
+    qDeleteAll(list_all.begin(), list_all.end());
+    list_all.clear();
+
+//    while(!list_all.isEmpty())
 //    {
-//        syncInfo* info = list_temp.takeFirst();
+//        info = list_all.takeFirst();
+//        qDebug()<<(int)info;
 //        delete info;
 //    }
-//    while(!list_dir.isEmpty())
-//    {
-//        syncInfo* info = list_dir.takeFirst();
-//        delete info;
-//    }
-//    while(!list_file.isEmpty())
-//    {
-//        syncInfo* info = list_file.takeFirst();
-//        delete info;
-    //    }
 }
 
 void syncTable::tempListToHostList()
