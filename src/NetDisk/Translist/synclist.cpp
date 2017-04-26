@@ -264,8 +264,8 @@ void syncList::act_delete_triggered()
         for(i=0; i<selectList.count(); i++)
         {
             info = list_show.at(selectList.at(i).row());
-            checkTable->syncDelete(info.absoluteFilePath());
-            checkTable->localDelete(info);
+            checkTable->syncDelete(info.absoluteFilePath());//删除成功在槽函数中调用了checkTable->localDelete(info);
+//            checkTable->localDelete(info);
 //            qDebug()<<str;
         }
         syncRefresh();

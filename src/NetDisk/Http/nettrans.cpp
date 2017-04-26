@@ -256,7 +256,7 @@ void netWork::md5Check()
 //    pFile->seek(0);
 
     fileMd5 = ch.result();
-    params<<QString("md5=%1&").arg(QString(fileMd5.toHex()))<<QString(APP_ID)+"&";
+    params<<QString("md5=%1&").arg(QString(fileMd5.toHex()))<<QString("pid=%1&").arg(filepId)<<QString(APP_ID)+"&";
     qba = getPost(params);
     qDebug()<<"info"<<md5Input<<"MD5"<<ch.result().toHex();
     QString nUrl = netConf->getServerAddress() + "/api/file/getFileByMd5";

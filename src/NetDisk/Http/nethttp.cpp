@@ -159,6 +159,23 @@ void NetHttp::syncTraversal()
     netSync(100);
 }
 
+void NetHttp::getUserInfo()
+{
+    QString nUrl;
+    nUrl = netConf->getServerAddress() + "/api/user/showUserInfo";//
+    QStringList param;
+    param<<QString(APP_ID)+"&";
+    param<<QString("token=%1&").arg(token);
+
+    QByteArray qba = getPost(param);
+
+    qDebug()<<"[getUserInfo]"<<nUrl<<qba;
+    QNetworkRequest request(nUrl);
+    request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
+    reply_userinfo = netConf->manager->post(request,qba);
+    connect(reply_userinfo, SIGNAL(finished()), this, SLOT(replyUserInfoFinished()));
+}
+
 QString NetHttp::netToken()
 {
     return token;
@@ -230,6 +247,125 @@ void NetHttp::replySyncFinished(QNetworkReply *reply)
     qDebug()<<"http SYNC recv:"<<nRecv.size();
     qDebug()<<nRecv;
     syncInfoRecv(nRecv, serverTime);
+}
+
+void NetHttp::replyUserInfoFinished()
+{
+    UserInfo info;
+    QJsonParseError jError;
+    QJsonValue jval;
+    QByteArray qba = reply_userinfo->readAll();
+    qDebug()<<"[userInfoRecv]"<<qba;
+    QJsonDocument parseDoc = QJsonDocument::fromJson(qba, &jError);
+
+    if(jError.error == QJsonParseError::NoError)
+    {
+        if(parseDoc.isObject())
+        {
+            QJsonObject obj = parseDoc.object();
+
+            if(obj.contains("code"))
+            {
+                //解析返回的状态码
+                jval = obj.take("code");
+                if(jval.isString() && (jval.toString() == "200"))
+                {
+                    //解析返回列表的属性
+                    if(obj.contains("result"))
+                    {
+
+                        jval = obj.take("result");
+                        if(jval.isObject())
+                        {
+                            QJsonObject subObj = jval.toObject();
+                            if(subObj.contains("PHONE"))
+                            {
+                                jval = subObj.take("PHONE");
+                                info.PHONE = jval.toString();
+                            }
+                            if(subObj.contains("ADMIN"))
+                            {
+                                jval = subObj.take("ADMIN");
+                                info.ADMIN = jval.toString();
+                            }
+                            if(subObj.contains("CURRENT_SIZE"))
+                            {
+                                jval = subObj.take("CURRENT_SIZE");
+                                info.CURRENT_SIZE = jval.toDouble();
+                            }
+                            if(subObj.contains("LANGUAGE"))
+                            {
+                                jval = subObj.take("LANGUAGE");
+                                info.LANGUAGE = jval.toString();
+                            }
+                            if(subObj.contains("REAL_NAME"))
+                            {
+                                jval = subObj.take("REAL_NAME");
+                                info.REAL_NAME = jval.toString();
+                            }
+                            if(subObj.contains("MAX_SIZE"))
+                            {
+                                jval = subObj.take("MAX_SIZE");
+                                info.MAX_SIZE = jval.toDouble();
+                            }
+                            if(subObj.contains("ROLE"))
+                            {
+                                jval = subObj.take("ROLE");
+                                info.ROLE = jval.toDouble();
+                            }
+                            if(subObj.contains("USER_NAME"))
+                            {
+                                jval = subObj.take("USER_NAME");
+                                info.USER_NAME = jval.toString();
+                            }
+                            if(subObj.contains("DEPTS"))
+                            {
+                                jval = subObj.take("DEPTS");
+                                info.DEPTS = jval.toString();
+                            }
+                            if(subObj.contains("ID"))
+                            {
+                                jval = subObj.take("ID");
+                                info.ID = jval.toDouble();
+                            }
+                            if(subObj.contains("EMAIL"))
+                            {
+                                jval = subObj.take("EMAIL");
+                                info.EMAIL = jval.toString();
+                            }
+                            if(subObj.contains("ADD_TIME"))
+                            {
+                                jval = subObj.take("ADD_TIME");
+                                info.ADD_TIME = QDateTime::fromString(jval.toString(), "yyyy-MM-dd hh:mm:ss");
+                            }
+                            if(subObj.contains("STATUS"))
+                            {
+                                jval = subObj.take("STATUS");
+                                info.STATUS = jval.toDouble();
+                            }
+                            if(subObj.contains("PASSWORD"))
+                            {
+                                jval = subObj.take("PASSWORD");
+                                info.PASSWORD = jval.toString();
+                            }
+                            if(subObj.contains("SKIN"))
+                            {
+                                jval = subObj.take("SKIN");
+                                info.SKIN = jval.toString();
+                            }
+                            if(subObj.contains("COMNAME"))
+                            {
+                                jval = subObj.take("COMNAME");
+                                info.COMNAME = jval.toString();
+                            }
+                            emit newUserInfo(info);
+                        }
+                    }
+                }
+                qDebug()<<"[replyUserInfoFinished]"<<obj.take("msg").toString();
+            }
+        }
+    }
 }
 
 /************************************
@@ -476,6 +612,7 @@ void NetHttp::loginRst(QByteArray rst)
                 token = jval.toString();
                 netConf->token = token;
                 qDebug()<<"[LOGIN TOKEN]"<<jval.toString();
+                getUserInfo();
             }
             if(obj.contains("code"))
             {
@@ -723,11 +860,11 @@ QByteArray NetHttp::getPost(QStringList param)
 //    str += QString("token=%1&").arg(token);
     postData += str.toUtf8();
     str += QString(APP_KEY);
-    qDebug()<<"[sign params]"<<str;
+//    qDebug()<<"[sign params]"<<str;
     QByteArray sign = QCryptographicHash::hash(str.toUtf8(), QCryptographicHash::Md5);
     qDebug()<<sign.toHex();
     postData += QString("sign=%1").arg(QString(sign.toHex())).toLocal8Bit();
-    qDebug()<<"[post params]"<<postData;
+//    qDebug()<<"[post params]"<<postData;
     return postData;
 }
 
@@ -851,14 +988,14 @@ void syncTable::syncInfoInsert(QList<syncInfo *> info)
     for(i=0; i<info.count(); i++)
     {
         qDebug()<<info.at(i)->ID;
-        if(list_index.indexOf(QString::number(info.at(i)->ID)) != -1)
-        {qDebug("repeat");
-            continue;
-        }
         if(info.at(i)->STATUS)
         {
             qDebug()<<"[delete sync]"<<info.at(i)->ID;
             localDelete(info.at(i)->ID);
+            continue;
+        }
+        if(list_index.indexOf(QString::number(info.at(i)->ID)) != -1)
+        {qDebug("repeat");
             continue;
         }
         syncInfo* nInfo = new syncInfo(info.at(i));qDebug()<<"[SYNC from host]"<<nInfo->FILE_NAME<<"id:"<<nInfo->ID;
@@ -1121,18 +1258,20 @@ void syncTable::syncMkDir()
     creatSyncUploadList();
 }
 
-void syncTable::syncDelete(QString file)
+void syncTable::syncDelete(QFileInfo file)
 {
     QString nUrl;
     QStringList params;
-    double fId = getIdByName(file);
+    delFile = file;
+    double fId = getIdByName(delFile.absoluteFilePath());
 
     params<<QString("fid=%1&").arg(fId)<<QString("token=%1&").arg(netConf->token)<<QString(APP_ID)+"&";
     QByteArray sign = getSign(params);
     nUrl = netConf->getServerAddress() + QString("/api/file/deleteFile?fid=%1&token=%2&sign=%3&").arg(fId).arg(netConf->token).arg(QString(sign.toHex()))+APP_ID+"&";
     qDebug()<<"DELETE"<<nUrl;
     syncInfoNeedUpdate = true;
-    netConf->manager->get(QNetworkRequest(QUrl(nUrl)));
+    deleteReply = netConf->manager->get(QNetworkRequest(QUrl(nUrl)));
+    connect(deleteReply, SIGNAL(finished()), this, SLOT(recvDeleteRst()));
 }
 
 void syncTable::localDelete(QFileInfo deleteFileInfo)
@@ -1203,7 +1342,11 @@ void syncTable::localDelete(double deleteFileId)
     //获取本地文件信息
     int index = list_local_index.indexOf(QString::number(deleteFileId));
     if(index == -1)
+    {
         qDebug()<<"[localDelete]:can't find local file"<<deleteFileId;
+        return;
+    }
+
 
     syncLocalInfo* lInfo = list_local.at(index);
 
@@ -1211,8 +1354,11 @@ void syncTable::localDelete(double deleteFileId)
     {
         QFile file(lInfo->syncPath);
         if(file.exists())
+        {
             isdeleted = file.remove();
-        if(!isdeleted)
+            qDebug()<<"deletefile"<<lInfo->syncPath<<isdeleted;
+        }
+        if(isdeleted)
         {
             index = getLocalInfoIndexByName(lInfo->syncPath);
             if(index>=0)
@@ -1229,13 +1375,18 @@ void syncTable::localDelete(double deleteFileId)
         int i = list_local_real.count()-1;
         QString deleteDir = lInfo->syncPath;
         QString str;
+        qDebug()<<"delete ready"<<deleteDir;
 
         for(; i>=0; i--)
         {
             if(!list_local_real.at(i)->exists())
+            {
+                qDebug()<<list_local_real.at(i)->absoluteFilePath()<<"not exist";
                 continue;
+            }
+
             str = list_local_real.at(i)->absoluteFilePath();
-            qDebug()<<"delete ready"<<deleteDir;
+            qDebug()<<str;
             if(str.size() < deleteDir.size())
                 continue;
             if(deleteDir == str.left(deleteDir.size()))
@@ -1243,7 +1394,7 @@ void syncTable::localDelete(double deleteFileId)
                 if(list_local_real.at(i)->isDir())
                 {
                     isdeleted = QDir().rmdir(str);
-                    qDebug()<<"deletedir"<<deleteDir<<isdeleted;
+                    qDebug()<<"deletedir"<<str<<isdeleted;
                 }
                 else if(list_local_real.at(i)->isFile())
                 {
@@ -1498,6 +1649,36 @@ void syncTable::recvMkdirRst()
         }
     }
     syncMkDir();
+}
+
+void syncTable::recvDeleteRst()
+{
+    disconnect(deleteReply, SIGNAL(finished()), this, SLOT(recvDeleteRst()));
+    QByteArray qba = deleteReply->readAll();
+    qDebug()<<"[recvDeleteRst]"<<qba;
+    QJsonParseError jError;
+    QJsonValue jval;
+    QJsonDocument parseDoc = QJsonDocument::fromJson(qba, &jError);
+
+    if(jError.error == QJsonParseError::NoError)
+    {
+        if(parseDoc.isObject())
+        {
+            QJsonObject obj = parseDoc.object();
+
+            if(obj.contains("msg"))
+            {
+                jval = obj.take("msg");
+                qDebug()<<jval.toString();
+            }
+            if(obj.contains("code"))
+            {
+                jval = obj.take("code");
+                if(jval.toString() == "200")
+                    localDelete(delFile);
+            }
+        }
+    }
 }
 
 

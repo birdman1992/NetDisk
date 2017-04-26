@@ -92,7 +92,7 @@ public:
     int getDownloadTaskNum();
     void syncDir();
     void syncMkDir();
-    void syncDelete(QString file);
+    void syncDelete(QFileInfo file);
     void addSyncLocalInfo(syncLocalInfo*);
     void addSyncDownloadInfo(syncInfo*);
     void localDelete(QFileInfo deleteFileInfo);
@@ -122,11 +122,13 @@ private:
     QList<syncInfo*> list_file;//host端所有更新文件
     int uploadTaskNum;//上传任务数
     int downloadTaskNum;//下载任务数
+    QFileInfo delFile;
 
     QStringList list_index;//host端所有更新文件的id，和list_all一一对应
     QStringList list_local_index;//本地所有文件id，和list_local一一对应
     QStringList list_path;//同步路径表
     QNetworkReply* reply;
+    QNetworkReply* deleteReply;
     QString cur_path;
     NetHttp* syncClient;
     bool syncAll;//是否遍历同步所有目录
@@ -146,6 +148,7 @@ private:
 
 private slots:
     void recvMkdirRst();
+    void recvDeleteRst();
 
 signals:
     void localListChanged();
@@ -184,6 +187,27 @@ public:
     QString FILE_NAME;
 };
 
+class UserInfo
+{
+public:
+    QString PHONE;  //管理员手机号
+    QString ADMIN;  //管理员的姓名（手机号）
+    quint64 CURRENT_SIZE;   //已用空间
+    QString LANGUAGE;   //语言
+    QString REAL_NAME;  //用户名
+    quint64 MAX_SIZE;   //总空间
+    int ROLE;   //角色
+    QString USER_NAME;  //用户名
+    QString DEPTS;  //所属部门
+    double ID;  //ID
+    QString EMAIL;  //邮箱
+    QDateTime ADD_TIME;     //注册时间
+    int STATUS;     //状态
+    QString PASSWORD;   //密码
+    QString SKIN;   //皮肤
+    QString COMNAME;    //公司名
+};
+
 class NetHttp : public QObject
 {
     Q_OBJECT
@@ -199,11 +223,13 @@ public:
     void netCreatShareLinks(QStringList fids);
     void netSync(double pId, QDateTime lastSyncTime=QDateTime());
     void syncTraversal();//遍历同步
+    void getUserInfo();
     QString netToken();
 
 private:
     QNetworkAccessManager* manager;
     QNetworkAccessManager* managerSync;
+    QNetworkReply* reply_userinfo;
     httpState State;
     TransList* transList;
     netTrans* fTrans;//上传下载
@@ -235,6 +261,7 @@ private:
 private slots:
     void replyFinished(QNetworkReply*);
     void replySyncFinished(QNetworkReply*);
+    void replyUserInfoFinished();
 
 signals:
     void listUpdate(QList<fileInfo*>);
@@ -246,6 +273,7 @@ signals:
     void syncHostPoint(QDateTime);
     void isTraversal(bool);
     void needSync();
+    void newUserInfo(UserInfo);
 
 public slots:
 };
