@@ -191,6 +191,7 @@ QString netWork::getTaskSpeed()
 {
     int i = 0;
     int num = 0;
+    taskMutex.lock();
     quint64 speed = taskInfo.taskSpeed;
     QStringList l;
     QString fTime;
@@ -201,21 +202,33 @@ QString netWork::getTaskSpeed()
         speed = num;
         i++;
     }
+
     if(taskInfo.taskSpeed)
     {
-        taskInfo.finishTime = QTime(0,0,0).addSecs(taskInfo.fileSize / taskInfo.taskSpeed);
+        taskInfo.finishTime = QTime(0,0,0).addSecs((taskInfo.fileSize-taskInfo.curSize) / taskInfo.taskSpeed);
         fTime = taskInfo.finishTime.toString();
     }
     else
         fTime = "--:--:--";
     qDebug()<<"finish time"<<fTime;
     taskInfo.taskSpeed = 0;
+    taskMutex.unlock();
     return fTime+"  "+QString::number(speed)+l.at(i);
+}
+
+int netWork::getTaskProgress()
+{
+    taskMutex.lock();
+    int ret = taskInfo.curSize*100/taskInfo.fileSize;
+    taskMutex.unlock();
+    return ret;
 }
 
 void netWork::setTaskInfo(double parentId)
 {
+    taskMutex.lock();
     taskInfo.parentId = parentId;
+    taskMutex.unlock();
 }
 
 void netWork::netPost(QNetworkRequest postRequest, QByteArray postData)
@@ -420,6 +433,7 @@ int netWork::netFileUpload()
     filePid_part.setBody(QString::number(filepId).toLocal8Bit());
     multiSend->append(filePid_part);
 
+    taskMutex.lock();
     if(taskInfo.taskId)
     {
         QHttpPart fileId_part;
@@ -427,6 +441,7 @@ int netWork::netFileUpload()
         fileId_part.setBody(QString::number(taskInfo.taskId).toLocal8Bit());
         multiSend->append(fileId_part);
     }
+    taskMutex.unlock();
 
 //    QHttpPart path_part;
 //    path_part.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"path\""));
@@ -533,11 +548,13 @@ void netWork::replyFinished(QNetworkReply *reply)
         {qDebug()<<"state:"<<netState;
             if(code == "200")//文件MD5存在
             {
+                taskMutex.lock();
                 taskInfo.taskState = FINISHI_STATE;
                 QJsonObject obj = result.toObject();
                 taskInfo.taskId = obj.take("ID").toDouble();
                 emit taskUpFinish(taskInfo);
                 qDebug()<<"file exit"<<taskInfo.taskId;
+                taskMutex.unlock();
             }
             else if(code == "-200")//文件MD5不存在
             {
@@ -566,17 +583,21 @@ void netWork::replyFinished(QNetworkReply *reply)
         {
             if(code == "200")//单片上传成功
             {
+                taskMutex.lock();
                 taskInfo.taskSpeed += chunksize;
                 taskInfo.curSize += chunksize;
                 taskInfo.taskSpeed += chunksize;
+                taskMutex.unlock();
 //                fileUpload(false);
                 netFileUpload();
             }
             if(!result.isNull())
             {
                 QJsonObject obj = result.toObject();
+                taskMutex.lock();
                 taskInfo.taskId = obj.take("ID").toDouble();
                 qDebug()<<"upload task over"<<taskInfo.taskId;
+                taskMutex.unlock();
                 emit taskUpFinish(taskInfo);
             }
         }
@@ -640,9 +661,11 @@ void netWork::uploadRelpy()
         {qDebug()<<"state:"<<netState;
             if(code == "200")//文件MD5存在
             {
+                taskMutex.lock();
                 taskInfo.taskState = FINISHI_STATE;
                 QJsonObject obj = result.toObject();
                 taskInfo.taskId = obj.take("ID").toDouble();
+                taskMutex.unlock();
                 emit taskUpFinish(taskInfo);
                 qDebug()<<"file exit"<<taskInfo.taskId;
             }
@@ -673,9 +696,11 @@ void netWork::uploadRelpy()
         {
             if(code == "200")//单片上传成功
             {
+                taskMutex.lock();
                 taskInfo.taskSpeed += chunksize;
                 taskInfo.curSize += chunksize;
                 taskInfo.taskSpeed += chunksize;
+                taskMutex.unlock();
 //                fileUpload(false);
                 netFileUpload();
             }
@@ -693,9 +718,11 @@ void netWork::uploadRelpy()
                     pFile->rename(upfileInfo.absolutePath()+"/"+taskInfo.fileName);
                 }
                 qDebug()<<pFile->fileName()<<taskinfo().fileName;
+                taskMutex.lock();
                 taskInfo.filePath = QFileInfo(*pFile).absoluteFilePath();
                 taskInfo.taskId = obj.take("ID").toDouble();
                 taskInfo.taskState = FINISHI_STATE;
+                taskMutex.unlock();
                 qDebug()<<"[UPLOAD OVER]"<<taskInfo.taskId;
                 emit taskUpFinish(taskInfo);
             }
@@ -712,7 +739,9 @@ void netWork::uploadRelpy()
 void netWork::replyError(QNetworkReply::NetworkError errorCode)
 {
     qDebug()<<errorCode;
+    taskMutex.lock();
     taskInfo.taskState = ERROR_STATE;
+    taskMutex.unlock();
     if(pFile->isOpen())
     {
         pFile->close();
@@ -761,7 +790,9 @@ void netWork::getServerAddr()
                 QJsonValue value = obj.take("code");
                 if(value.toString() == "-200")
                 {
+                    taskMutex.lock();
                     taskInfo.taskState = ERROR_STATE;
+                    taskMutex.unlock();
                     return;
                 }
             }
@@ -793,10 +824,12 @@ void netWork::fileRecv()
             }
         }
     }
-
+    taskMutex.lock();
     taskInfo.curSize+=qba.size();
     taskInfo.taskSpeed += qba.size();
+    taskMutex.unlock();
     pFile->write(qba);
+    //qDebug()<<"write";
 }
 
 void netWork::fileRecvFinished()
@@ -807,12 +840,14 @@ void netWork::fileRecvFinished()
     }
     netReply->deleteLater();
     qDebug()<<"[netTrans]:"<<pFile->fileName()<<"download finished.";
+    taskMutex.lock();
     if(getMd5(pFile) == fileMd5)
     {
         taskInfo.taskState = FINISHI_STATE;qDebug()<<"check pass";
     }
     else
         taskInfo.taskState = ERROR_STATE;
+    taskMutex.unlock();
     emit taskFinish(taskInfo);
 }
 
@@ -879,6 +914,11 @@ bool netTrans::taskIsStart()
 QString netTrans::getTaskSpeed()
 {
     return work->getTaskSpeed();
+}
+
+int netTrans::getTaskProgress()
+{
+    return work->getTaskProgress();
 }
 
 TaskInfo netTrans::taskinfo()

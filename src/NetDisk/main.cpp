@@ -38,10 +38,10 @@ int main(int argc, char *argv[])
     {
         netConf = new NetConfig;
         MainWidget w;
-    //    w.show();
-
         return a.exec();
+    //    w.show();
     }
+    return 0;
 }
 
 void outputMessage(QtMsgType type, const QMessageLogContext &context, const QString &msg)

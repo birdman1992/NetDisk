@@ -298,7 +298,7 @@ void syncList::showEvent(QShowEvent* event)
     QWidget::showEvent(event);
 }
 
-void syncList::contextMenuEvent(QContextMenuEvent *event)
+void syncList::contextMenuEvent(QContextMenuEvent*)
 {
     QItemSelectionModel *selections = ui->tableWidget->selectionModel();
     selectList = selections->selectedRows();

@@ -6,6 +6,7 @@
 #include <qnetworkaccessmanager.h>
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
+#include <QMutex>
 #include <QString>
 #include <QFile>
 #include <QFileInfo>
@@ -53,6 +54,7 @@ public:
     TaskInfo taskinfo();
     void taskStart();
     QString getTaskSpeed();
+    int getTaskProgress();
     void setTaskInfo(double parentId);
     void netPost(QNetworkRequest postRequest, QByteArray postData);
     void netPost(QNetworkRequest postRequest, QHttpMultiPart* postData);
@@ -76,7 +78,7 @@ private:
     QByteArray fileMd5;
     TaskInfo taskInfo;
     QByteArray sign;
-
+    QMutex taskMutex;
 
     double filepId;//文件父目录ID
     double fileId;//文件ID
@@ -124,6 +126,7 @@ public:
     void taskStart();
     bool taskIsStart();
     QString getTaskSpeed();
+    int getTaskProgress();
     TaskInfo taskinfo();
     ~netTrans();
 public slots:

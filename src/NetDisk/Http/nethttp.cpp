@@ -1708,7 +1708,6 @@ void syncTable::creatSyncUploadList()
             continue;
         if(localInfoReal->isDir())
         {
-
             continue;
         }
         localInfo->PARENT_ID = getIdByName(localInfoReal->absolutePath());

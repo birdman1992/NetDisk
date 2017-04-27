@@ -89,7 +89,7 @@ void TransList::progressCheck()
             transModel->setData(transModel->index(i,colIndex_state),tips.at(taskList.at(i)->taskinfo().taskState),Qt::DisplayRole);
         }
         transModel->setData(transModel->index(i,colIndex_speed),taskList.at(i)->getTaskSpeed(), Qt::DisplayRole);
-        transModel->setData(transModel->index(i,colIndex_progress),(taskList.at(i)->taskinfo().curSize)*100/(taskList.at(i)->taskinfo().fileSize));
+        transModel->setData(transModel->index(i,colIndex_progress),taskList.at(i)->getTaskProgress());
         i++;
     }
 }

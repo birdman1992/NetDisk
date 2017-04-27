@@ -248,7 +248,7 @@ void NetSync::syncUploadStart()
 {
     netTrans* trans = new netTrans;
     syncInfo* info;
-    int i = 0;
+//    int i = 0;
     uptask = 0;
     emit syncStateChanged(true);
     qDebug()<<"upload:"<<syncT.list_sync_upload.count();
@@ -454,7 +454,8 @@ void NetSync::taskDownloadFinished(TaskInfo info)
             syncT.updateParentDate(sInfo->parentId);
             delete trans;
             syncLocalWrite(syncT.list_local);
-            syncTaskDownload();
+            syncDownloadStart();
+//            syncTaskDownload();
             break;
         }
     }

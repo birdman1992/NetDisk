@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QPaintEvent>
 #include <QPainter>
+#include <Http/nethttp.h>
 
 namespace Ui {
 class UserInfoPanel;
@@ -20,6 +21,10 @@ public:
 private:
     Ui::UserInfoPanel *ui;
     void paintEvent(QPaintEvent *);
+
+    QString sizeToByte(quint64 fileSize);
+public slots:
+    void userinfoUpdate(UserInfo);
 };
 
 #endif // USERINFOPANEL_H

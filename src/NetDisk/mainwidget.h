@@ -93,6 +93,7 @@ public slots:
     void openDiskConfig();
     void diskInit();
     void setSyncState(int state);
+    void userinfoUpdate(UserInfo);
 
 
 private:

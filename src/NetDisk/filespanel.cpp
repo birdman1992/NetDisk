@@ -27,7 +27,7 @@ FilesPanel::FilesPanel(QWidget *parent) :
     showListView = false;
     resizeEventEnable = true;
     curDirId = -1;
-    pageSize = 50;
+    pageSize = 56;
     pageNum = 1;
     showDeleteFolder = 0;
     isResize = false;
@@ -180,8 +180,8 @@ void FilesPanel::panelPaste()
 
 void FilesPanel::panelCd(fileInfo* dir)
 {
-    int i = 0;
-    bool del = false;
+//    int i = 0;
+//    bool del = false;
     qDebug()<<"HTTP:cd";
     panelClear();
     if(dir == NULL)

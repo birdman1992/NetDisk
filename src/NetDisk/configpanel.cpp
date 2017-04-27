@@ -155,8 +155,8 @@ void ConfigPanel::initStack()
     item->setSizeHint(QSize(138,38));
     item->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
     ui->listWidget->addItem(item);
-
     ui->listWidget->setCurrentRow(0);
+    ui->stackedPanel->setCurrentIndex(0);
     connect(ui->listWidget, SIGNAL(currentRowChanged(int)), ui->stackedPanel, SLOT(setCurrentIndex(int)));
 }
 

@@ -183,7 +183,13 @@ void MainWidget::setSyncState(int state)//isSyncing = checked
 //    {
 //        ui->syncStart->setEnabled(true);qDebug()<<"settrue1";
 //        ui->syncStart->setChecked(false);
-//    }
+    //    }
+}
+
+void MainWidget::userinfoUpdate(UserInfo info)
+{
+    ui->userinfo->setText(info.USER_NAME);
+    userInfo->userinfoUpdate(info);
 }
 
 void MainWidget::hidePanel()
@@ -417,12 +423,12 @@ void MainWidget::diskInit()
 
     if(isInited)
     {
-        scrollFolder->hide();
-        loadingUi.show();
-        syncPanel->hide();
+//        scrollFolder->hide();
+//        loadingUi.show();
+//        syncPanel->hide();
 //        ui->frame_sync->hide();
-        ui->frame_function->hide();
-        diskPanel->panelRefresh();
+//        ui->frame_function->hide();
+//        diskPanel->panelRefresh();
         return;
     }
 
@@ -494,6 +500,7 @@ void MainWidget::diskInit()
     syncPanel->initTable(diskPanel->diskSync->getTable());
 
     connect(diskPanel->httpClient, SIGNAL(loginStateChanged(bool)), this, SLOT(loginRst(bool)));
+    connect(diskPanel->httpClient, SIGNAL(newUserInfo(UserInfo)), this, SLOT(userinfoUpdate(UserInfo)));
     connect(diskPanel, SIGNAL(pathChanged(QList<fileInfo*>)), pathView, SLOT(pathChange(QList<fileInfo*>)));
     connect(diskPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
     connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
@@ -685,8 +692,10 @@ void MainWidget::loginRst(bool isSucceed)
 {
     if(isSucceed)
     {
+        hidePanel();
         loginUi.close();
         this->show();
+        ui->sliderbar->setCurrentRow(0);
         diskPanel->panelCd((fileInfo*)NULL);
         isLogin = true;
         setSysMenu();
