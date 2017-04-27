@@ -210,7 +210,7 @@ QString netWork::getTaskSpeed()
     }
     else
         fTime = "--:--:--";
-    qDebug()<<"finish time"<<fTime;
+//    qDebug()<<"finish time"<<fTime;
     taskInfo.taskSpeed = 0;
     taskMutex.unlock();
     return fTime+"  "+QString::number(speed)+l.at(i);

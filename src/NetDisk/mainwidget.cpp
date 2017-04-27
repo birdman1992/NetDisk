@@ -164,6 +164,7 @@ void MainWidget::setSyncState(int state)//isSyncing = checked
                                      #syncStart:pressed{border-image: url(:/imgs/同步中hover.png);color: rgb(255, 255, 255);}");
         break;
     case 2://可同步
+        ui->syncMsg->setText("可同步");
         ui->syncStart->setStyleSheet("#syncStart{border-image: url(:/imgs/一键同步.png);color: rgb(255, 255, 255);}\
                                      #syncStart:pressed{border-image: url(:/imgs/一键同步hover.png);color: rgb(255, 255, 255);}");
         break;
@@ -415,7 +416,7 @@ void MainWidget::openDiskConfig()
 void MainWidget::diskInit()
 {
     if(netConf->autoSyncDir())
-        setSyncState(3);
+        setSyncState(0);
     else if(syncMsgState)
         setSyncState(1);
     else
@@ -884,7 +885,6 @@ void MainWidget::on_syncStart_clicked()
         ui->syncMsg->setText("正在检查同步");
         diskPanel->diskSync->loginSync();
 //        if(diskPanel->diskSync->syncLocalCheck())//检查本地同步
-
         break;
     case 1://同步中
         ui->syncMsg->setText("正在同步中");
