@@ -32,6 +32,7 @@ public:
     NetSync* diskSync;
     int pageSize;//当前页大小
     int pageNum;//当前页码
+    int totalPageNum;//总页码
     void panelShow(QList<QFolder*> fPanel);
     void panelClear();
     void panelRefresh();

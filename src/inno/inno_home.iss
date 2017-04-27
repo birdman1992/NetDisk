@@ -3,9 +3,9 @@
 
 #define MyAppName "联瑞企业网盘"
 #define MyAppVersion "1.01"
-#define MyAppPublisher "linkreal"
+#define MyAppPublisher "深圳联瑞信息技术有限公司"
 #define MyAppURL "http://120.76.52.78:8800/LinkRealSkyDrive/"
-#define MyAppExeName "LinkReal.exe"
+#define MyAppExeName "LinkRealNetDisk.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -19,7 +19,7 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={pf}\MyAppName
+DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 InfoBeforeFile=C:\Users\birdman\Desktop\fankui.txt
@@ -28,6 +28,7 @@ OutputDir=C:\Users\birdman\Desktop\
 OutputBaseFilename=联瑞企业网盘安装包
 Compression=lzma
 SolidCompression=yes
+PrivilegesRequired=admin
 
 [Languages]
 Name: "chs"; MessagesFile: "compiler:Languages\ChineseSimplified.isl" 
@@ -37,7 +38,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
-Source: "C:\Users\birdman\Desktop\netdisk\LinkReal.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\birdman\Desktop\netdisk\LinkRealNetDisk.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Users\birdman\Desktop\netdisk\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 

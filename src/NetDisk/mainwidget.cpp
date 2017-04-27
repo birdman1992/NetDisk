@@ -696,6 +696,7 @@ void MainWidget::loginRst(bool isSucceed)
         hidePanel();
         loginUi.close();
         this->show();
+        pageWidget->show();
         ui->sliderbar->setCurrentRow(0);
         diskPanel->panelCd((fileInfo*)NULL);
         isLogin = true;
@@ -725,6 +726,7 @@ void MainWidget::pageUpdate(bool _isFirst,bool _isLast,int _pageNum,int _totalPa
 {
     qDebug()<<_isFirst<<_isLast<<_pageNum<<_totalPageNum;
     diskPanel->pageNum = _pageNum;
+    diskPanel->totalPageNum = _totalPageNum;
     page_ahead->setEnabled(!_isFirst);
     page_next->setEnabled(!_isLast);
     page_info->setText(QString("第%1页/共%2页").arg(_pageNum).arg(_totalPageNum));
@@ -810,7 +812,7 @@ void MainWidget::aheadPage(bool)
 
 void MainWidget::nextPage(bool)
 {
-    if(diskPanel->pageNum > (diskPanel->pageSize-1))
+    if(diskPanel->pageNum > (diskPanel->totalPageNum-1))
         return;
     diskPanel->panelCdPage(diskPanel->pageNum+1);
 }

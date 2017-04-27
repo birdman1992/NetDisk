@@ -29,6 +29,7 @@ FilesPanel::FilesPanel(QWidget *parent) :
     curDirId = -1;
     pageSize = 56;
     pageNum = 1;
+    totalPageNum = 1;
     showDeleteFolder = 0;
     isResize = false;
 
