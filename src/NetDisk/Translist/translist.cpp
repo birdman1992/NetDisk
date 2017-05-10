@@ -12,38 +12,39 @@ TransList::TransList(QWidget *parent) :
     ui(new Ui::TransList)
 {
     ui->setupUi(this);
-    transNum = 1;
-    progress = 1;
-    colIndex_state = 2;
-    colIndex_speed = 3;
-    colIndex_progress = 4;
-    tips<<"等待"<<"下载中"<<"上传中"<<"下载完成"<<"下载失败";
-    brush<<new QBrush(QColor(0, 0, 0))<<new QBrush(QColor(0, 0, 0))<<new QBrush(QColor(0, 0, 0))<<new QBrush(QColor(0, 0, 255))<<new QBrush(QColor(255, 0, 0));
-    transModel = new TransModel(this);
 
-    transModel->setHorizontalHeaderItem(0, new QStandardItem("文件"));
-    transModel->setHorizontalHeaderItem(1, new QStandardItem("大小"));
-    transModel->setHorizontalHeaderItem(2, new QStandardItem("状态"));
-    transModel->setHorizontalHeaderItem(3, new QStandardItem("完成时间"));
-    transModel->setHorizontalHeaderItem(4, new QStandardItem("进度"));
+    listUiInit();
+//    transNum = 1;
+//    progress = 1;
+//    colIndex_state = 2;
+//    colIndex_speed = 3;
+//    colIndex_progress = 4;
+//    tips<<"等待"<<"下载中"<<"上传中"<<"下载完成"<<"下载失败";
+//    brush<<new QBrush(QColor(0, 0, 0))<<new QBrush(QColor(0, 0, 0))<<new QBrush(QColor(0, 0, 0))<<new QBrush(QColor(0, 0, 255))<<new QBrush(QColor(255, 0, 0));
+//    transModel = new TransModel(this);
 
-    ui->scrollArea->setWidgetResizable(true);
-    ui->scrollArea->setFrameShape(QFrame::NoFrame);
-    ui->transview->setModel(transModel);
-    ui->transview->setColumnWidth(0, 400);
-    ui->transview->setColumnWidth(1,60);
-    ui->transview->setColumnWidth(colIndex_state,60);
-    ui->transview->setColumnWidth(colIndex_speed,120);
-    ui->transview->setColumnWidth(colIndex_progress, 150);
+//    transModel->setHorizontalHeaderItem(0, new QStandardItem("文件"));
+//    transModel->setHorizontalHeaderItem(1, new QStandardItem("大小"));
+//    transModel->setHorizontalHeaderItem(2, new QStandardItem("状态"));
+//    transModel->setHorizontalHeaderItem(3, new QStandardItem("完成时间"));
+//    transModel->setHorizontalHeaderItem(4, new QStandardItem("进度"));
+
+//    ui->scrollArea->setWidgetResizable(true);
+//    ui->scrollArea->setFrameShape(QFrame::NoFrame);
+//    ui->transview->setModel(transModel);
+//    ui->transview->setColumnWidth(0, 400);
+//    ui->transview->setColumnWidth(1,60);
+//    ui->transview->setColumnWidth(colIndex_state,60);
+//    ui->transview->setColumnWidth(colIndex_speed,120);
+//    ui->transview->setColumnWidth(colIndex_progress, 150);
 
 
 
-    BarDelegate* bar = new BarDelegate(this);
-    ui->transview->setItemDelegateForColumn(colIndex_progress,bar);
+//    BarDelegate* bar = new BarDelegate(this);
+//    ui->transview->setItemDelegateForColumn(colIndex_progress,bar);
 
-//    transModel->setData(transModel->index(0,3),progress);
-    connect(&tProgress, SIGNAL(timeout()), this, SLOT(progressCheck()));
-    tProgress.start(1000);
+//    connect(&tProgress, SIGNAL(timeout()), this, SLOT(progressCheck()));
+//    tProgress.start(1000);
 }
 
 int TransList::download(DownloadInfo*)
@@ -71,6 +72,19 @@ QString TransList::sizeofbytes(quint64 fsize)
     return QString::number(fsize)+l.at(i);
 }
 
+void TransList::listUiInit()
+{
+    ui->stackedWidget->setCurrentIndex(0);
+    ui->listWidget->addItems(QStringList()<<"上传列表"<<"下载列表");
+    ui->listWidget->item(0)->setSizeHint(QSize(440,30));
+    ui->listWidget->item(1)->setSizeHint(QSize(440,30));
+    ui->listWidget->item(0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+    ui->listWidget->item(1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
+
+    connect(ui->listWidget, SIGNAL(currentRowChanged(int)), ui->stackedWidget, SLOT(setCurrentIndex(int)));
+    ui->listWidget->setCurrentRow(0);
+}
+
 void TransList::progressCheck()
 {
     for(int i=0; i<taskList.count();)
@@ -80,7 +94,7 @@ void TransList::progressCheck()
             netTrans* trans = taskList.takeAt(i);
             delete trans;
             transModel->removeRow(i);
-            ui->transview->update();
+//            ui->transview->update();
             continue;
         }
         else

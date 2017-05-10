@@ -477,10 +477,11 @@ void MainWidget::diskInit()
     scrollFolder->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     scrollFolder->setWidgetResizable(true);
     ui->panelLayout->addWidget(scrollFolder);
-    ui->panelLayout->addWidget(transList);
+//    ui->panelLayout->addWidget(transList);
     ui->panelLayout->addWidget(&loadingUi);
     ui->panelLayout->addWidget(syncPanel);
 
+    ui->mainLayout->addWidget(transList);
 //    scrollFolder->verticalScrollBar()->setRange(0,100);
 //    loadingUi.reloadStart();
     scrollFolder->hide();
@@ -612,14 +613,17 @@ void MainWidget::on_refresh_clicked()
 
 void MainWidget::on_translist_toggled(bool checked)
 {qDebug()<<"checked"<<checked;
-    hidePanel();
+//    hidePanel();
     if(checked)
     {
+        ui->mainPanel->hide();
         transList->show();
     }
     else
     {
-        on_sliderbar_clicked(ui->sliderbar->currentIndex());
+        transList->hide();
+        ui->mainPanel->show();
+//        on_sliderbar_clicked(ui->sliderbar->currentIndex());
     }
 }
 
