@@ -142,6 +142,7 @@ private:
     void initFunctionList();
     void initTitleMenu();
 //    void setSyncState(bool isSyncing);
+    void setPanelState(int state);
     void hidePanel();
     void setSysMenu();
     void mousePressEvent(QMouseEvent *event);

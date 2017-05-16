@@ -147,6 +147,11 @@ void MainWidget::initTitleMenu()
     ui->menu->view()->setFixedWidth(150);
 }
 
+void MainWidget::setPanelState(int state)
+{
+
+}
+
 void MainWidget::setSyncState(int state)//isSyncing = checked
 {
     qDebug()<<"sync state"<<state;
@@ -200,7 +205,7 @@ void MainWidget::hidePanel()
     loadingUi.hide();
     pageWidget->hide();
     syncPanel->hide();
-//    ui->frame_sync->hide();
+    ui->frame_sync->hide();
     ui->frame_function->hide();
 }
 
@@ -487,8 +492,8 @@ void MainWidget::diskInit()
     scrollFolder->hide();
     loadingUi.show();
     syncPanel->hide();
-//    ui->frame_sync->hide();
-    ui->frame_function->hide();
+    ui->frame_sync->hide();
+//    ui->frame_function->hide();
     diskPanel = new FilesPanel(this);
     diskPanel->httpClient->netInit(transList);
 
@@ -701,6 +706,7 @@ void MainWidget::loginRst(bool isSucceed)
         loginUi.close();
         this->show();
         pageWidget->show();
+        ui->frame_function->show();
         ui->sliderbar->setCurrentRow(0);
         diskPanel->panelCd((fileInfo*)NULL);
         isLogin = true;
@@ -786,7 +792,7 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
 //            ui->frame_sync->show();
 //            ui->syncStart->setEnabled(true);
 //        }
-//        ui->frame_function->show();
+        ui->frame_function->show();
         diskPanel->pathRefresh();
         ui->searchBtn->setEnabled(true);
         ui->searchFilter->setEnabled(true);
@@ -799,6 +805,7 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
 //            ui->frame_sync->show();
 //            ui->syncStart->setEnabled(true);
 //        }
+        ui->frame_sync->show();
         ui->searchBtn->setEnabled(false);
         ui->searchFilter->setEnabled(false);
         ui->search->setEnabled(false);
