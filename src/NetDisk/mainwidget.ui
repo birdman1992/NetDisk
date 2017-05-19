@@ -1160,7 +1160,7 @@ font: 9pt &quot;微软雅黑&quot;;
                 <bool>true</bool>
                </property>
                <property name="checked">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
               </widget>
              </item>

@@ -33,25 +33,6 @@ FilesPanel::FilesPanel(QWidget *parent) :
     showDeleteFolder = 0;
     isResize = false;
 
-
-    ui->listView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui->listView->setColumnCount(5);
-    ui->listView->horizontalHeader()->setHighlightSections(false);
-
-    ui->listView->setHorizontalHeaderItem(0,new QTableWidgetItem(""));
-    ui->listView->setHorizontalHeaderItem(1,new QTableWidgetItem("文件名"));
-    ui->listView->setHorizontalHeaderItem(2,new QTableWidgetItem("大小"));
-    ui->listView->setHorizontalHeaderItem(3,new QTableWidgetItem("共享者"));
-    ui->listView->setHorizontalHeaderItem(4,new QTableWidgetItem("修改时间"));
-    ui->listView->horizontalHeaderItem(1)->setTextAlignment(Qt::ElideLeft);
-    ui->listView->horizontalHeaderItem(2)->setTextAlignment(Qt::ElideLeft);
-    ui->listView->horizontalHeaderItem(3)->setTextAlignment(Qt::ElideLeft);
-    ui->listView->horizontalHeaderItem(4)->setTextAlignment(Qt::ElideLeft);
-    ui->listView->hide();
-
-    //列表视图槽
-    connect(ui->listView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(listViewCd(QModelIndex)));
-
     //http
     httpClient = new NetHttp(this);
 
@@ -68,6 +49,8 @@ FilesPanel::FilesPanel(QWidget *parent) :
     connect(act_refresh, SIGNAL(triggered(bool)), this, SLOT(fileRefresh()));
     connect(act_sort, SIGNAL(triggered(bool)), this, SLOT(fileSort()));
     connect(act_upload, SIGNAL(triggered(bool)), this, SLOT(fileUpload()));
+
+    setTableState(true);
 
     //FTP槽
 //    connect(&ftpClient, SIGNAL(listInfo(QUrlInfo)), this, SLOT(ftpGetListInfo(QUrlInfo)));
@@ -110,12 +93,14 @@ void FilesPanel::setViewMode(bool showList)
 void FilesPanel::panelShow(QList<QFolder*> fPanel)
 {
     if(showListView)
-    {//qDebug("show list");
+    {qDebug("show list");
         showList(fPanel);
         return;
     }
     else
-    {//qDebug("show folder");
+    {qDebug("show folder");
+//        showFolder(fPanel);
+//        return;
         int i = 0;
         int j = 0;
         int offset_x = 15;
@@ -128,7 +113,7 @@ void FilesPanel::panelShow(QList<QFolder*> fPanel)
         }
         emit isLoading(false);
         ui->listView->hide();
-
+        qDebug()<<"geometry"<<this->geometry().width();
         int ele_wid = fPanel.at(i)->geometry().width() + offset_x;
         int ele_hei = fPanel.at(i)->geometry().height() + offset_y;
         int count_x = (this->geometry().width() - offset_x)/(ele_wid);
@@ -383,7 +368,7 @@ void FilesPanel::paintEvent(QPaintEvent*)
 }
 
 void FilesPanel::resizeEvent(QResizeEvent*)
-{
+{qDebug()<<"[resizeEvent]";
     if(resizeEventEnable)
     {
         isResize = true;
@@ -437,12 +422,45 @@ short FilesPanel::folderTypeJudge(QString fName, bool isDir)
     }
 }
 
+void FilesPanel::setTableState(bool listState)
+{
+    if(listState)
+    {
+        ui->listView->setSelectionBehavior(QAbstractItemView::SelectRows);
+        ui->listView->setColumnCount(5);
+        ui->listView->horizontalHeader()->setVisible(true);
+        ui->listView->horizontalHeader()->setHighlightSections(false);
+
+        ui->listView->setHorizontalHeaderItem(0,new QTableWidgetItem(""));
+        ui->listView->setHorizontalHeaderItem(1,new QTableWidgetItem("文件名"));
+        ui->listView->setHorizontalHeaderItem(2,new QTableWidgetItem("大小"));
+        ui->listView->setHorizontalHeaderItem(3,new QTableWidgetItem("共享者"));
+        ui->listView->setHorizontalHeaderItem(4,new QTableWidgetItem("修改时间"));
+        ui->listView->horizontalHeaderItem(1)->setTextAlignment(Qt::ElideLeft);
+        ui->listView->horizontalHeaderItem(2)->setTextAlignment(Qt::ElideLeft);
+        ui->listView->horizontalHeaderItem(3)->setTextAlignment(Qt::ElideLeft);
+        ui->listView->horizontalHeaderItem(4)->setTextAlignment(Qt::ElideLeft);
+        ui->listView->hide();
+
+        //列表视图槽
+        connect(ui->listView, SIGNAL(clicked(QModelIndex)), this, SLOT(listViewClicked(QModelIndex)));
+        connect(ui->listView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(listViewCd(QModelIndex)));
+    }
+    else
+    {
+        ui->listView->horizontalHeader()->setVisible(false);
+        ui->listView->setSelectionBehavior(QAbstractItemView::SelectItems);
+        disconnect(ui->listView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(listViewCd(QModelIndex)));
+    }
+}
+
 void FilesPanel::showList(QList<QFolder *> fPanel)
 {
     int i = 0;
     int wid = 0;
 
     wid = this->geometry().width();
+//    setTableState(true);
     ui->listView->setRowCount(fPanel.count());
     ui->listView->setColumnWidth(0,wid/24);
     ui->listView->setColumnWidth(1,wid/2+10);
@@ -463,6 +481,7 @@ void FilesPanel::showList(QList<QFolder *> fPanel)
     }
 
     emit isLoading(false);
+//    connect(ui->listView, SIGNAL()
 
     for(i=0; i<fPanel.count(); i++)
     {
@@ -477,6 +496,70 @@ void FilesPanel::showList(QList<QFolder *> fPanel)
     }
     this->setMinimumHeight(487);
     ui->listView->show();
+}
+
+void FilesPanel::showFolder(QList<QFolder *> fPanel)
+{
+    int i=0;
+    int j=0;
+    int k=0;
+    int offset_x = 15;
+    int offset_y = 15;
+
+    if(!isResize)
+        checkListClear();
+    else
+        return;
+
+    if(fPanel.isEmpty())
+    {
+        emit isLoading(false);
+        return;
+    }
+    emit isLoading(false);
+    int ele_wid = fPanel.at(i)->geometry().width() + offset_x;
+    int ele_hei = fPanel.at(i)->geometry().height() + offset_y;
+    int count_x = (this->geometry().width() - offset_x)/(ele_wid);
+    int count_y = (fPanel.count()/count_x) + (fPanel.count()%count_x != 0);
+//    int panelSize_h = ((fPanel.count()/count_x) + (fPanel.count()%count_x != 0))*ele_hei + offset_y;
+//    this->setMinimumHeight(panelSize_h);
+
+    qDebug()<<"folder count"<<fPanel.count()<<count_x<<count_y;
+    setTableState(false);
+    ui->listView->clearContents();
+    ui->listView->setColumnCount(count_x);
+    ui->listView->setRowCount(count_y);
+
+
+    for(i=0; i<count_x; i++)
+        ui->listView->setColumnWidth(i, ele_wid);
+
+    for(i=0; i<count_y; i++)
+        ui->listView->setRowHeight(i, ele_hei);
+    ui->listView->show();
+
+    k=0;
+    i=0;
+
+    for(i=0; i<(count_y-1); i++)
+    {
+        for(j=0; j<count_x; j++)
+        {
+            ui->listView->setCellWidget(i, j, fPanel.at(k));
+            k++;
+        }
+    }
+
+    //最后一行
+    for(j=0; j<(fPanel.count()%count_x); j++)
+    {
+        if(k>=fPanel.count())
+            break;
+        qDebug()<<"[show]"<<i<<j<<k<<fPanel.count()%count_x;
+        ui->listView->setCellWidget(i, j, fPanel.at(k));
+        k++;
+    }
+
 }
 
 void FilesPanel::checkListClear()
@@ -590,6 +673,11 @@ void FilesPanel::review()
 void FilesPanel::listViewCd(QModelIndex index)
 {
     panelCd(checkList.at(index.row())->fInfo);
+}
+
+void FilesPanel::listViewClicked(QModelIndex index)
+{
+    qDebug()<<"[listViewClicked]"<<index.row();
 }
 
 

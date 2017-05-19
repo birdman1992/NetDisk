@@ -19,7 +19,7 @@ MainWidget::MainWidget(QWidget *parent) :
     isLogin = false;
     isInited = false;
     syncMsgState = false;
-    ui->viewCut->setHidden(true);
+//    ui->viewCut->setHidden(true);
 
     //网盘设置
     diskConfig = new ConfigPanel();
@@ -126,6 +126,8 @@ void MainWidget::initFunctionList()
     item->setSizeHint(itemSize);
     ui->functionList->addItem(item);
 
+    setFunctionState(false);
+
 //    ui->searchFilter->addItem(" 全部");
     ui->showDelete->setText("显示已删文件");
     ui->search->setTextMargins(5,0,0,0);
@@ -150,6 +152,29 @@ void MainWidget::initTitleMenu()
 void MainWidget::setPanelState(int state)
 {
 
+}
+
+void MainWidget::setFunctionState(bool hasSelectItem)
+{
+    selected = hasSelectItem;
+    ui->functionList->item(0)->setFlags((Qt::ItemIsEnabled));
+    ui->functionList->item(1)->setFlags((Qt::ItemIsEnabled));
+    if(hasSelectItem)
+    {
+        ui->functionList->item(2)->setFlags((Qt::ItemIsEnabled));
+        ui->functionList->item(3)->setFlags((Qt::ItemIsEnabled));
+        ui->functionList->item(4)->setFlags((Qt::ItemIsEnabled));
+        ui->functionList->item(5)->setFlags( (Qt::ItemIsEnabled));
+        ui->functionList->item(6)->setFlags((Qt::ItemIsEnabled));
+    }
+    else
+    {
+        ui->functionList->item(2)->setFlags(Qt::NoItemFlags);
+        ui->functionList->item(3)->setFlags(Qt::NoItemFlags);
+        ui->functionList->item(4)->setFlags(Qt::NoItemFlags);
+        ui->functionList->item(5)->setFlags(Qt::NoItemFlags);
+        ui->functionList->item(6)->setFlags(Qt::NoItemFlags);
+    }
 }
 
 void MainWidget::setSyncState(int state)//isSyncing = checked
@@ -344,9 +369,13 @@ void MainWidget::functionBtnClicked(QModelIndex index)
 {
     int funcNum = index.row();
 
+    if((!selected) && (funcNum>1))
+        return;
+
     switch (funcNum)
     {
         case 0:
+            qDebug("upload");break;
             diskPanel->fileUpload(); break;
         case 1:
             diskPanel->fileNew(); break;

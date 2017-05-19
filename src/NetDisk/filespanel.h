@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QList>
 #include <QMenu>
+#include <QMap>
 #include <QAction>
 #include <QCheckBox>
 #include <QTableView>
@@ -99,12 +100,17 @@ private:
     void resizeEvent(QResizeEvent* size);
     void pathClear();
     short folderTypeJudge(QString fName,bool isDir);
+    void setTableState(bool listState);//设置表格形态
     void showList(QList<QFolder*> fPanel);
+    void showFolder(QList<QFolder*> fPanel);
     void checkListClear();
+    void selectListClear();
 
 private slots:
     void httpGetListInfo(QList<fileInfo*>);
     void listViewCd(QModelIndex);
+    void listViewClicked(QModelIndex);
+
 
 signals:
     void pathChanged(QList<fileInfo*>);//当前目录路径，当前目录的文件列表
