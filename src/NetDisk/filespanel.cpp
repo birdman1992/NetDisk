@@ -336,6 +336,23 @@ void FilesPanel::pathRefresh()
     emit pathChanged(folderPath);
 }
 
+QStringList FilesPanel::getSelectFid()
+{
+    int i = 0;
+    QStringList l;
+
+    for(i=0; i<checkList.count(); i++)
+    {
+        if(checkList.at(i)->box->isChecked())
+        {
+            l<<QString::number(checkList.at(i)->fInfo->ID);
+            qDebug()<<checkList.at(i)->fInfo->ID;
+        }
+    }
+
+    return l;
+}
+
 bool FilesPanel::repeatCheck(QString *fName, QFolder* pFolder)
 {
     int i;
@@ -481,12 +498,12 @@ void FilesPanel::showList(QList<QFolder *> fPanel)
     }
 
     emit isLoading(false);
-//    connect(ui->listView, SIGNAL()
 
     for(i=0; i<fPanel.count(); i++)
     {
         fPanel.at(i)->hide();
-        ListRowWidgets* _row = new ListRowWidgets(fPanel.at(i)->info());
+        ListRowWidgets* _row = new ListRowWidgets(fPanel.at(i)->info(),i);
+        connect(_row, SIGNAL(selectState(bool,int)), this, SLOT(rowSelected(bool,int)));
         checkList<<_row;
         ui->listView->setCellWidget(i,0,_row->slctBox);
         ui->listView->setItem(i,1,_row->file);
@@ -622,6 +639,17 @@ void FilesPanel::fileSort()
     qDebug("sort");
 }
 
+void FilesPanel::rowSelected(bool state, int)
+{
+//    if(ui->listView->item(index,1)->isSelected() && state)
+//        return;
+
+//    if(ui->listView->selectionMode() != QAbstractItemView::MultiSelection)
+//        ui->listView->setSelectionMode(QAbstractItemView::MultiSelection);
+    emit hasSelected(state);
+//    ui->listView->setItemSelected(ui->listView->item(index,0), state);
+}
+
 void FilesPanel::showEvent(QShowEvent *event)
 {
 //    emit pathChanged(folderPath);
@@ -678,6 +706,21 @@ void FilesPanel::listViewCd(QModelIndex index)
 void FilesPanel::listViewClicked(QModelIndex index)
 {
     qDebug()<<"[listViewClicked]"<<index.row();
+//    int i = 0;
+    if(ui->listView->selectionMode() != QAbstractItemView::SingleSelection)
+    {
+        ui->listView->setSelectionMode(QAbstractItemView::SingleSelection);
+    }
+
+    for(int i=0; i<ui->listView->rowCount(); i++)
+    {
+//            ui->listView->setItemSelected(ui->listView->item(i,1), false);
+        checkList.at(i)->clearSelectState();
+    }
+    ui->listView->item(index.row(), 1)->setSelected(true);
+    QWidget* wdg = (QWidget*)ui->listView->cellWidget(index.row(),0);
+    QCheckBox* box = (QCheckBox*)wdg->children().at(1);
+    box->setChecked(true);
 }
 
 

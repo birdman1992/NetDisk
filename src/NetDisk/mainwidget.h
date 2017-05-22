@@ -94,6 +94,7 @@ public slots:
     void diskInit();
     void setSyncState(int state);
     void userinfoUpdate(UserInfo);
+    void funcStateEnable(bool);
 
 
 private:

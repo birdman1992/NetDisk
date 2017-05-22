@@ -1,11 +1,12 @@
 #include "listrowwidgets.h"
 #include <QIcon>
 
-ListRowWidgets::ListRowWidgets(fileInfo *info)
+ListRowWidgets::ListRowWidgets(fileInfo* info, int _index)
 {
-    slctBox = new QWidget;
-    layout = new QHBoxLayout;
-    box = new QCheckBox;
+    slctBox = new QWidget(this);
+    layout = new QHBoxLayout(this);
+    box = new QCheckBox(this);
+    index = _index;
     file = NULL;
     fInfo = info;
     setFileIcon(info->FILE_NAME, info->EXT);
@@ -16,6 +17,17 @@ ListRowWidgets::ListRowWidgets(fileInfo *info)
     fileSize = new QTableWidgetItem(QString::number(info->SIZE));
     Modifytime = new QTableWidgetItem(info->LAST_MOD_TIME.toString("yyyy-MM-dd hh:mm:ss dddd"));
     shareName = new QTableWidgetItem(info->REAL_NAME);
+    connect(box, SIGNAL(toggled(bool)), this, SLOT(selectChanged(bool)));
+}
+
+void ListRowWidgets::setSelect(bool select)
+{
+    box->setChecked(select);
+}
+
+void ListRowWidgets::clearSelectState()
+{
+    box->setChecked(false);
 }
 
 ListRowWidgets::~ListRowWidgets()
@@ -23,6 +35,11 @@ ListRowWidgets::~ListRowWidgets()
     delete box;
     slctBox->deleteLater();
     layout->deleteLater();
+}
+
+void ListRowWidgets::selectChanged(bool selected)
+{
+    emit selectState(selected, index);
 }
 
 void ListRowWidgets::setFileIcon(QString fileName, QString fExt)

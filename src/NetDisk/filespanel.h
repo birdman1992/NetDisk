@@ -47,6 +47,7 @@ public:
     void panelSearch(int searchType, QString name=QString());
     void panelShare();
     void pathRefresh();
+    QStringList getSelectFid();
     void fileDownload(fileInfo info);
     bool repeatCheck(QString* fName, QFolder* pFolder);
     void setViewMode(bool showList);
@@ -60,6 +61,7 @@ public slots:
     void fileRefresh();
     void fileUpload();
     void fileSort();
+    void rowSelected(bool, int);
 
 private:
     Ui::FilesPanel *ui;
@@ -73,6 +75,7 @@ private:
     QFolder* pFolder;//文件夹指针
     QFolder* pClipboard;//剪贴板指针
     QString* pCdFolder;//cd指令目录指针
+    bool ign_select;
     bool pasteEnable;
     bool resizeEventEnable;
     bool showListView;//true:显示列表视图    false:显示平铺视图
@@ -118,6 +121,7 @@ signals:
     void newTask(netTrans*);
     void isLoading(bool);
     void scrollValueChanged(int value);
+    void hasSelected(bool);
 };
 
 #endif // FILESPANEL_H

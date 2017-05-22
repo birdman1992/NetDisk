@@ -56,12 +56,12 @@ HEADERS  += mainwidget.h \
     taesclass.h \
     Tablewidget/selectdelegate.h \
     Tablewidget/transbtn.h \
-    Tablewidget/listrowwidgets.h \
     Netsync/netsync.h \
     Translist/synclist.h \
     serverconfig.h \
     Http/netdonwloader.h \
-    userinfopanel.h
+    userinfopanel.h \
+    Tablewidget/listrowwidgets.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \

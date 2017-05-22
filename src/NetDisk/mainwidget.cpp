@@ -223,6 +223,11 @@ void MainWidget::userinfoUpdate(UserInfo info)
     userInfo->userinfoUpdate(info);
 }
 
+void MainWidget::funcStateEnable(bool enable)
+{
+    setFunctionState(enable);
+}
+
 void MainWidget::hidePanel()
 {
     transList->hide();
@@ -383,6 +388,7 @@ void MainWidget::functionBtnClicked(QModelIndex index)
             qDebug("share");
             diskPanel->panelShare();break;
         case 3:
+            diskPanel->getSelectFid();
             qDebug("link");break;
         case 4:
             qDebug("download");break;
@@ -542,6 +548,7 @@ void MainWidget::diskInit()
     connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
     connect(diskPanel, SIGNAL(isLoading(bool)), this, SLOT(isLoading(bool)));
     connect(diskPanel, SIGNAL(scrollValueChanged(int)), this, SLOT(scrollValueUpdate(int)));
+    connect(diskPanel, SIGNAL(hasSelected(bool)), this, SLOT(funcStateEnable(bool)));
 //    connect(ui->syncStart, SIGNAL(clicked()), diskPanel->diskSync, SLOT(syncTaskUpload()));
 //    connect(ui->syncStart, SIGNAL(clicked()), diskPanel->diskSync, SLOT(syncTaskDownload()));
     connect(syncPanel, SIGNAL(pathChanged(QList<QFileInfo*>)), pathView, SLOT(pathChange(QList<QFileInfo*>)));
