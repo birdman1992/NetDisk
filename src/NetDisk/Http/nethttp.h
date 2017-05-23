@@ -129,6 +129,7 @@ private:
     QStringList list_path;//同步路径表
     QNetworkReply* reply;
     QNetworkReply* deleteReply;
+    QNetworkReply* shareReply;
     QString cur_path;
     NetHttp* syncClient;
     bool syncAll;//是否遍历同步所有目录
@@ -220,7 +221,9 @@ public:
     void netUpload(QString fileName, double pId);
     void netDownload(fileInfo info, QString downloadPath = QString());
     void netDelete(double fId);
+    void netDelete(QStringList fIds);
     void netCreatShareLinks(QStringList fids);
+    void netFilesRestore(QStringList fids);
     void netSync(double pId, QDateTime lastSyncTime=QDateTime());
     void syncTraversal();//遍历同步
     void getUserInfo();
@@ -247,6 +250,7 @@ private:
     QList<syncInfo*> listSync;
 
     QString httpDateTran(QByteArray raw);
+    void shareLinkRecv(QByteArray info);
     void fileInfoRecv(QByteArray info);
     void fileInfoShow(fileInfo* info);
     void fileListClear();
@@ -274,6 +278,7 @@ signals:
     void isTraversal(bool);
     void needSync();
     void newUserInfo(UserInfo);
+    void shareLink(QString,QString);
 
 public slots:
 };

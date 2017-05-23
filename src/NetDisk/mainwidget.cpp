@@ -42,6 +42,7 @@ MainWidget::MainWidget(QWidget *parent) :
 
     loginUi.show();
     loginUi.autoLogin();
+
 }
 
 MainWidget::~MainWidget()
@@ -380,7 +381,7 @@ void MainWidget::functionBtnClicked(QModelIndex index)
     switch (funcNum)
     {
         case 0:
-            qDebug("upload");break;
+            qDebug("upload");
             diskPanel->fileUpload(); break;
         case 1:
             diskPanel->fileNew(); break;
@@ -388,14 +389,15 @@ void MainWidget::functionBtnClicked(QModelIndex index)
             qDebug("share");
             diskPanel->panelShare();break;
         case 3:
-            diskPanel->getSelectFid();
-            qDebug("link");break;
+            diskPanel->creatShareLink();break;
         case 4:
             qDebug("download");break;
         case 5:
-            qDebug("delete");break;
+            qDebug("delete");
+            diskPanel->deleteSelectedFiles();break;
         case 6:
-            qDebug("restore");break;
+            qDebug("restore");
+            diskPanel->restoreSelectedFiles();break;
 
         default:
             break;

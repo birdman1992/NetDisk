@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ShareLink</class>
+ <widget class="QWidget" name="ShareLink">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>488</width>
+    <height>234</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget{
+background-color: rgb(255, 255, 255);
+font: 12px &quot;微软雅黑&quot;;
+}
+QLineEdit{
+border: 1px solid rgb(218, 224, 226);
+}
+
+QLineEdit:hover{
+border: 1px solid rgb(67, 122, 232);
+}
+
+#getpasswd{
+border: 1px solid rgb(218, 224, 226);
+}
+
+#getpasswd:hover{
+border: 1px solid rgb(67, 122, 232);
+}</string>
+  </property>
+  <widget class="QFrame" name="frame">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>488</width>
+     <height>36</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>81</width>
+      <height>34</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>链接分享</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="close">
+    <property name="geometry">
+     <rect>
+      <x>460</x>
+      <y>5</y>
+      <width>22</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">#close{
+	border-image: url(:/imgs/share/close.png);
+}
+
+#close:hover{
+	border-image: url(:/imgs/share/close.png);
+	background-color: rgb(254, 142, 141);
+}
+
+#close:pressed{
+	border-image: url(:/imgs/share/close.png);
+	background-color: rgb(250,90,87);
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>60</y>
+     <width>94</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <property name="text">
+    <string>已生成分享链接</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>60</y>
+     <width>261</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">color:rgb(141, 145, 153);
+</string>
+   </property>
+   <property name="text">
+    <string>仅支持他人查看下载和转存到联瑞网盘</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="link">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>90</y>
+     <width>456</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="passwd">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>150</y>
+     <width>211</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="copy">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>150</y>
+     <width>111</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#copy{
+color:rgb(255,255,255);
+background-color:rgb(67, 122, 232);
+border: 1px solid grey;
+}
+
+#copy:hover{
+background-color:rgb(81,138,252);
+border: 1px solid grey;
+color:rgb(255,255,255);
+}
+
+#copy:pressed{
+color:rgb(255,255,255);
+background-color:rgb(67, 122, 232);
+border: 1px solid grey;
+}</string>
+   </property>
+   <property name="text">
+    <string>复制链接及密码</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>150</y>
+     <width>58</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>提取密码</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

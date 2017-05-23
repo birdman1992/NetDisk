@@ -90,14 +90,15 @@ void NetHttp::netUpload(QString fileName, double pId)
 {
     fTrans = new netTrans;
     fTrans->netUpload(fileName, pId, token);
-    emit newTask(fTrans);
+    fTrans->taskStart();
+//    emit newTask(fTrans);
 }
 
 void NetHttp::netDownload(fileInfo info, QString downloadPath)
 {
     fTrans = new netTrans;
     fTrans->netDownload(info, downloadPath,token);
-    emit newTask(fTrans);
+//    emit newTask(fTrans);
 }
 
 void NetHttp::netDelete(double fId)
@@ -113,19 +114,59 @@ void NetHttp::netDelete(double fId)
     manager->get(QNetworkRequest(QUrl(nUrl)));
 }
 
+void NetHttp::netDelete(QStringList fIds)
+{
+    QString nUrl;
+    QString fidList = fIds.takeFirst();
+    QStringList params;
+    while(!fIds.isEmpty())
+    {
+        fidList += ",";
+        fidList += fIds.takeFirst();
+    }
+    params<<QString("fids=%1&").arg(fidList)<<QString("token=%1&").arg(token)<<QString(APP_ID)+"&";
+    QByteArray sign = getSign(params);
+    nUrl = netConf->getServerAddress() + QString("/api/file/deleteFiles?fids=%1&token=%2&sign=%3&").arg(fidList).arg(token).arg(QString(sign.toHex()))+APP_ID+"&";
+    qDebug()<<"DELETE"<<nUrl;
+    State = H_DEL;
+    manager->get(QNetworkRequest(QUrl(nUrl)));
+}
+
 void NetHttp::netCreatShareLinks(QStringList fids)
 {
     QString nUrl;
     QString fidList = fids.takeFirst();
+    QStringList params;
 
     while(!fids.isEmpty())
     {
         fidList += ",";
         fidList += fids.takeFirst();
     }
-    nUrl = netConf->getServerAddress() + "/createShareLink?fids="+fidList+"&"+APP_ID+"&"+APP_KEY;
+    params<<QString("fids=%1&").arg(fidList)<<QString(APP_ID)+"&"<<QString("token=%1&").arg(token);
+    QByteArray sign = getSign(params);
+    nUrl = netConf->getServerAddress() + QString("/api/file/createShareLink?fids=%1&token=%2&sign=%3&").arg(fidList).arg(token).arg(QString(sign.toHex()))+APP_ID+"&";
     qDebug()<<"[SHARE]"<<nUrl;
     State = H_SHARE;
+    manager->get(QNetworkRequest(QUrl(nUrl)));
+}
+
+void NetHttp::netFilesRestore(QStringList fids)
+{
+    QString nUrl;
+    QString fidList = fids.takeFirst();
+    QStringList params;
+
+    while(!fids.isEmpty())
+    {
+        fidList += ",";
+        fidList += fids.takeFirst();
+    }
+    params<<QString("fids=%1&").arg(fidList)<<QString(APP_ID)+"&"<<QString("token=%1&").arg(token);
+    QByteArray sign = getSign(params);
+    nUrl = netConf->getServerAddress() + QString("/api/file/recoverFiles?fids=%1&token=%2&sign=%3&").arg(fidList).arg(token).arg(QString(sign.toHex()))+APP_ID+"&";
+    qDebug()<<"[restore]"<<nUrl;
+    State = H_DEL;
     manager->get(QNetworkRequest(QUrl(nUrl)));
 }
 
@@ -226,7 +267,7 @@ void NetHttp::replyFinished(QNetworkReply *reply)
         case H_NEW:
             callbackNew(nRecv);break;
         case H_SHARE:
-            break;
+            shareLinkRecv(nRecv);break;
         default:break;
     }
 }
@@ -371,6 +412,39 @@ void NetHttp::replyUserInfoFinished()
 /************************************
   私有接口
 ************************************/
+void NetHttp::shareLinkRecv(QByteArray info)
+{
+    QJsonParseError jError;
+    QJsonValue jval;
+    QJsonDocument parseDoc = QJsonDocument::fromJson(info, &jError);
+
+    if(jError.error == QJsonParseError::NoError)
+    {
+        if(parseDoc.isObject())
+        {
+            QJsonObject obj = parseDoc.object();
+            if(obj.contains("code"))
+            {
+                //解析返回的状态码
+                jval = obj.take("code");
+                if(jval.isString() && (jval.toString() == "200"))
+                {
+                    if(obj.contains("result"))
+                    {
+                        jval = obj.take("result");
+                        QJsonObject subObj = jval.toObject();
+                        emit shareLink(subObj.take("link").toString(), subObj.take("password").toString());
+                    }
+                }
+                else
+                {
+                    qDebug()<<obj.take("msg").toString();
+                }
+            }
+        }
+    }
+}
+
 void NetHttp::fileInfoRecv(QByteArray info)
 {
     fileInfo* fInfo;

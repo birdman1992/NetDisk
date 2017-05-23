@@ -47,7 +47,9 @@ public:
     void panelSearch(int searchType, QString name=QString());
     void panelShare();
     void pathRefresh();
-    QStringList getSelectFid();
+    void creatShareLink();
+    void deleteSelectedFiles();
+    void restoreSelectedFiles();
     void fileDownload(fileInfo info);
     bool repeatCheck(QString* fName, QFolder* pFolder);
     void setViewMode(bool showList);
@@ -108,11 +110,13 @@ private:
     void showFolder(QList<QFolder*> fPanel);
     void checkListClear();
     void selectListClear();
+    QStringList getSelectFid();
 
 private slots:
     void httpGetListInfo(QList<fileInfo*>);
     void listViewCd(QModelIndex);
     void listViewClicked(QModelIndex);
+    void getShareLink(QString, QString);
 
 
 signals:

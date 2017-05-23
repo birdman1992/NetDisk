@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include <QStandardItem>
 #include <qscrollbar.h>
+#include "Share/sharelink.h"
 
 #define FOLDER_SIZE 100
 
@@ -61,6 +62,7 @@ FilesPanel::FilesPanel(QWidget *parent) :
     connect(httpClient, SIGNAL(listUpdate(QList<fileInfo*>)), this, SLOT(httpGetListInfo(QList<fileInfo*>)));
     connect(httpClient, SIGNAL(updateRequest()), this, SLOT(fileRefresh()));
     connect(httpClient, SIGNAL(newTask(netTrans*)), this, SIGNAL(newTask(netTrans*)));
+    connect(httpClient,SIGNAL(shareLink(QString,QString)), this, SLOT(getShareLink(QString,QString)));
 
     //排序子菜单
     menu_sort = new QMenu(this);
@@ -334,6 +336,21 @@ void FilesPanel::panelShare()
 void FilesPanel::pathRefresh()
 {
     emit pathChanged(folderPath);
+}
+
+void FilesPanel::creatShareLink()
+{
+    httpClient->netCreatShareLinks(getSelectFid());
+}
+
+void FilesPanel::deleteSelectedFiles()
+{
+    httpClient->netDelete(getSelectFid());
+}
+
+void FilesPanel::restoreSelectedFiles()
+{
+    httpClient->netFilesRestore(getSelectFid());
 }
 
 QStringList FilesPanel::getSelectFid()
@@ -615,6 +632,7 @@ void FilesPanel::showDelete(bool show)
 {
     qDebug()<<"show delete"<<show;
     showDeleteFolder = show;
+    panelRefresh();
 }
 
 //菜单槽
@@ -658,7 +676,6 @@ void FilesPanel::showEvent(QShowEvent *event)
 
 void FilesPanel::fileUpload()
 {
-
     QString upFile = QFileDialog::getOpenFileName(this, tr("上传文件"), "./");
     QFileInfo info = QFileInfo(upFile);
     QString fName = info.filePath();
@@ -721,6 +738,12 @@ void FilesPanel::listViewClicked(QModelIndex index)
     QWidget* wdg = (QWidget*)ui->listView->cellWidget(index.row(),0);
     QCheckBox* box = (QCheckBox*)wdg->children().at(1);
     box->setChecked(true);
+}
+
+void FilesPanel::getShareLink(QString link, QString passwd)
+{
+    ShareLink* winShareLink = new ShareLink(link,passwd);
+    winShareLink->show();
 }
 
 
