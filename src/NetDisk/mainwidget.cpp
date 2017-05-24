@@ -391,7 +391,8 @@ void MainWidget::functionBtnClicked(QModelIndex index)
         case 3:
             diskPanel->creatShareLink();break;
         case 4:
-            qDebug("download");break;
+            qDebug("download");
+            diskPanel->downloadSelectedFiles();break;
         case 5:
             qDebug("delete");
             diskPanel->deleteSelectedFiles();break;

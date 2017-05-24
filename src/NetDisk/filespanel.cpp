@@ -353,6 +353,11 @@ void FilesPanel::restoreSelectedFiles()
     httpClient->netFilesRestore(getSelectFid());
 }
 
+void FilesPanel::downloadSelectedFiles()
+{
+    httpClient->netFilesDownload(getSelectDirs(), getSelectFiles());
+}
+
 QStringList FilesPanel::getSelectFid()
 {
     int i = 0;
@@ -364,6 +369,38 @@ QStringList FilesPanel::getSelectFid()
         {
             l<<QString::number(checkList.at(i)->fInfo->ID);
             qDebug()<<checkList.at(i)->fInfo->ID;
+        }
+    }
+    return l;
+}
+
+QList<fileInfo*> FilesPanel::getSelectFiles()
+{
+    int i = 0;
+    QList<fileInfo*> l;
+
+    for(i=0; i<checkList.count(); i++)
+    {
+        if(checkList.at(i)->box->isChecked() && (!checkList.at(i)->fInfo->EXT.isEmpty()))
+        {
+            l<<new fileInfo(*(checkList.at(i)->fInfo));
+            qDebug()<<"[files]"<<checkList.at(i)->fInfo->ID;
+        }
+    }
+    return l;
+}
+
+QList<fileInfo*> FilesPanel::getSelectDirs()
+{
+    int i = 0;
+    QList<fileInfo*> l;
+
+    for(i=0; i<checkList.count(); i++)
+    {
+        if(checkList.at(i)->box->isChecked() && (checkList.at(i)->fInfo->EXT.isEmpty()))
+        {
+            l<<new fileInfo(*(checkList.at(i)->fInfo));
+            qDebug()<<"[dirs]"<<checkList.at(i)->fInfo->ID;
         }
     }
 

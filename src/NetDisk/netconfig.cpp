@@ -39,7 +39,7 @@ void NetConfig::setServerAddress(QString address)
 
 QString NetConfig::getServerAddress()
 {
-    qDebug()<<"serveraddress"<<serverAddress.isEmpty();
+//    qDebug()<<"serveraddress"<<serverAddress.isEmpty();
     return serverAddress;
 }
 

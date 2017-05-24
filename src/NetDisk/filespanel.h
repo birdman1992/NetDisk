@@ -50,6 +50,7 @@ public:
     void creatShareLink();
     void deleteSelectedFiles();
     void restoreSelectedFiles();
+    void downloadSelectedFiles();
     void fileDownload(fileInfo info);
     bool repeatCheck(QString* fName, QFolder* pFolder);
     void setViewMode(bool showList);
@@ -111,6 +112,8 @@ private:
     void checkListClear();
     void selectListClear();
     QStringList getSelectFid();
+    QList<fileInfo*> getSelectFiles();
+    QList<fileInfo*> getSelectDirs();
 
 private slots:
     void httpGetListInfo(QList<fileInfo*>);
