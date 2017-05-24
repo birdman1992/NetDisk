@@ -36,6 +36,7 @@ private:
     int colIndex_progress;
 
     QString sizeofbytes(quint64 fsize);
+    void listUiInit();
 
 private slots:
     void progressCheck();

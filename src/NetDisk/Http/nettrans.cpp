@@ -157,7 +157,7 @@ TaskInfo netWork::taskinfo()
 }
 
 void netWork::taskStart()
-{
+{qDebug("taskStart");
     if(isupload)
     {
         md5Check();

@@ -90,14 +90,24 @@ void NetHttp::netUpload(QString fileName, double pId)
 {
     fTrans = new netTrans;
     fTrans->netUpload(fileName, pId, token);
-    emit newTask(fTrans);
+    fTrans->taskStart();
+//    emit newTask(fTrans);
 }
 
 void NetHttp::netDownload(fileInfo info, QString downloadPath)
 {
     fTrans = new netTrans;
     fTrans->netDownload(info, downloadPath,token);
-    emit newTask(fTrans);
+    fTrans->taskStart();
+    //    emit newTask(fTrans);
+}
+
+void NetHttp::netDownload(DownloadTaskInfo *info)
+{
+    fTrans = new netTrans;
+    fTrans->netDownload(*(info->info), info->path, token);
+    fTrans->taskStart();
+    fTrans->task = info;
 }
 
 void NetHttp::netDelete(double fId)
@@ -113,20 +123,114 @@ void NetHttp::netDelete(double fId)
     manager->get(QNetworkRequest(QUrl(nUrl)));
 }
 
+void NetHttp::netDelete(QStringList fIds)
+{
+    QString nUrl;
+    QString fidList = fIds.takeFirst();
+    QStringList params;
+    while(!fIds.isEmpty())
+    {
+        fidList += ",";
+        fidList += fIds.takeFirst();
+    }
+    params<<QString("fids=%1&").arg(fidList)<<QString("token=%1&").arg(token)<<QString(APP_ID)+"&";
+    QByteArray sign = getSign(params);
+    nUrl = netConf->getServerAddress() + QString("/api/file/deleteFiles?fids=%1&token=%2&sign=%3&").arg(fidList).arg(token).arg(QString(sign.toHex()))+APP_ID+"&";
+    qDebug()<<"DELETE"<<nUrl;
+    State = H_DEL;
+    manager->get(QNetworkRequest(QUrl(nUrl)));
+}
+
 void NetHttp::netCreatShareLinks(QStringList fids)
 {
     QString nUrl;
     QString fidList = fids.takeFirst();
+    QStringList params;
 
     while(!fids.isEmpty())
     {
         fidList += ",";
         fidList += fids.takeFirst();
     }
-    nUrl = netConf->getServerAddress() + "/createShareLink?fids="+fidList+"&"+APP_ID+"&"+APP_KEY;
+    params<<QString("fids=%1&").arg(fidList)<<QString(APP_ID)+"&"<<QString("token=%1&").arg(token);
+    QByteArray sign = getSign(params);
+    nUrl = netConf->getServerAddress() + QString("/api/file/createShareLink?fids=%1&token=%2&sign=%3&").arg(fidList).arg(token).arg(QString(sign.toHex()))+APP_ID+"&";
     qDebug()<<"[SHARE]"<<nUrl;
     State = H_SHARE;
     manager->get(QNetworkRequest(QUrl(nUrl)));
+}
+
+void NetHttp::netFilesRestore(QStringList fids)
+{
+    QString nUrl;
+    QString fidList = fids.takeFirst();
+    QStringList params;
+
+    while(!fids.isEmpty())
+    {
+        fidList += ",";
+        fidList += fids.takeFirst();
+    }
+    params<<QString("fids=%1&").arg(fidList)<<QString(APP_ID)+"&"<<QString("token=%1&").arg(token);
+    QByteArray sign = getSign(params);
+    nUrl = netConf->getServerAddress() + QString("/api/file/recoverFiles?fids=%1&token=%2&sign=%3&").arg(fidList).arg(token).arg(QString(sign.toHex()))+APP_ID+"&";
+    qDebug()<<"[restore]"<<nUrl;
+    State = H_DEL;
+    manager->get(QNetworkRequest(QUrl(nUrl)));
+}
+
+void NetHttp::netFilesDownload(QList<fileInfo *> dirs, QList<fileInfo *> files)
+{
+    DownloadTaskInfo* info;
+
+    //填充下载队列
+    while(!files.isEmpty())
+    {
+        info = new DownloadTaskInfo;
+        info->info = files.takeFirst();
+        info->path = QString();
+        if(!taskCheck(info->info))
+        {
+            delete info;
+            continue;
+        }
+        listDownloading<<info->info->ID;
+        listDownloadTask<<info;
+    }
+
+    //填充遍历队列
+    QDir dir;
+    while(!dirs.isEmpty())
+    {
+        info = new DownloadTaskInfo;
+        info->info = dirs.takeFirst();
+        info->path = netConf->getDownloadPath()+info->info->FILE_NAME+"/";
+
+        if(!taskCheck(info->info))
+        {
+            delete info;
+            continue;
+        }
+
+        if(!dir.exists(info->path))
+            dir.mkdir(info->path);
+        listDownloading<<info->info->ID;
+        listDownloadCheck<<info;
+    }
+    netDownloadDirsCheck(listDownloadCheck);
+}
+
+void NetHttp::getUserOrgList()
+{
+    QString nUrl;
+    QStringList params;
+    params<<QString(APP_ID)+"&"<<QString("token=%1&").arg(netConf->token);
+    QByteArray sign = getSign(params);
+
+    nUrl = netConf->getServerAddress() + QString("/org/userOrgList?token=%1&sign=%2&").arg(netConf->token).arg(QString(sign.toHex()))+APP_ID+"&";//
+    qDebug()<<"[getUserOrgList]"<<nUrl;
+    reply_userDeptInfo = netConf->manager->get(QNetworkRequest(QUrl(nUrl)));
+    connect(reply_userDeptInfo, SIGNAL(finished()), this, SLOT(repluUserDeptInfoFinished()));
 }
 
 void NetHttp::netSync(double pId, QDateTime lastSyncTime)
@@ -181,6 +285,23 @@ QString NetHttp::netToken()
     return token;
 }
 
+bool NetHttp::taskCheck(fileInfo *info)
+{
+    for(int i=0; i<listDownloading.count(); i++)
+    {
+        if(info->ID == listDownloading.at(i))
+            return false;
+    }
+
+    for(int i=0; i<listDownloadTask.count(); i++)
+    {
+        if(info->ID == listDownloadTask.at(i)->info->ID)
+            return false;
+    }
+    qDebug("pass");
+    return true;
+}
+
 QString NetHttp::httpDateTran(QByteArray raw)
 {
     QString str = QString(raw);
@@ -226,7 +347,7 @@ void NetHttp::replyFinished(QNetworkReply *reply)
         case H_NEW:
             callbackNew(nRecv);break;
         case H_SHARE:
-            break;
+            shareLinkRecv(nRecv);break;
         default:break;
     }
 }
@@ -368,9 +489,250 @@ void NetHttp::replyUserInfoFinished()
     }
 }
 
+void NetHttp::replyTaskFinished()
+{
+    fileInfo* fInfo;
+    DownloadTaskInfo* dInfo;
+    QJsonParseError jError;
+    QJsonValue jval;
+    QByteArray info = reply_task->readAll();
+    disconnect(reply_task, SIGNAL(finished()), this, SLOT(replyTaskFinished()));
+    reply_task->deleteLater();
+    QJsonDocument parseDoc = QJsonDocument::fromJson(info, &jError);
+
+    if(jError.error == QJsonParseError::NoError)
+    {
+        if(parseDoc.isObject())
+        {
+            QJsonObject obj = parseDoc.object();
+
+            if(obj.contains("code"))
+            {
+                //解析返回的状态码
+                jval = obj.take("code");
+                if(jval.isString() && (jval.toString() == "200"))
+                {
+//                    qDebug("---------------------\nList info:");
+//                    qDebug()<<"code:"<<jval.toString()<<obj.take("msg").toString();
+                    //解析返回列表的属性
+                    if(obj.contains("result"))
+                    {
+
+                        jval = obj.take("result");
+                        if(jval.isObject())
+                        {
+                            QJsonObject subObj = jval.toObject();
+                            //判断是否是第一页
+                            if(subObj.contains("firstPage"))
+                            {
+                                jval = subObj.take("firstPage");
+                                isFirstPage = jval.toBool();
+//                                qDebug()<<"Is first page:"<<isFirstPage;
+                            }
+                            //判断是否是最后一页
+                            if(subObj.contains("lastPage"))
+                            {
+                                jval = subObj.take("lastPage");
+                                isLastPage = jval.toBool();
+//                                qDebug()<<"Is last page:"<<isLastPage;
+                            }
+                            //解析列表行数
+                            if(subObj.contains("totalRow"))
+                            {
+                                jval = subObj.take("totalRow");
+                                totalRow = jval.toDouble();
+//                                qDebug()<<"Total row:"<<totalRow;
+                            }
+                            //解析列表页数
+                            if(subObj.contains("totalPage"))
+                            {
+                                jval = subObj.take("totalPage");
+                                totalPage = jval.toDouble();
+//                                qDebug()<<"Total page:"<<totalPage;
+                            }
+                            //解析列表大小
+                            if(subObj.contains("pageSize"))
+                            {
+                                jval = subObj.take("pageSize");
+//                                int pageSize; = jval.toDouble();
+//                                qDebug()<<"Page size:"<<pageSize;
+                            }
+                            else return;
+
+                            //解析当前页码号
+                            if(subObj.contains("pageNumber"))
+                            {
+                                jval = subObj.take("pageNumber");
+                                currentPageNum = jval.toDouble();
+//                                qDebug()<<"Current pageNum:"<<currentPageNum;
+//                                qDebug("\n");
+                            }
+                            //解析列表文件信息
+                            if(subObj.contains("list"))
+                            {
+                                jval = subObj.take("list");
+                                if(jval.isArray())
+                                {
+                                    QJsonArray jArray = jval.toArray();
+
+                                    for(int i=0; i<jArray.count(); i++)
+                                    {
+                                        subObj = jArray.at(i).toObject();
+                                        fInfo = new fileInfo;
+                                        dInfo = new DownloadTaskInfo;
+                                        dInfo->info = fInfo;
+                                        fInfo->ADD_TIME = QDateTime::fromString(subObj.take("ADD_TIME").toString(),"yyyy-MM-dd hh:mm:ss");
+                                        fInfo->EXT = subObj.take("EXT").toString();
+                                        fInfo->FILE_PATH = subObj.take("FILE_PATH").toString();
+                                        fInfo->FILE_TYPE = subObj.take("FILE_TYPE").toDouble();
+                                        fInfo->ID = subObj.take("ID").toDouble();
+                                        fInfo->IS_ENCRYPED = subObj.take("IS_ENCRYPED").toBool();
+                                        fInfo->LAST_MOD_TIME = QDateTime::fromString(subObj.take("LAST_MOD_TIME").toString(),"yyyy-MM-dd hh:mm:ss");
+                                        fInfo->MAST_ID = subObj.take("MAST_ID").toDouble();
+                                        fInfo->MD5 = subObj.take("MD5").toString();
+                                        fInfo->PARENT_ID = subObj.take("PARENT_ID").toDouble();
+                                        fInfo->REAL_KEY = subObj.take("REAL_KEY").toString();
+                                        fInfo->SIZE = subObj.take("SIZE").toDouble();
+                                        fInfo->STATUS = subObj.take("STATUS").toDouble();
+                                        fInfo->USER_ID = subObj.take("USER_ID").toDouble();
+                                        fInfo->VERSION = subObj.take("VERSION").toDouble();
+                                        fInfo->REAL_NAME = subObj.take("REAL_NAME").toString();
+                                        fInfo->TYPE = subObj.take("TYPE").toDouble();
+                                        fInfo->FILE_SERVER = subObj.take("FILE_SERVER").toString();
+                                        fInfo->FILE_NAME = subObj.take("FILE_NAME").toString();
+//                                        fileInfoShow(fInfo);
+                                        if(dInfo->info->EXT.isEmpty())//文件夹
+                                        {
+                                            dInfo->path = curTaskPath+dInfo->info->FILE_NAME+"/";
+                                            listDownloadCheck<<dInfo;
+                                            QDir dir;
+                                            if(!dir.exists(dInfo->path))
+                                            {
+                                                dir.mkdir(dInfo->path);
+                                            }
+                                        }
+                                        else//文件
+                                        {
+                                            dInfo->path = curTaskPath;
+                                            listDownloadTask<<dInfo;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    qDebug()<<"code:"<<jval.toString()<<obj.take("msg").toString();
+                    return;
+                }
+
+            }
+        }
+    }
+    else return;
+
+    netDownloadDirsCheck(listDownloadCheck);
+//    if(needLoginSync)
+//    {
+//        emit needSync();
+//        needLoginSync = false;
+//    }
+//    emit listUpdate(listInfo);
+    //    emit pageChanged(isFirstPage, isLastPage, currentPageNum, totalPage);
+}
+
+void NetHttp::repluUserDeptInfoFinished()
+{
+    QByteArray info = reply_userDeptInfo->readAll();
+    reply_userDeptInfo->deleteLater();
+
+    QJsonParseError jError;
+    QJsonValue jval;
+    QJsonDocument parseDoc = QJsonDocument::fromJson(info, &jError);
+
+    if(jError.error == QJsonParseError::NoError)
+    {
+        if(parseDoc.isObject())
+        {
+            QJsonObject obj = parseDoc.object();
+
+            if(obj.contains("code"))
+            {
+                //解析返回的状态码
+                if(obj.contains("msg"))
+                {
+                    jval = obj.take("msg");
+                    qDebug()<<"[SYNC MSG]:"<<jval.toString();
+                }
+                jval = obj.take("code");
+                if(!(jval.isString() && (jval.toString() == "200")))
+                {
+                    return;
+                }
+            }
+            if(obj.contains("result"))
+            {
+                jval = obj.take("result");
+                QJsonArray infoArray = jval.toArray();
+                if(infoArray.isEmpty())
+                {
+                   return;
+                }
+                QList<User*> l_user;
+                QList<Dept*> l_dept;
+                for(int i=0; i<infoArray.count(); i++)
+                {
+//                    jval = infoArray[i];
+//                    QJsonObject subObj = jval.toObject();
+//                    if(subObj.take("lev").toInt() == 1)
+//                    {
+//                        User* user = new User;
+//                        user->id = subObj.take("id").toInt();
+//                    }
+                }
+            }
+        }
+    }
+}
+
 /************************************
   私有接口
 ************************************/
+void NetHttp::shareLinkRecv(QByteArray info)
+{
+    QJsonParseError jError;
+    QJsonValue jval;
+    QJsonDocument parseDoc = QJsonDocument::fromJson(info, &jError);
+
+    if(jError.error == QJsonParseError::NoError)
+    {
+        if(parseDoc.isObject())
+        {
+            QJsonObject obj = parseDoc.object();
+            if(obj.contains("code"))
+            {
+                //解析返回的状态码
+                jval = obj.take("code");
+                if(jval.isString() && (jval.toString() == "200"))
+                {
+                    if(obj.contains("result"))
+                    {
+                        jval = obj.take("result");
+                        QJsonObject subObj = jval.toObject();
+                        emit shareLink(subObj.take("link").toString(), subObj.take("password").toString());
+                    }
+                }
+                else
+                {
+                    qDebug()<<obj.take("msg").toString();
+                }
+            }
+        }
+    }
+}
+
 void NetHttp::fileInfoRecv(QByteArray info)
 {
     fileInfo* fInfo;
@@ -829,6 +1191,42 @@ void NetHttp::syncListCreat(QJsonArray info, QDateTime syncTime)
     syncListCreatError:
     qDebug("[SYNC INFO]:read error.");
     return;
+}
+
+void NetHttp::netDownloadDirsCheck(QList<DownloadTaskInfo *> &listCheck)
+{
+    QString nUrl;
+    if(listCheck.isEmpty())
+    {
+        qDebug()<<"download list";
+        for(int i=0; i<listDownloadTask.count(); i++)
+        {
+            netDownload(listDownloadTask.at(i));
+            qDebug()<<listDownloadTask.at(i)->path+listDownloadTask.at(i)->info->FILE_NAME;
+        }
+        listDownloadingTask<<listDownloadTask;
+        listDownloadTask.clear();
+//        qDebug()<<listDownloadTask.count()<<listDownloadingTask.at(0)->info->ID<<listDownloadingTask.count();
+        return;
+    }
+    DownloadTaskInfo* info = listCheck.takeFirst();
+    qDebug()<<"netDownloadDirsCheck"<<info->info->FILE_NAME<<info->info->ID;
+    double pId = info->info->ID;
+    curTaskPath = info->path;
+    delete info;
+
+    nUrl = netConf->getServerAddress() + "/api/file/getMyFile";//
+    QStringList param;
+    param<<QString("pid=%1&").arg(pId)<<QString(APP_ID)+"&";
+    param<<QString("token=%1&").arg(token);
+
+    QByteArray qba = getPost(param);
+    qDebug()<<"LIST"<<nUrl<<qba;
+//    State = H_LIST;
+    QNetworkRequest request(nUrl);
+    request.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
+    reply_task = netConf->manager->post(request,qba);
+    connect(reply_task, SIGNAL(finished()), this, SLOT(replyTaskFinished()));
 }
 
 QByteArray NetHttp::getSign(QStringList param)
@@ -1841,4 +2239,15 @@ int syncTable::getDownloadTaskNum()
 void syncTable::clearSyncList()
 {
 
+}
+
+DownloadTaskInfo::DownloadTaskInfo()
+{
+
+}
+
+DownloadTaskInfo::~DownloadTaskInfo()
+{
+    if(info == NULL)
+        delete info;
 }

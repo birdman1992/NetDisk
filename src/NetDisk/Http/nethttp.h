@@ -129,6 +129,7 @@ private:
     QStringList list_path;//同步路径表
     QNetworkReply* reply;
     QNetworkReply* deleteReply;
+    QNetworkReply* shareReply;
     QString cur_path;
     NetHttp* syncClient;
     bool syncAll;//是否遍历同步所有目录
@@ -187,6 +188,15 @@ public:
     QString FILE_NAME;
 };
 
+class DownloadTaskInfo
+{
+public:
+    DownloadTaskInfo();
+    ~DownloadTaskInfo();
+    fileInfo* info;
+    QString path;
+};
+
 class UserInfo
 {
 public:
@@ -208,6 +218,25 @@ public:
     QString COMNAME;    //公司名
 };
 
+class User
+{
+public:
+    User();
+    QString id;
+    QString name;
+    QString parentId;
+};
+
+class Dept
+{
+public:
+    Dept();
+    int id;
+    QString name;
+    QList<User*> list_user;
+    QList<Dept*> list_dept;
+};
+
 class NetHttp : public QObject
 {
     Q_OBJECT
@@ -219,8 +248,13 @@ public:
     void netMkdir(double pId=-1, QString fileName = QString("新建文件夹"));
     void netUpload(QString fileName, double pId);
     void netDownload(fileInfo info, QString downloadPath = QString());
+    void netDownload(DownloadTaskInfo* info);
     void netDelete(double fId);
+    void netDelete(QStringList fIds);
     void netCreatShareLinks(QStringList fids);
+    void netFilesRestore(QStringList fids);
+    void netFilesDownload(QList<fileInfo*>dirs, QList<fileInfo*> files);
+    void getUserOrgList();
     void netSync(double pId, QDateTime lastSyncTime=QDateTime());
     void syncTraversal();//遍历同步
     void getUserInfo();
@@ -230,12 +264,15 @@ private:
     QNetworkAccessManager* manager;
     QNetworkAccessManager* managerSync;
     QNetworkReply* reply_userinfo;
+    QNetworkReply* reply_task;
+    QNetworkReply* reply_userDeptInfo;
     httpState State;
     TransList* transList;
     netTrans* fTrans;//上传下载
     QList<netTrans*>listTask;//任务队列
     QDateTime serverTime;
     QString token;
+    QString curTaskPath;
     bool isLastPage;
     bool isFirstPage;
     bool needLoginSync;
@@ -245,8 +282,15 @@ private:
     double lastSyncId;
     QList<fileInfo*> listInfo;
     QList<syncInfo*> listSync;
+    QList<DownloadTaskInfo*> listDownloadTask;
+    QList<DownloadTaskInfo*> listDownloadCheck;
+    QList<DownloadTaskInfo*> listDownloadingTask;
+    QList<double> listDownloading;
+    QList<Dept*> listDept;
 
+    bool taskCheck(fileInfo* info);
     QString httpDateTran(QByteArray raw);
+    void shareLinkRecv(QByteArray info);
     void fileInfoRecv(QByteArray info);
     void fileInfoShow(fileInfo* info);
     void fileListClear();
@@ -255,6 +299,7 @@ private:
     void loginRst(QByteArray rst);
     void syncInfoRecv(QByteArray info, QDateTime syncTime);
     void syncListCreat(QJsonArray info, QDateTime syncTime);
+    void netDownloadDirsCheck(QList<DownloadTaskInfo *> &listCheck);
     QByteArray getSign(QStringList param);
     QByteArray getPost(QStringList param);
 
@@ -262,6 +307,8 @@ private slots:
     void replyFinished(QNetworkReply*);
     void replySyncFinished(QNetworkReply*);
     void replyUserInfoFinished();
+    void replyTaskFinished();
+    void repluUserDeptInfoFinished();
 
 signals:
     void listUpdate(QList<fileInfo*>);
@@ -274,6 +321,7 @@ signals:
     void isTraversal(bool);
     void needSync();
     void newUserInfo(UserInfo);
+    void shareLink(QString,QString);
 
 public slots:
 };

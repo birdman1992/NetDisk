@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QList>
 #include <QMenu>
+#include <QMap>
 #include <QAction>
 #include <QCheckBox>
 #include <QTableView>
@@ -46,6 +47,10 @@ public:
     void panelSearch(int searchType, QString name=QString());
     void panelShare();
     void pathRefresh();
+    void creatShareLink();
+    void deleteSelectedFiles();
+    void restoreSelectedFiles();
+    void downloadSelectedFiles();
     void fileDownload(fileInfo info);
     bool repeatCheck(QString* fName, QFolder* pFolder);
     void setViewMode(bool showList);
@@ -59,6 +64,7 @@ public slots:
     void fileRefresh();
     void fileUpload();
     void fileSort();
+    void rowSelected(bool, int);
 
 private:
     Ui::FilesPanel *ui;
@@ -72,6 +78,7 @@ private:
     QFolder* pFolder;//文件夹指针
     QFolder* pClipboard;//剪贴板指针
     QString* pCdFolder;//cd指令目录指针
+    bool ign_select;
     bool pasteEnable;
     bool resizeEventEnable;
     bool showListView;//true:显示列表视图    false:显示平铺视图
@@ -99,12 +106,21 @@ private:
     void resizeEvent(QResizeEvent* size);
     void pathClear();
     short folderTypeJudge(QString fName,bool isDir);
+    void setTableState(bool listState);//设置表格形态
     void showList(QList<QFolder*> fPanel);
+    void showFolder(QList<QFolder*> fPanel);
     void checkListClear();
+    void selectListClear();
+    QStringList getSelectFid();
+    QList<fileInfo*> getSelectFiles();
+    QList<fileInfo*> getSelectDirs();
 
 private slots:
     void httpGetListInfo(QList<fileInfo*>);
     void listViewCd(QModelIndex);
+    void listViewClicked(QModelIndex);
+    void getShareLink(QString, QString);
+
 
 signals:
     void pathChanged(QList<fileInfo*>);//当前目录路径，当前目录的文件列表
@@ -112,6 +128,7 @@ signals:
     void newTask(netTrans*);
     void isLoading(bool);
     void scrollValueChanged(int value);
+    void hasSelected(bool);
 };
 
 #endif // FILESPANEL_H

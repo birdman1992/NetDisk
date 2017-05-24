@@ -94,6 +94,7 @@ public slots:
     void diskInit();
     void setSyncState(int state);
     void userinfoUpdate(UserInfo);
+    void funcStateEnable(bool);
 
 
 private:
@@ -122,6 +123,7 @@ private:
     bool isLogin;
     bool isInited;
     bool syncMsgState;
+    bool selected;//文件面板是否有文件项被选中
     QPoint dragPosition;
     int fType;
     int syncState;//0:无同步,1:同步中,2:可同步,3:自动同步,4:同步检查中
@@ -142,6 +144,8 @@ private:
     void initFunctionList();
     void initTitleMenu();
 //    void setSyncState(bool isSyncing);
+    void setPanelState(int state);
+    void setFunctionState(bool hasSelectItem);
     void hidePanel();
     void setSysMenu();
     void mousePressEvent(QMouseEvent *event);

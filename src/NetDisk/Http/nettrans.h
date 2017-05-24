@@ -115,6 +115,8 @@ private slots:
 
 };
 
+class DownloadTaskInfo;
+
 class netTrans : public QObject
 {
     Q_OBJECT
@@ -128,6 +130,7 @@ public:
     QString getTaskSpeed();
     int getTaskProgress();
     TaskInfo taskinfo();
+    DownloadTaskInfo* task;
     ~netTrans();
 public slots:
     void transReady();

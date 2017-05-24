@@ -38,7 +38,8 @@ SOURCES += main.cpp\
     Translist/synclist.cpp \
     serverconfig.cpp \
     Http/netdonwloader.cpp \
-    userinfopanel.cpp
+    userinfopanel.cpp \
+    Share/sharelink.cpp
 
 HEADERS  += mainwidget.h \
     QFolder/qfolder.h \
@@ -56,12 +57,13 @@ HEADERS  += mainwidget.h \
     taesclass.h \
     Tablewidget/selectdelegate.h \
     Tablewidget/transbtn.h \
-    Tablewidget/listrowwidgets.h \
     Netsync/netsync.h \
     Translist/synclist.h \
     serverconfig.h \
     Http/netdonwloader.h \
-    userinfopanel.h
+    userinfopanel.h \
+    Tablewidget/listrowwidgets.h \
+    Share/sharelink.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \
@@ -73,7 +75,8 @@ FORMS    += mainwidget.ui \
     login.ui \
     Translist/synclist.ui \
     serverconfig.ui \
-    userinfopanel.ui
+    userinfopanel.ui \
+    Share/sharelink.ui
 
 RESOURCES += \
     img.qrc

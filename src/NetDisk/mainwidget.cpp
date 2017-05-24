@@ -19,7 +19,7 @@ MainWidget::MainWidget(QWidget *parent) :
     isLogin = false;
     isInited = false;
     syncMsgState = false;
-    ui->viewCut->setHidden(true);
+//    ui->viewCut->setHidden(true);
 
     //网盘设置
     diskConfig = new ConfigPanel();
@@ -42,6 +42,7 @@ MainWidget::MainWidget(QWidget *parent) :
 
     loginUi.show();
     loginUi.autoLogin();
+
 }
 
 MainWidget::~MainWidget()
@@ -126,6 +127,8 @@ void MainWidget::initFunctionList()
     item->setSizeHint(itemSize);
     ui->functionList->addItem(item);
 
+    setFunctionState(false);
+
 //    ui->searchFilter->addItem(" 全部");
     ui->showDelete->setText("显示已删文件");
     ui->search->setTextMargins(5,0,0,0);
@@ -145,6 +148,34 @@ void MainWidget::initTitleMenu()
     ui->menu->addItem("注销");
     ui->menu->addItem("退出");
     ui->menu->view()->setFixedWidth(150);
+}
+
+void MainWidget::setPanelState(int state)
+{
+
+}
+
+void MainWidget::setFunctionState(bool hasSelectItem)
+{
+    selected = hasSelectItem;
+    ui->functionList->item(0)->setFlags((Qt::ItemIsEnabled));
+    ui->functionList->item(1)->setFlags((Qt::ItemIsEnabled));
+    if(hasSelectItem)
+    {
+        ui->functionList->item(2)->setFlags((Qt::ItemIsEnabled));
+        ui->functionList->item(3)->setFlags((Qt::ItemIsEnabled));
+        ui->functionList->item(4)->setFlags((Qt::ItemIsEnabled));
+        ui->functionList->item(5)->setFlags( (Qt::ItemIsEnabled));
+        ui->functionList->item(6)->setFlags((Qt::ItemIsEnabled));
+    }
+    else
+    {
+        ui->functionList->item(2)->setFlags(Qt::NoItemFlags);
+        ui->functionList->item(3)->setFlags(Qt::NoItemFlags);
+        ui->functionList->item(4)->setFlags(Qt::NoItemFlags);
+        ui->functionList->item(5)->setFlags(Qt::NoItemFlags);
+        ui->functionList->item(6)->setFlags(Qt::NoItemFlags);
+    }
 }
 
 void MainWidget::setSyncState(int state)//isSyncing = checked
@@ -193,6 +224,11 @@ void MainWidget::userinfoUpdate(UserInfo info)
     userInfo->userinfoUpdate(info);
 }
 
+void MainWidget::funcStateEnable(bool enable)
+{
+    setFunctionState(enable);
+}
+
 void MainWidget::hidePanel()
 {
     transList->hide();
@@ -200,7 +236,7 @@ void MainWidget::hidePanel()
     loadingUi.hide();
     pageWidget->hide();
     syncPanel->hide();
-//    ui->frame_sync->hide();
+    ui->frame_sync->hide();
     ui->frame_function->hide();
 }
 
@@ -339,9 +375,13 @@ void MainWidget::functionBtnClicked(QModelIndex index)
 {
     int funcNum = index.row();
 
+    if((!selected) && (funcNum>1))
+        return;
+
     switch (funcNum)
     {
         case 0:
+            qDebug("upload");
             diskPanel->fileUpload(); break;
         case 1:
             diskPanel->fileNew(); break;
@@ -349,13 +389,16 @@ void MainWidget::functionBtnClicked(QModelIndex index)
             qDebug("share");
             diskPanel->panelShare();break;
         case 3:
-            qDebug("link");break;
+            diskPanel->creatShareLink();break;
         case 4:
-            qDebug("download");break;
+            qDebug("download");
+            diskPanel->downloadSelectedFiles();break;
         case 5:
-            qDebug("delete");break;
+            qDebug("delete");
+            diskPanel->deleteSelectedFiles();break;
         case 6:
-            qDebug("restore");break;
+            qDebug("restore");
+            diskPanel->restoreSelectedFiles();break;
 
         default:
             break;
@@ -477,17 +520,18 @@ void MainWidget::diskInit()
     scrollFolder->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     scrollFolder->setWidgetResizable(true);
     ui->panelLayout->addWidget(scrollFolder);
-    ui->panelLayout->addWidget(transList);
+//    ui->panelLayout->addWidget(transList);
     ui->panelLayout->addWidget(&loadingUi);
     ui->panelLayout->addWidget(syncPanel);
 
+    ui->mainLayout->addWidget(transList);
 //    scrollFolder->verticalScrollBar()->setRange(0,100);
 //    loadingUi.reloadStart();
     scrollFolder->hide();
     loadingUi.show();
     syncPanel->hide();
-//    ui->frame_sync->hide();
-    ui->frame_function->hide();
+    ui->frame_sync->hide();
+//    ui->frame_function->hide();
     diskPanel = new FilesPanel(this);
     diskPanel->httpClient->netInit(transList);
 
@@ -507,6 +551,7 @@ void MainWidget::diskInit()
     connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
     connect(diskPanel, SIGNAL(isLoading(bool)), this, SLOT(isLoading(bool)));
     connect(diskPanel, SIGNAL(scrollValueChanged(int)), this, SLOT(scrollValueUpdate(int)));
+    connect(diskPanel, SIGNAL(hasSelected(bool)), this, SLOT(funcStateEnable(bool)));
 //    connect(ui->syncStart, SIGNAL(clicked()), diskPanel->diskSync, SLOT(syncTaskUpload()));
 //    connect(ui->syncStart, SIGNAL(clicked()), diskPanel->diskSync, SLOT(syncTaskDownload()));
     connect(syncPanel, SIGNAL(pathChanged(QList<QFileInfo*>)), pathView, SLOT(pathChange(QList<QFileInfo*>)));
@@ -612,14 +657,17 @@ void MainWidget::on_refresh_clicked()
 
 void MainWidget::on_translist_toggled(bool checked)
 {qDebug()<<"checked"<<checked;
-    hidePanel();
+//    hidePanel();
     if(checked)
     {
+        ui->mainPanel->hide();
         transList->show();
     }
     else
     {
-        on_sliderbar_clicked(ui->sliderbar->currentIndex());
+        transList->hide();
+        ui->mainPanel->show();
+//        on_sliderbar_clicked(ui->sliderbar->currentIndex());
     }
 }
 
@@ -697,6 +745,7 @@ void MainWidget::loginRst(bool isSucceed)
         loginUi.close();
         this->show();
         pageWidget->show();
+        ui->frame_function->show();
         ui->sliderbar->setCurrentRow(0);
         diskPanel->panelCd((fileInfo*)NULL);
         isLogin = true;
@@ -782,7 +831,7 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
 //            ui->frame_sync->show();
 //            ui->syncStart->setEnabled(true);
 //        }
-//        ui->frame_function->show();
+        ui->frame_function->show();
         diskPanel->pathRefresh();
         ui->searchBtn->setEnabled(true);
         ui->searchFilter->setEnabled(true);
@@ -795,6 +844,7 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
 //            ui->frame_sync->show();
 //            ui->syncStart->setEnabled(true);
 //        }
+        ui->frame_sync->show();
         ui->searchBtn->setEnabled(false);
         ui->searchFilter->setEnabled(false);
         ui->search->setEnabled(false);
