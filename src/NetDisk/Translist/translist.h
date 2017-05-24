@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QTimer>
 #include <QList>
+#include <QProgressBar>
 #include "Translist/bardelegata.h"
 #include "Http/nettrans.h"
 #include "Http/netdonwloader.h"
@@ -11,6 +12,14 @@ namespace Ui {
 class TransList;
 }
 class netTrans;
+
+class TaskRow
+{
+public:
+    TaskRow(){}
+    QProgressBar* progress;
+    netTrans* trans;
+};
 
 class TransList : public QWidget
 {
@@ -27,6 +36,7 @@ private:
     QTimer tProgress;
     TransModel* transModel;
     QList<netTrans*> taskList;
+    QList<TaskRow*> taskDownload;
     QList<NetDonwloader*> list_downloader;//下载器队列
     NetDonwloader* downloadInfo;
     int transNum;
@@ -37,6 +47,7 @@ private:
 
     QString sizeofbytes(quint64 fsize);
     void listUiInit();
+    void checkDownload();
 
 private slots:
     void progressCheck();
@@ -44,6 +55,7 @@ private slots:
 
 public slots:
     void newTask(netTrans*);
+    void newDownloadTask(netTrans*);
 };
 
 #endif // TRANSLIST_H

@@ -221,7 +221,7 @@ public:
 class User
 {
 public:
-    User();
+    User(){}
     QString id;
     QString name;
     QString parentId;
@@ -230,9 +230,10 @@ public:
 class Dept
 {
 public:
-    Dept();
-    int id;
+    Dept(){}
+    QString id;
     QString name;
+    QString parentId;
     QList<User*> list_user;
     QList<Dept*> list_dept;
 };
@@ -271,6 +272,7 @@ private:
     netTrans* fTrans;//上传下载
     QList<netTrans*>listTask;//任务队列
     QDateTime serverTime;
+    Dept orzStruct;//组织结构
     QString token;
     QString curTaskPath;
     bool isLastPage;
@@ -302,18 +304,20 @@ private:
     void netDownloadDirsCheck(QList<DownloadTaskInfo *> &listCheck);
     QByteArray getSign(QStringList param);
     QByteArray getPost(QStringList param);
+    void creatOrz(QList<Dept*> depts, QList<User*> users);
 
 private slots:
     void replyFinished(QNetworkReply*);
     void replySyncFinished(QNetworkReply*);
     void replyUserInfoFinished();
     void replyTaskFinished();
-    void repluUserDeptInfoFinished();
+    void replyUserDeptInfoFinished();
 
 signals:
     void listUpdate(QList<fileInfo*>);
     void updateRequest();
     void newTask(netTrans*);
+    void newDownloadTask(netTrans*);
     void loginStateChanged(bool);
     void pageChanged(bool isFirst,bool isLast,int pageNum,int totalPageNum);
     void syncUpdate(QList<syncInfo*>, QDateTime);

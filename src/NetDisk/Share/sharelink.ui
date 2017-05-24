@@ -14,7 +14,10 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget{
+   <string notr="true">#ShareLink{
+border:1px solid grey;
+}
+QWidget{
 background-color: rgb(255, 255, 255);
 font: 12px &quot;微软雅黑&quot;;
 }
@@ -37,9 +40,9 @@ border: 1px solid rgb(67, 122, 232);
   <widget class="QFrame" name="frame">
    <property name="geometry">
     <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>488</width>
+     <x>1</x>
+     <y>1</y>
+     <width>486</width>
      <height>36</height>
     </rect>
    </property>

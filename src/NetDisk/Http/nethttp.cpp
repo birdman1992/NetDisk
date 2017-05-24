@@ -106,8 +106,9 @@ void NetHttp::netDownload(DownloadTaskInfo *info)
 {
     fTrans = new netTrans;
     fTrans->netDownload(*(info->info), info->path, token);
-    fTrans->taskStart();
+//    fTrans->taskStart();
     fTrans->task = info;
+    emit newDownloadTask(fTrans);
 }
 
 void NetHttp::netDelete(double fId)
@@ -227,10 +228,10 @@ void NetHttp::getUserOrgList()
     params<<QString(APP_ID)+"&"<<QString("token=%1&").arg(netConf->token);
     QByteArray sign = getSign(params);
 
-    nUrl = netConf->getServerAddress() + QString("/org/userOrgList?token=%1&sign=%2&").arg(netConf->token).arg(QString(sign.toHex()))+APP_ID+"&";//
+    nUrl = netConf->getServerAddress() + QString("/org/userOrgList?sign=%1&token=%2&").arg(QString(sign.toHex())).arg(netConf->token)+APP_ID;//
     qDebug()<<"[getUserOrgList]"<<nUrl;
     reply_userDeptInfo = netConf->manager->get(QNetworkRequest(QUrl(nUrl)));
-    connect(reply_userDeptInfo, SIGNAL(finished()), this, SLOT(repluUserDeptInfoFinished()));
+    connect(reply_userDeptInfo, SIGNAL(finished()), this, SLOT(replyUserDeptInfoFinished()));
 }
 
 void NetHttp::netSync(double pId, QDateTime lastSyncTime)
@@ -643,11 +644,11 @@ void NetHttp::replyTaskFinished()
     //    emit pageChanged(isFirstPage, isLastPage, currentPageNum, totalPage);
 }
 
-void NetHttp::repluUserDeptInfoFinished()
+void NetHttp::replyUserDeptInfoFinished()
 {
     QByteArray info = reply_userDeptInfo->readAll();
     reply_userDeptInfo->deleteLater();
-
+    qDebug()<<"replyUserDeptInfoFinished"<<info;
     QJsonParseError jError;
     QJsonValue jval;
     QJsonDocument parseDoc = QJsonDocument::fromJson(info, &jError);
@@ -684,14 +685,26 @@ void NetHttp::repluUserDeptInfoFinished()
                 QList<Dept*> l_dept;
                 for(int i=0; i<infoArray.count(); i++)
                 {
-//                    jval = infoArray[i];
-//                    QJsonObject subObj = jval.toObject();
-//                    if(subObj.take("lev").toInt() == 1)
-//                    {
-//                        User* user = new User;
-//                        user->id = subObj.take("id").toInt();
-//                    }
+                    jval = infoArray[i];
+                    QJsonObject subObj = jval.toObject();
+                    if(subObj.take("lev").toInt() == 1)
+                    {
+                        Dept* dept = new Dept;
+                        dept->id = subObj.take("id").toString();
+                        dept->name = subObj.take("text").toString();
+                        dept->parentId = subObj.take("parent").toString();
+                        l_dept<<dept;
+                    }
+                    else if(subObj.take("lev").toInt() == 2)
+                    {
+                        User* user = new User;
+                        user->id = subObj.take("id").toString();
+                        user->name = subObj.take("text").toString();
+                        user->parentId = subObj.take("parent").toString();
+                        l_user<<user;
+                    }
                 }
+                creatOrz(l_dept,l_user);
             }
         }
     }
@@ -1264,6 +1277,24 @@ QByteArray NetHttp::getPost(QStringList param)
     postData += QString("sign=%1").arg(QString(sign.toHex())).toLocal8Bit();
 //    qDebug()<<"[post params]"<<postData;
     return postData;
+}
+
+void NetHttp::creatOrz(QList<Dept *> depts, QList<User *> users)
+{
+    //寻找最上层部门
+    for(int i=0; i<depts.count(); i++)
+    {
+        if(depts.at(i)->parentId == "#")
+        {
+            orzStruct = *(depts.at(i));
+            break;
+        }
+        if(i == depts.count()-1)
+            return;
+    }
+
+    qDebug()<<orzStruct.name<<orzStruct.parentId;
+
 }
 
 fileInfo::fileInfo()

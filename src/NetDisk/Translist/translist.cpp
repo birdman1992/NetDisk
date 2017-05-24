@@ -43,8 +43,8 @@ TransList::TransList(QWidget *parent) :
 //    BarDelegate* bar = new BarDelegate(this);
 //    ui->transview->setItemDelegateForColumn(colIndex_progress,bar);
 
-//    connect(&tProgress, SIGNAL(timeout()), this, SLOT(progressCheck()));
-//    tProgress.start(1000);
+    connect(&tProgress, SIGNAL(timeout()), this, SLOT(progressCheck()));
+    tProgress.start(1000);
 }
 
 int TransList::download(DownloadInfo*)
@@ -80,32 +80,45 @@ void TransList::listUiInit()
     ui->listWidget->item(1)->setSizeHint(QSize(440,30));
     ui->listWidget->item(0)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
     ui->listWidget->item(1)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
-
     connect(ui->listWidget, SIGNAL(currentRowChanged(int)), ui->stackedWidget, SLOT(setCurrentIndex(int)));
     ui->listWidget->setCurrentRow(0);
+
+    ui->downloadTable->setColumnCount(5);
+    ui->downloadTable->setColumnWidth(0, 400);//文件名
+    ui->downloadTable->setColumnWidth(1, 60);//大小
+    ui->downloadTable->setColumnWidth(2, 60);//状态
+    ui->downloadTable->setColumnWidth(3, 120);//完成时间
+    ui->downloadTable->setColumnWidth(4, 150);//进度
+}
+
+void TransList::checkDownload()
+{
+    for(int i=0; i<taskDownload.count(); i++)
+    {
+
+    }
 }
 
 void TransList::progressCheck()
 {
-    for(int i=0; i<taskList.count();)
-    {
-        if(taskList.at(i)->taskinfo().taskState == FINISHI_STATE)
-        {
-            netTrans* trans = taskList.takeAt(i);
-            delete trans;
-            transModel->removeRow(i);
-//            ui->transview->update();
-            continue;
-        }
-        else
-        {
-            transModel->item(i, colIndex_state)->setForeground(*(brush.at(taskList.at(i)->taskinfo().taskState)));
-            transModel->setData(transModel->index(i,colIndex_state),tips.at(taskList.at(i)->taskinfo().taskState),Qt::DisplayRole);
-        }
-        transModel->setData(transModel->index(i,colIndex_speed),taskList.at(i)->getTaskSpeed(), Qt::DisplayRole);
-        transModel->setData(transModel->index(i,colIndex_progress),taskList.at(i)->getTaskProgress());
-        i++;
-    }
+//    for(int i=0; i<taskList.count();)
+//    {
+//        if(taskList.at(i)->taskinfo().taskState == FINISHI_STATE)
+//        {
+//            netTrans* trans = taskList.takeAt(i);
+//            delete trans;
+//            transModel->removeRow(i);
+//            continue;
+//        }
+//        else
+//        {
+//            transModel->item(i, colIndex_state)->setForeground(*(brush.at(taskList.at(i)->taskinfo().taskState)));
+//            transModel->setData(transModel->index(i,colIndex_state),tips.at(taskList.at(i)->taskinfo().taskState),Qt::DisplayRole);
+//        }
+//        transModel->setData(transModel->index(i,colIndex_speed),taskList.at(i)->getTaskSpeed(), Qt::DisplayRole);
+//        transModel->setData(transModel->index(i,colIndex_progress),taskList.at(i)->getTaskProgress());
+//        i++;
+//    }
 }
 
 void TransList::downloadFinish(DownloadInfo*)
@@ -130,3 +143,21 @@ void TransList::newTask(netTrans *trans)
     transModel->item(rows,2)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
     transModel->item(rows,3)->setTextAlignment(Qt::AlignHCenter|Qt::AlignVCenter);
 }
+
+//文件名 大小 状态 完成时间 进度
+void TransList::newDownloadTask(netTrans *trans)
+{
+    TaskRow* _row = new TaskRow();
+    _row->trans = trans;
+    _row->progress = new QProgressBar;
+    int rows = taskDownload.count();
+    taskDownload<<_row;
+    ui->downloadTable->setRowCount(taskDownload.count());
+
+    ui->downloadTable->setItem(rows, 0, new QTableWidgetItem(trans->taskinfo().fileName));
+    ui->downloadTable->setItem(rows, 1, new QTableWidgetItem(sizeofbytes(trans->taskinfo().fileSize)));
+    ui->downloadTable->setItem(rows, 2, new QTableWidgetItem());
+    ui->downloadTable->setItem(rows, 3, new QTableWidgetItem());
+    ui->downloadTable->setCellWidget(rows, 4, _row->progress);
+}
+

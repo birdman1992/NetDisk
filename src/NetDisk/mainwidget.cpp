@@ -150,7 +150,7 @@ void MainWidget::initTitleMenu()
     ui->menu->view()->setFixedWidth(150);
 }
 
-void MainWidget::setPanelState(int state)
+void MainWidget::setPanelState(int)
 {
 
 }
@@ -387,6 +387,7 @@ void MainWidget::functionBtnClicked(QModelIndex index)
             diskPanel->fileNew(); break;
         case 2:
             qDebug("share");
+//            diskPanel->creatShareLink();break;
             diskPanel->panelShare();break;
         case 3:
             diskPanel->creatShareLink();break;
@@ -548,7 +549,8 @@ void MainWidget::diskInit()
     connect(diskPanel->httpClient, SIGNAL(newUserInfo(UserInfo)), this, SLOT(userinfoUpdate(UserInfo)));
     connect(diskPanel, SIGNAL(pathChanged(QList<fileInfo*>)), pathView, SLOT(pathChange(QList<fileInfo*>)));
     connect(diskPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
-    connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
+//    connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
+    connect(diskPanel->httpClient, SIGNAL(newDownloadTask(netTrans*)), transList, SLOT(newDownloadTask(netTrans*)));
     connect(diskPanel, SIGNAL(isLoading(bool)), this, SLOT(isLoading(bool)));
     connect(diskPanel, SIGNAL(scrollValueChanged(int)), this, SLOT(scrollValueUpdate(int)));
     connect(diskPanel, SIGNAL(hasSelected(bool)), this, SLOT(funcStateEnable(bool)));

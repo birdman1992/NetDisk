@@ -61,7 +61,7 @@ FilesPanel::FilesPanel(QWidget *parent) :
     //HTTP槽
     connect(httpClient, SIGNAL(listUpdate(QList<fileInfo*>)), this, SLOT(httpGetListInfo(QList<fileInfo*>)));
     connect(httpClient, SIGNAL(updateRequest()), this, SLOT(fileRefresh()));
-    connect(httpClient, SIGNAL(newTask(netTrans*)), this, SIGNAL(newTask(netTrans*)));
+//    connect(httpClient, SIGNAL(newTask(netTrans*)), this, SIGNAL(newTask(netTrans*)));
     connect(httpClient,SIGNAL(shareLink(QString,QString)), this, SLOT(getShareLink(QString,QString)));
 
     //排序子菜单
@@ -317,20 +317,7 @@ void FilesPanel::panelSearch(int searchType, QString name)
 //创建分享链接
 void FilesPanel::panelShare()
 {
-    int i = 0;
-
-    if(showListView)
-    {
-        QStringList shareList;
-
-        for(i=0; i< checkList.count(); i++)
-        {
-            ListRowWidgets* row = checkList.at(i);
-            if(row->box->isChecked())
-                shareList<<QString::number(row->fInfo->ID);
-        }
-        httpClient->netCreatShareLinks(shareList);
-    }
+    httpClient->getUserOrgList();
 }
 
 void FilesPanel::pathRefresh()
