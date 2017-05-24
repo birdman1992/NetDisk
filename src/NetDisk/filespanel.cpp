@@ -25,7 +25,7 @@ FilesPanel::FilesPanel(QWidget *parent) :
     pFolder = NULL;
     curDirId = 0;
     pCdFolder = NULL;
-    showListView = false;
+    showListView = true;
     resizeEventEnable = true;
     curDirId = -1;
     pageSize = 56;

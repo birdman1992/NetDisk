@@ -19,6 +19,7 @@ MainWidget::MainWidget(QWidget *parent) :
     isLogin = false;
     isInited = false;
     syncMsgState = false;
+    ui->translist->setHidden(true);
 //    ui->viewCut->setHidden(true);
 
     //网盘设置
@@ -387,8 +388,8 @@ void MainWidget::functionBtnClicked(QModelIndex index)
             diskPanel->fileNew(); break;
         case 2:
             qDebug("share");
-//            diskPanel->creatShareLink();break;
-            diskPanel->panelShare();break;
+            diskPanel->creatShareLink();break;
+//            diskPanel->panelShare();break;
         case 3:
             diskPanel->creatShareLink();break;
         case 4:
