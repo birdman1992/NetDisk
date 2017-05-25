@@ -83,16 +83,19 @@ void MainWidget::initSilidebar()
     item->setTextAlignment(Qt::AlignHCenter);
     item->setSizeHint(isize);
     ui->sliderbar->addItem(item);
-//    item = new QListWidgetItem(QIcon(":/imgs/slidebar/他人共享.png"),"他人共享");
-//    item->setTextAlignment(Qt::AlignHCenter);
-//    item->setSizeHint(isize);
-//    ui->sliderbar->addItem(item);
-//    item = new QListWidgetItem(QIcon(":/imgs/slidebar/链接管理.png"),"链接管理");
-//    item->setTextAlignment(Qt::AlignHCenter);
-//    item->setSizeHint(isize);
-//    ui->sliderbar->addItem(item);
+
     item = new QListWidgetItem(QIcon(":/imgs/slidebar/文件同步.png"),"文件同步");
     item->setTextAlignment(Qt::AlignJustify);
+    item->setSizeHint(isize);
+    ui->sliderbar->addItem(item);
+
+    item = new QListWidgetItem(QIcon(":/imgs/slidebar/他人共享.png"),"他人共享");
+    item->setTextAlignment(Qt::AlignHCenter);
+    item->setSizeHint(isize);
+    ui->sliderbar->addItem(item);
+
+    item = new QListWidgetItem(QIcon(":/imgs/slidebar/链接管理.png"),"链接管理");
+    item->setTextAlignment(Qt::AlignHCenter);
     item->setSizeHint(isize);
     ui->sliderbar->addItem(item);
 
@@ -827,6 +830,7 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
     switch(index.row())
     {
     case 0://我的文件
+        ui->stackedPanel->setCurrentIndex(0);
         scrollFolder->show();
         pageWidget->show();
 //        if(!syncHidden)
@@ -841,6 +845,7 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
         ui->search->setEnabled(true);
         break;
     case 1://我的同步
+        ui->stackedPanel->setCurrentIndex(0);
         syncPanel->show();
 //        if(!syncHidden)
 //        {
@@ -852,6 +857,14 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
         ui->searchFilter->setEnabled(false);
         ui->search->setEnabled(false);
         break;
+    case 2://他人共享
+        ui->stackedPanel->setCurrentIndex(0);
+        break;
+
+    case 3://链接管理
+        ui->stackedPanel->setCurrentIndex(2);
+        break;
+
     default:break;
     }
 }

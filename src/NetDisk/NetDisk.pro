@@ -39,7 +39,8 @@ SOURCES += main.cpp\
     serverconfig.cpp \
     Http/netdonwloader.cpp \
     userinfopanel.cpp \
-    Share/sharelink.cpp
+    Share/sharelink.cpp \
+    Tablewidget/linkrowwidgets.cpp
 
 HEADERS  += mainwidget.h \
     QFolder/qfolder.h \
@@ -63,7 +64,8 @@ HEADERS  += mainwidget.h \
     Http/netdonwloader.h \
     userinfopanel.h \
     Tablewidget/listrowwidgets.h \
-    Share/sharelink.h
+    Share/sharelink.h \
+    Tablewidget/linkrowwidgets.h
 
 FORMS    += mainwidget.ui \
     QFolder/qfolder.ui \
