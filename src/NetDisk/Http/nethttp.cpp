@@ -106,9 +106,9 @@ void NetHttp::netDownload(DownloadTaskInfo *info)
 {
     fTrans = new netTrans;
     fTrans->netDownload(*(info->info), info->path, token);
-    fTrans->taskStart();
+//    fTrans->taskStart();
     fTrans->task = info;
-//    emit newDownloadTask(fTrans);
+    emit newDownloadTask(fTrans);
 }
 
 void NetHttp::netDelete(double fId)

@@ -19,7 +19,7 @@ MainWidget::MainWidget(QWidget *parent) :
     isLogin = false;
     isInited = false;
     syncMsgState = false;
-    ui->translist->setHidden(true);
+//    ui->translist->setHidden(true);
 //    ui->viewCut->setHidden(true);
 
     //网盘设置

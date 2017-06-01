@@ -1,6 +1,6 @@
 #include "linkrowwidgets.h"
 
-LinkRowWidgets::LinkRowWidgets(QWidget *parent) : QWidget(parent)
+LinkRowWidgets::LinkRowWidgets(LinkInfo *info, QWidget *parent)
 {
 
 }

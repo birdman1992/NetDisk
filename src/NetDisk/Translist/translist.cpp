@@ -12,7 +12,6 @@ TransList::TransList(QWidget *parent) :
     ui(new Ui::TransList)
 {
     ui->setupUi(this);
-
     listUiInit();
 //    transNum = 1;
 //    progress = 1;
@@ -74,6 +73,8 @@ QString TransList::sizeofbytes(quint64 fsize)
 
 void TransList::listUiInit()
 {
+    downloadNum = 0;
+
     ui->stackedWidget->setCurrentIndex(0);
     ui->listWidget->addItems(QStringList()<<"上传列表"<<"下载列表");
     ui->listWidget->item(0)->setSizeHint(QSize(440,30));
@@ -93,14 +94,18 @@ void TransList::listUiInit()
 
 void TransList::checkDownload()
 {
+    downloadNum = 0;
     for(int i=0; i<taskDownload.count(); i++)
     {
-
+        if(taskDownload.at(i)->trans->taskinfo().taskState == DOWNLOAD_STATE)
+            downloadNum++;
+        if(taskDownload.)
     }
 }
 
 void TransList::progressCheck()
 {
+    checkDownload();
 //    for(int i=0; i<taskList.count();)
 //    {
 //        if(taskList.at(i)->taskinfo().taskState == FINISHI_STATE)
@@ -149,7 +154,8 @@ void TransList::newDownloadTask(netTrans *trans)
 {
     TaskRow* _row = new TaskRow();
     _row->trans = trans;
-    _row->progress = new QProgressBar;
+    _row->progress->setStyleSheet("QProgressBar {border: 0px solid grey;text-align: center;background-color: rgb(225, 230, 240);}\
+                                  QProgressBar::chunk {background-color: rgb(194, 200, 204);width: 20px;}");
     int rows = taskDownload.count();
     taskDownload<<_row;
     ui->downloadTable->setRowCount(taskDownload.count());
@@ -158,6 +164,6 @@ void TransList::newDownloadTask(netTrans *trans)
     ui->downloadTable->setItem(rows, 1, new QTableWidgetItem(sizeofbytes(trans->taskinfo().fileSize)));
     ui->downloadTable->setItem(rows, 2, new QTableWidgetItem());
     ui->downloadTable->setItem(rows, 3, new QTableWidgetItem());
-    ui->downloadTable->setCellWidget(rows, 4, _row->progress);
+    ui->downloadTable->setCellWidget(rows, 4, _row->proCell);
 }
 

@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QList>
 #include <QProgressBar>
+#include <QHBoxLayout>
 #include "Translist/bardelegata.h"
 #include "Http/nettrans.h"
 #include "Http/netdonwloader.h"
@@ -16,7 +17,18 @@ class netTrans;
 class TaskRow
 {
 public:
-    TaskRow(){}
+    TaskRow(){
+        QHBoxLayout *hLayout = new QHBoxLayout;
+        progress = new QProgressBar;
+        proCell = new QWidget();
+        hLayout->addWidget(progress);
+        proCell->setLayout(hLayout);
+        progress->setStyleSheet("QProgressBar {border: 0px solid grey;text-align: center;background-color: rgb(225, 230, 240);}\
+                                          QProgressBar::chunk {background-color: rgb(194, 200, 204);width: 20px;}");
+        progress->setMaximumHeight(5);
+        progress->setTextVisible(false);
+    }
+    QWidget* proCell;
     QProgressBar* progress;
     netTrans* trans;
 };
@@ -39,6 +51,7 @@ private:
     QList<TaskRow*> taskDownload;
     QList<NetDonwloader*> list_downloader;//下载器队列
     NetDonwloader* downloadInfo;
+    int downloadNum;
     int transNum;
     int progress;
     int colIndex_speed;
