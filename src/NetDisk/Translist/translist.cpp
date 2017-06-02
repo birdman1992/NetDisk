@@ -74,6 +74,9 @@ QString TransList::sizeofbytes(quint64 fsize)
 void TransList::listUiInit()
 {
     downloadNum = 0;
+    colIndex_state = 2;
+    colIndex_speed = 3;
+    colIndex_progress = 4;
 
     ui->stackedWidget->setCurrentIndex(0);
     ui->listWidget->addItems(QStringList()<<"上传列表"<<"下载列表");
@@ -94,13 +97,28 @@ void TransList::listUiInit()
 
 void TransList::checkDownload()
 {
-    downloadNum = 0;
+    downloadNum = getDownloadNum();
+    for(int i=0; i<taskDownload.count(); i++)
+    {
+        if((taskDownload.at(i)->trans->taskinfo().taskState == NO_STATE) && (downloadNum <= netConf->getMaxTaskNum()))
+        {
+            taskDownload.at(i)->trans->taskStart();
+        }
+    }
+}
+
+int TransList::getDownloadNum()
+{
+    int ret = 0;
     for(int i=0; i<taskDownload.count(); i++)
     {
         if(taskDownload.at(i)->trans->taskinfo().taskState == DOWNLOAD_STATE)
-            downloadNum++;
-        if(taskDownload.)
+        {
+            ret++;
+        }
     }
+
+    return ret;
 }
 
 void TransList::progressCheck()
@@ -157,13 +175,14 @@ void TransList::newDownloadTask(netTrans *trans)
     _row->progress->setStyleSheet("QProgressBar {border: 0px solid grey;text-align: center;background-color: rgb(225, 230, 240);}\
                                   QProgressBar::chunk {background-color: rgb(194, 200, 204);width: 20px;}");
     int rows = taskDownload.count();
+    connect(_row->trans, SIGNAL(downloadProgress(int)), _row->progress, SLOT(setValue(int)));
     taskDownload<<_row;
     ui->downloadTable->setRowCount(taskDownload.count());
 
     ui->downloadTable->setItem(rows, 0, new QTableWidgetItem(trans->taskinfo().fileName));
     ui->downloadTable->setItem(rows, 1, new QTableWidgetItem(sizeofbytes(trans->taskinfo().fileSize)));
-    ui->downloadTable->setItem(rows, 2, new QTableWidgetItem());
-    ui->downloadTable->setItem(rows, 3, new QTableWidgetItem());
+    ui->downloadTable->setItem(rows, 2, new QTableWidgetItem("等待中"));
+    ui->downloadTable->setItem(rows, 3, new QTableWidgetItem("---"));
     ui->downloadTable->setCellWidget(rows, 4, _row->proCell);
 }
 

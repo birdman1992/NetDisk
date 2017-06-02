@@ -27,6 +27,7 @@ public:
                                           QProgressBar::chunk {background-color: rgb(194, 200, 204);width: 20px;}");
         progress->setMaximumHeight(5);
         progress->setTextVisible(false);
+        progress->setRange(0,100);
     }
     QWidget* proCell;
     QProgressBar* progress;
@@ -61,6 +62,7 @@ private:
     QString sizeofbytes(quint64 fsize);
     void listUiInit();
     void checkDownload();
+    int getDownloadNum();
 
 private slots:
     void progressCheck();

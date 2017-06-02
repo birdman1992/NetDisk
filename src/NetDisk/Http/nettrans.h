@@ -104,6 +104,7 @@ signals:
     void transReady();
     void needPost(QNetworkRequest postRequest, QByteArray postData);
     void needPost(QNetworkRequest postRequest, QHttpMultiPart* postData);
+    void DownloadProgress(int);
 
 private slots:
     void replyFinished(QNetworkReply* reply);
@@ -112,6 +113,7 @@ private slots:
     void getServerAddr();
     void fileRecv();
     void fileRecvFinished();
+    void getDownloadProgress(qint64,qint64);
 
 };
 
@@ -140,6 +142,8 @@ public slots:
 signals:
     void taskFinished(TaskInfo);
     void taskUpFinished(TaskInfo);
+    void taskProgress(int);
+    void downloadProgress(int);
 
 private:
     netWork* work;

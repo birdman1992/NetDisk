@@ -183,6 +183,7 @@ void netWork::taskStart()
                 connect(netReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(replyError(QNetworkReply::NetworkError)));
                 connect(netReply, SIGNAL(readyRead()), this, SLOT(fileRecv()));
                 connect(netReply, SIGNAL(finished()), this, SLOT(fileRecvFinished()));
+                connect(netReply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(getDownloadProgress(qint64,qint64)));
         }
     }
 }
@@ -851,6 +852,12 @@ void netWork::fileRecvFinished()
     emit taskFinish(taskInfo);
 }
 
+void netWork::getDownloadProgress(qint64 curBytes, qint64 totalBytes)
+{
+    qDebug()<<"[download]"<<curBytes<<"/"<<totalBytes;
+    emit DownloadProgress(curBytes/totalBytes);
+}
+
 /****************************************************************************************************/
 netTrans::netTrans(QObject *parent):
     QObject(parent)
@@ -863,6 +870,7 @@ netTrans::netTrans(QObject *parent):
     Thread->start();
     connect(work, SIGNAL(transReady()), this, SLOT(transReady()));
     connect(work, SIGNAL(taskFinish(TaskInfo)), this, SIGNAL(taskFinished(TaskInfo)));
+    connect(work, SIGNAL(DownloadProgress(int)), this, SIGNAL(downloadProgress(int)));
     connect(work, SIGNAL(taskUpFinish(TaskInfo)), this, SIGNAL(taskUpFinished(TaskInfo)));
     connect(work, SIGNAL(needPost(QNetworkRequest,QByteArray)), this, SLOT(netPost(QNetworkRequest,QByteArray)));
     connect(work, SIGNAL(needPost(QNetworkRequest,QHttpMultiPart*)), this, SLOT(netPost(QNetworkRequest,QHttpMultiPart*)));
