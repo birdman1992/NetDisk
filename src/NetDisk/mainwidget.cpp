@@ -391,8 +391,8 @@ void MainWidget::functionBtnClicked(QModelIndex index)
             diskPanel->fileNew(); break;
         case 2:
             qDebug("share");
-            diskPanel->creatShareLink();break;
-//            diskPanel->panelShare();break;
+//            diskPanel->creatShareLink();break;
+            diskPanel->panelShare();break;
         case 3:
             diskPanel->creatShareLink();break;
         case 4:
@@ -885,12 +885,6 @@ void MainWidget::nextPage(bool)
     if(diskPanel->pageNum > (diskPanel->totalPageNum-1))
         return;
     diskPanel->panelCdPage(diskPanel->pageNum+1);
-}
-
-
-void MainWidget::on_functionList_clicked(const QModelIndex&)
-{
-
 }
 
 void MainWidget::menuOpenWebsite()

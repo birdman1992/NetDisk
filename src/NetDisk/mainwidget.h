@@ -73,7 +73,7 @@ private slots:
     void actLogout(bool);//注销
     void actQuit(bool);//退出
     void on_sliderbar_clicked(QModelIndex);
-    void on_functionList_clicked(const QModelIndex &index);
+
     //菜单槽
     void menuOpenWebsite();
     void menuOpenDownloadDir();
