@@ -416,6 +416,7 @@ int netWork::netFileUpload()
         return 0;
     }
     qDebug("%d/%d",chunk,chunks);
+//    emit DownloadProgress(100*chunk/chunks);
     chunksize = qMin(bytesToLoad, CHUNK_SIZE);
 //    chunksize = CHUNK_SIZE;
 
@@ -613,7 +614,7 @@ void netWork::replyFinished(QNetworkReply *reply)
 }
 
 void netWork::uploadRelpy()
-{
+{qDebug()<<"uploadRelpy";
     QByteArray qba = netReply->readAll();
     disconnect(netReply, SIGNAL(finished()), this, SLOT(uploadRelpy()));
     netReply->deleteLater();
@@ -850,12 +851,13 @@ void netWork::fileRecvFinished()
         taskInfo.taskState = ERROR_STATE;
     taskMutex.unlock();
     emit taskFinish(taskInfo);
+    delete pFile;
 }
 
 void netWork::getDownloadProgress(qint64 curBytes, qint64 totalBytes)
 {
-    qDebug()<<"[download]"<<curBytes<<"/"<<totalBytes;
-    emit DownloadProgress(curBytes/totalBytes);
+//    qDebug()<<"[download]"<<curBytes<<"/"<<totalBytes;
+    emit DownloadProgress(100*curBytes/totalBytes);
 }
 
 /****************************************************************************************************/

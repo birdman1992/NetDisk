@@ -17,18 +17,8 @@ class netTrans;
 class TaskRow
 {
 public:
-    TaskRow(){
-        QHBoxLayout *hLayout = new QHBoxLayout;
-        progress = new QProgressBar;
-        proCell = new QWidget();
-        hLayout->addWidget(progress);
-        proCell->setLayout(hLayout);
-        progress->setStyleSheet("QProgressBar {border: 0px solid grey;text-align: center;background-color: rgb(225, 230, 240);}\
-                                          QProgressBar::chunk {background-color: rgb(194, 200, 204);width: 20px;}");
-        progress->setMaximumHeight(5);
-        progress->setTextVisible(false);
-        progress->setRange(0,100);
-    }
+    TaskRow();
+    ~TaskRow();
     QWidget* proCell;
     QProgressBar* progress;
     netTrans* trans;
@@ -50,6 +40,7 @@ private:
     TransModel* transModel;
     QList<netTrans*> taskList;
     QList<TaskRow*> taskDownload;
+    QList<TaskRow*> taskUpload;
     QList<NetDonwloader*> list_downloader;//下载器队列
     NetDonwloader* downloadInfo;
     int downloadNum;
@@ -64,6 +55,8 @@ private:
     void checkDownload();
     int getDownloadNum();
 
+    int getUploadNum();
+    void checkUpload();
 private slots:
     void progressCheck();
     void downloadFinish(DownloadInfo* info);
@@ -71,6 +64,8 @@ private slots:
 public slots:
     void newTask(netTrans*);
     void newDownloadTask(netTrans*);
+    void newUploadTask(netTrans*);
+    void setValue(int);
 };
 
 #endif // TRANSLIST_H

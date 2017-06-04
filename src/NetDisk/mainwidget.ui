@@ -21,7 +21,15 @@
 	background-color: rgb(255, 255, 255);
 	border:1px solid gray;
 }
-</string>
+
+QCheckBox::indicator:unchecked {
+	image: url(:/imgs/未勾选.png);
+}
+
+QCheckBox::indicator:checked {
+	
+	image: url(:/imgs/勾选.png);
+}</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,8">
    <property name="spacing">

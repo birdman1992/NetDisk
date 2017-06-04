@@ -555,6 +555,10 @@ void MainWidget::diskInit()
     connect(diskPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
 //    connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
     connect(diskPanel->httpClient, SIGNAL(newDownloadTask(netTrans*)), transList, SLOT(newDownloadTask(netTrans*)));
+    connect(diskPanel->diskSync, SIGNAL(newDownloadTask(netTrans*)), transList, SLOT(newDownloadTask(netTrans*)));
+    connect(diskPanel->httpClient, SIGNAL(newUPloadTask(netTrans*)), transList, SLOT(newUploadTask(netTrans*)));
+    connect(diskPanel->diskSync, SIGNAL(newUploadTask(netTrans*)), transList, SLOT(newUploadTask(netTrans*)));
+
     connect(diskPanel, SIGNAL(isLoading(bool)), this, SLOT(isLoading(bool)));
     connect(diskPanel, SIGNAL(scrollValueChanged(int)), this, SLOT(scrollValueUpdate(int)));
     connect(diskPanel, SIGNAL(hasSelected(bool)), this, SLOT(funcStateEnable(bool)));

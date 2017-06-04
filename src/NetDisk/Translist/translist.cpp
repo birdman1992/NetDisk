@@ -100,9 +100,12 @@ void TransList::checkDownload()
     downloadNum = getDownloadNum();
     for(int i=0; i<taskDownload.count(); i++)
     {
-        if((taskDownload.at(i)->trans->taskinfo().taskState == NO_STATE) && (downloadNum <= netConf->getMaxTaskNum()))
+        if((taskDownload.at(i)->trans->taskinfo().taskState == NO_STATE))
         {
-            taskDownload.at(i)->trans->taskStart();
+            if(downloadNum <= netConf->getMaxTaskNum())
+                taskDownload.at(i)->trans->taskStart();
+            else
+                break;
         }
     }
 }
@@ -110,11 +113,102 @@ void TransList::checkDownload()
 int TransList::getDownloadNum()
 {
     int ret = 0;
-    for(int i=0; i<taskDownload.count(); i++)
+    for(int i=0; (i<taskDownload.count()); i++)
     {
+//        if(taskDownload.at(i)->trans == NULL)
+//        {
+//            qDebug()<<"[getDownloadNum]"<<i<<"isNULL";
+//            ui->downloadTable->removeRow(i);
+//            delete taskDownload.takeAt(i);
+//            i--;
+//            continue;
+//        }
+//        qDebug()<<"[getDownloadNum]"<<i<<taskDownload.at(i)->trans->taskinfo().taskState;
         if(taskDownload.at(i)->trans->taskinfo().taskState == DOWNLOAD_STATE)
         {
             ret++;
+            ui->downloadTable->item(i, colIndex_state)->setText("下载中");
+            ui->downloadTable->item(i,colIndex_speed)->setText(taskDownload.at(i)->trans->getTaskSpeed());
+        }
+        else if(taskDownload.at(i)->trans->taskinfo().taskState == FINISHI_STATE)
+        {
+            ui->downloadTable->removeRow(i);
+            delete taskDownload.takeAt(i);
+            i--;
+        }
+        else if(taskDownload.at(i)->trans->taskinfo().taskState == ERROR_STATE)
+        {
+            if(ui->downloadTable->item(i, colIndex_state)->text() == "下载失败")
+            {
+                ui->downloadTable->removeRow(i);
+                delete taskDownload.takeAt(i);
+                i--;
+            }
+            else
+            {
+                ui->downloadTable->item(i, colIndex_state)->setText("下载失败");
+                ui->downloadTable->item(i, colIndex_state)->setTextColor(QColor(222,0,0));
+            }
+        }
+    }
+
+    return ret;
+}
+
+void TransList::checkUpload()
+{
+    int uploadNum = getUploadNum();
+    for(int i=0; i<taskUpload.count(); i++)
+    {
+        if((taskUpload.at(i)->trans->taskinfo().taskState == NO_STATE))
+        {
+            if(uploadNum <= netConf->getMaxTaskNum())
+                taskUpload.at(i)->trans->taskStart();
+            else
+                break;
+        }
+    }
+}
+
+int TransList::getUploadNum()
+{
+    int ret = 0;
+    for(int i=0; (i<taskUpload.count()); i++)
+    {
+//        if(taskUpload.at(i)->trans == NULL)
+//        {
+//            qDebug()<<"[getUploadNum]"<<i<<"isNULL";
+//            ui->uploadTable->removeRow(i);
+//            delete taskUpload.takeAt(i);
+//            i--;
+//            continue;
+//        }
+//        qDebug()<<"[getUploadNum]"<<i<<taskUpload.at(i)->trans->taskinfo().taskState;
+        if(taskUpload.at(i)->trans->taskinfo().taskState == UPLOAD_STATE)
+        {
+            ret++;
+            ui->uploadTable->item(i, colIndex_state)->setText("上传中");
+            ui->uploadTable->item(i,colIndex_speed)->setText(taskUpload.at(i)->trans->getTaskSpeed());
+        }
+        else if(taskUpload.at(i)->trans->taskinfo().taskState == FINISHI_STATE)
+        {
+            ui->uploadTable->removeRow(i);
+            delete taskUpload.takeAt(i);
+            i--;
+        }
+        else if(taskUpload.at(i)->trans->taskinfo().taskState == ERROR_STATE)
+        {
+            if(ui->uploadTable->item(i, colIndex_state)->text() == "上传失败")
+            {
+                ui->uploadTable->removeRow(i);
+                delete taskUpload.takeAt(i);
+                i--;
+            }
+            else
+            {
+                ui->uploadTable->item(i, colIndex_state)->setText("上传失败");
+                ui->uploadTable->item(i, colIndex_state)->setTextColor(QColor(222,0,0));
+            }
         }
     }
 
@@ -124,6 +218,7 @@ int TransList::getDownloadNum()
 void TransList::progressCheck()
 {
     checkDownload();
+    checkUpload();
 //    for(int i=0; i<taskList.count();)
 //    {
 //        if(taskList.at(i)->taskinfo().taskState == FINISHI_STATE)
@@ -172,10 +267,11 @@ void TransList::newDownloadTask(netTrans *trans)
 {
     TaskRow* _row = new TaskRow();
     _row->trans = trans;
-    _row->progress->setStyleSheet("QProgressBar {border: 0px solid grey;text-align: center;background-color: rgb(225, 230, 240);}\
-                                  QProgressBar::chunk {background-color: rgb(194, 200, 204);width: 20px;}");
+    _row->progress->setStyleSheet("QProgressBar {margin-top:10px;margin-bottom:10px;margin-right:36px; border: 0px solid grey;background-color: rgb(225, 230, 240);}\
+                                  QProgressBar::chunk {background-color: rgb(194, 200, 204);}");
     int rows = taskDownload.count();
     connect(_row->trans, SIGNAL(downloadProgress(int)), _row->progress, SLOT(setValue(int)));
+//    connect(_row->trans, SIGNAL(downloadProgress(int)), this, SLOT(setValue(int)));
     taskDownload<<_row;
     ui->downloadTable->setRowCount(taskDownload.count());
 
@@ -186,3 +282,52 @@ void TransList::newDownloadTask(netTrans *trans)
     ui->downloadTable->setCellWidget(rows, 4, _row->proCell);
 }
 
+void TransList::newUploadTask(netTrans *trans)
+{
+    TaskRow* _row = new TaskRow();
+    _row->trans = trans;
+    _row->progress->setStyleSheet("QProgressBar {margin-top:10px;margin-bottom:10px;margin-right:36px; border: 0px solid grey;background-color: rgb(225, 230, 240);}\
+                                  QProgressBar::chunk {background-color: rgb(194, 200, 204);}");
+    int rows = taskUpload.count();
+    connect(_row->trans, SIGNAL(downloadProgress(int)), _row->progress, SLOT(setValue(int)));
+    connect(_row->trans, SIGNAL(downloadProgress(int)), this, SLOT(setValue(int)));
+    taskUpload<<_row;
+    ui->uploadTable->setRowCount(taskUpload.count());
+
+    ui->uploadTable->setItem(rows, 0, new QTableWidgetItem(trans->taskinfo().fileName));
+    ui->uploadTable->setItem(rows, 1, new QTableWidgetItem(sizeofbytes(trans->taskinfo().fileSize)));
+    ui->uploadTable->setItem(rows, 2, new QTableWidgetItem("等待中"));
+    ui->uploadTable->setItem(rows, 3, new QTableWidgetItem("---"));
+    ui->uploadTable->setCellWidget(rows, 4, _row->proCell);
+}
+
+void TransList::setValue(int val)
+{
+    qDebug()<<"setValue"<<val;
+}
+
+
+TaskRow::TaskRow()
+{
+    proCell = new QWidget;
+    QHBoxLayout *hLayout = new QHBoxLayout(proCell);
+    progress = new QProgressBar(proCell);
+    hLayout->addWidget(progress);
+    proCell->setLayout(hLayout);
+    progress->setMaximumHeight(25);
+    progress->setTextVisible(true);
+    progress->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+    progress->setRange(0,100);
+}
+
+TaskRow::~TaskRow()
+{
+    if(proCell!=NULL)
+        delete proCell;
+    if(trans!=NULL)
+    {
+//        qDebug()<<"[TaskRow delete]"<<trans->taskinfo().taskId<<trans->taskinfo().taskState;
+        delete trans;
+        trans = NULL;
+    }
+}

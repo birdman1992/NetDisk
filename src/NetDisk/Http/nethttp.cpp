@@ -91,7 +91,8 @@ void NetHttp::netUpload(QString fileName, double pId)
     fTrans = new netTrans;
     fTrans->netUpload(fileName, pId, token);
     fTrans->taskStart();
-//    emit newTask(fTrans);
+//    emit newUPloadTask(fTrans);
+    //    emit newTask(fTrans);
 }
 
 void NetHttp::netDownload(fileInfo info, QString downloadPath)

@@ -5,7 +5,7 @@
 
 SelectDelegate::SelectDelegate( QObject *parent ) : QAbstractItemDelegate( parent ) { }
 
-void SelectDelegate::paint( QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index ) const
+void SelectDelegate::paint( QPainter *painter, const QStyleOptionViewItem&, const QModelIndex &index ) const
 {
     //获取值
     bool checked = index.model()->data(index, Qt::DisplayRole).toBool();

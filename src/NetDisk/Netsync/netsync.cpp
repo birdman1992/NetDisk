@@ -262,6 +262,7 @@ void NetSync::syncUploadStart()
         connect(trans, SIGNAL(taskUpFinished(TaskInfo)), this, SLOT(taskUploadFinished(TaskInfo)));
         taskUpload<<trans;
         trans->taskStart();
+        emit newUploadTask(trans);
     }
 
 //    for(i=0; i<syncT.list_sync_upload.count(); i++)
@@ -295,6 +296,7 @@ void NetSync::syncDownloadStart()
         qDebug()<<"[sync down]"<<info->PARENT_ID<<downloadPath<<info->FILE_NAME;
         trans->netDownload(info, downloadPath,netClient->netToken());
         trans->taskStart();
+        emit newDownloadTask(trans);
         connect(trans, SIGNAL(taskFinished(TaskInfo)), this, SLOT(taskDownloadFinished(TaskInfo)));
         taskDownload<<trans;
         syncT.list_download_task<<downloadPath+"/"+info->FILE_NAME;
@@ -452,7 +454,12 @@ void NetSync::taskDownloadFinished(TaskInfo info)
 //            syncT.list_local<<sInfo;
             syncT.addSyncLocalInfo(sInfo);
             syncT.updateParentDate(sInfo->parentId);
-            delete trans;
+//            if(trans != NULL)
+//            {
+//                qDebug()<<"[sync delete]"<<trans->taskinfo().taskId<<trans->taskinfo().taskState;
+//                delete trans;
+//                trans = NULL;
+//            }
             syncLocalWrite(syncT.list_local);
             syncDownloadStart();
 //            syncTaskDownload();
@@ -464,7 +471,8 @@ void NetSync::taskDownloadFinished(TaskInfo info)
 
 //    syncT.creatSyncUploadList();
     syncT.setLocalList();
-    syncT.reportSyncNum();
+    if(taskDownload.isEmpty())
+        syncT.reportSyncNum();
     if((syncT.list_sync_download.count() == 0) && (syncT.list_sync_upload.count() == 0))
     {
         syncT.isSyncing = false;
@@ -500,7 +508,7 @@ void NetSync::taskUploadFinished(TaskInfo info)
 //            syncT.list_local<<sInfo;
             syncT.addSyncLocalInfo(sInfo);
 //            qDebug()<<sInfo->fileName;
-            delete trans;
+//            delete trans;
             syncLocalWrite(syncT.list_local);
             syncUploadStart();
             break;
@@ -514,7 +522,8 @@ void NetSync::taskUploadFinished(TaskInfo info)
     }
 
     syncT.setLocalList();
-    syncT.reportSyncNum();
+    if(taskDownload.isEmpty())
+        syncT.reportSyncNum();
     qDebug()<<"[taskUpload]"<<taskUpload.count()<<syncT.list_sync_upload.count();
     if((syncT.list_sync_download.count() == 0) && (syncT.list_sync_upload.count() == 0))
         emit syncStateChanged(false);

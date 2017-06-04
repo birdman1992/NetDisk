@@ -81,7 +81,8 @@ private slots:
 
 
 signals:
-
+    void newDownloadTask(netTrans*);
+    void newUploadTask(netTrans*);
     void syncStateChanged(bool);
 };
 

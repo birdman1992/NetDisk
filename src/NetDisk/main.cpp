@@ -48,9 +48,9 @@ void outputMessage(QtMsgType type, const QMessageLogContext &context, const QStr
 {
     static QMutex mutex;
     mutex.lock();
-
+    QtMsgType msgType = type;
     QString text;
-    switch(type)
+    switch(msgType)
     {
     case QtDebugMsg:
         text = QString("Debug:");

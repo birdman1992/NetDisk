@@ -108,5 +108,7 @@
         <file>imgs/一键同步hover.png</file>
         <file>imgs/gear.png</file>
         <file>imgs/share/close.png</file>
+        <file>imgs/勾选.png</file>
+        <file>imgs/未勾选.png</file>
     </qresource>
 </RCC>
