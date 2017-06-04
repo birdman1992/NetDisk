@@ -416,7 +416,7 @@ int netWork::netFileUpload()
         return 0;
     }
     qDebug("%d/%d",chunk,chunks);
-//    emit DownloadProgress(100*chunk/chunks);
+    emit DownloadProgress(100*chunk/chunks);
     chunksize = qMin(bytesToLoad, CHUNK_SIZE);
 //    chunksize = CHUNK_SIZE;
 

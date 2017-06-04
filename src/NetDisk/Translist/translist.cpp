@@ -93,6 +93,13 @@ void TransList::listUiInit()
     ui->downloadTable->setColumnWidth(2, 60);//状态
     ui->downloadTable->setColumnWidth(3, 120);//完成时间
     ui->downloadTable->setColumnWidth(4, 150);//进度
+
+    ui->uploadTable->setColumnCount(5);
+    ui->uploadTable->setColumnWidth(0, 400);//文件名
+    ui->uploadTable->setColumnWidth(1, 60);//大小
+    ui->uploadTable->setColumnWidth(2, 60);//状态
+    ui->uploadTable->setColumnWidth(3, 120);//完成时间
+    ui->uploadTable->setColumnWidth(4, 150);//进度
 }
 
 void TransList::checkDownload()

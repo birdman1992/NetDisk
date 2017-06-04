@@ -89,15 +89,15 @@ void MainWidget::initSilidebar()
     item->setSizeHint(isize);
     ui->sliderbar->addItem(item);
 
-    item = new QListWidgetItem(QIcon(":/imgs/slidebar/他人共享.png"),"他人共享");
-    item->setTextAlignment(Qt::AlignHCenter);
-    item->setSizeHint(isize);
-    ui->sliderbar->addItem(item);
+//    item = new QListWidgetItem(QIcon(":/imgs/slidebar/他人共享.png"),"他人共享");
+//    item->setTextAlignment(Qt::AlignHCenter);
+//    item->setSizeHint(isize);
+//    ui->sliderbar->addItem(item);
 
-    item = new QListWidgetItem(QIcon(":/imgs/slidebar/链接管理.png"),"链接管理");
-    item->setTextAlignment(Qt::AlignHCenter);
-    item->setSizeHint(isize);
-    ui->sliderbar->addItem(item);
+//    item = new QListWidgetItem(QIcon(":/imgs/slidebar/链接管理.png"),"链接管理");
+//    item->setTextAlignment(Qt::AlignHCenter);
+//    item->setSizeHint(isize);
+//    ui->sliderbar->addItem(item);
 
     ui->sliderbar->setCurrentRow(0);
 }
@@ -862,11 +862,11 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
         ui->search->setEnabled(false);
         break;
     case 2://他人共享
-        ui->stackedPanel->setCurrentIndex(0);
+//        ui->stackedPanel->setCurrentIndex(0);
         break;
 
     case 3://链接管理
-        ui->stackedPanel->setCurrentIndex(2);
+//        ui->stackedPanel->setCurrentIndex(2);
         break;
 
     default:break;
