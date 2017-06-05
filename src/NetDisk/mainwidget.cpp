@@ -408,6 +408,7 @@ void MainWidget::functionBtnClicked(QModelIndex index)
         default:
             break;
     }
+    setFunctionState(false);
 }
 
 void MainWidget::historyEnabled(bool backEnable, bool aheadEnable)
@@ -418,11 +419,12 @@ void MainWidget::historyEnabled(bool backEnable, bool aheadEnable)
 
 void MainWidget::getSyncNum(int upNum, int downNum)
 {
+    qDebug()<<"getSyncNum"<<syncState;
     QString strLocal = QString("本地更新文件%1个").arg(upNum);
     QString strHost = QString("云端更新文件%1个").arg(downNum);
     ui->msg_local->setText(strLocal);
     ui->msg_host->setText(strHost);
-    if(!(upNum||downNum))
+    if(!(upNum||downNum))//没有同步
     {
 //        ui->frame_sync->hide();
         if(syncMsgState)//同步状态发生跳变
@@ -437,7 +439,7 @@ void MainWidget::getSyncNum(int upNum, int downNum)
             {
                 setSyncState(1);//变更为同步中
             }
-            else if(syncState == 0)//无同步
+            else if(syncState == 0 || syncState == 4)//无同步或查询同步中
             {
                 setSyncState(2);//变更为可同步状态
             }

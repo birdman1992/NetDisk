@@ -471,7 +471,7 @@ void NetSync::taskDownloadFinished(TaskInfo info)
 
 //    syncT.creatSyncUploadList();
     syncT.setLocalList();
-    if(taskDownload.isEmpty())
+    if(taskDownload.isEmpty()&&taskUpload.isEmpty())
         syncT.reportSyncNum();
     if((syncT.list_sync_download.count() == 0) && (syncT.list_sync_upload.count() == 0))
     {
@@ -522,7 +522,7 @@ void NetSync::taskUploadFinished(TaskInfo info)
     }
 
     syncT.setLocalList();
-    if(taskDownload.isEmpty())
+    if(taskDownload.isEmpty()&&taskUpload.isEmpty())
         syncT.reportSyncNum();
     qDebug()<<"[taskUpload]"<<taskUpload.count()<<syncT.list_sync_upload.count();
     if((syncT.list_sync_download.count() == 0) && (syncT.list_sync_upload.count() == 0))

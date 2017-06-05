@@ -515,16 +515,28 @@ void FilesPanel::setTableState(bool listState)
 void FilesPanel::showList(QList<QFolder *> fPanel)
 {
     int i = 0;
-    int wid = 0;
-
-    wid = this->geometry().width();
-//    setTableState(true);
     ui->listView->setRowCount(fPanel.count());
-    ui->listView->setColumnWidth(0,wid/24);
-    ui->listView->setColumnWidth(1,wid/2+10);
-    ui->listView->setColumnWidth(2,wid/10);
-    ui->listView->setColumnWidth(3,wid/10);
-    ui->listView->setColumnWidth(4,wid/4);
+    //列表视图
+    int wid = this->geometry().width();
+    if(wid<1000)
+    {
+        ui->listView->setColumnWidth(0,25);
+        ui->listView->setColumnWidth(1,436);
+        ui->listView->setColumnWidth(2,100);
+        ui->listView->setColumnWidth(3,100);
+        ui->listView->setColumnWidth(4,217);
+    }
+    else
+    {
+        ui->listView->setColumnWidth(0,25);
+        ui->listView->setColumnWidth(1,436*2);
+        ui->listView->setColumnWidth(2,100*2);
+        ui->listView->setColumnWidth(3,100*2);
+        ui->listView->setColumnWidth(4,217*2);
+    }
+
+//    qDebug()<<wid;
+//    qDebug()<<ui->listView->columnWidth(0)<<ui->listView->columnWidth(1)<<ui->listView->columnWidth(2)<<ui->listView->columnWidth(3)<<ui->listView->columnWidth(4);
 
     if(!isResize)
         checkListClear();
@@ -552,7 +564,7 @@ void FilesPanel::showList(QList<QFolder *> fPanel)
         ui->listView->setItem(i,3,_row->shareName);
         ui->listView->setItem(i,4,_row->Modifytime);
     }
-    this->setMinimumHeight(487);
+    this->setMinimumHeight(410);
     ui->listView->show();
 }
 
@@ -662,12 +674,22 @@ void FilesPanel::showDelete(bool show)
 //菜单槽
 void FilesPanel::fileNew()
 {
-    pFolder = new QFolder(this);
-    curPanel<<pFolder;
-    panelShow(curPanel);
-    pFolder->newfolder();
-//    folderPath<<pFolder;
-//    ftpClient.ftpMkdir(getCurPath()+);
+//    QScrollBar* bar = ui->listView->verticalScrollBar();
+//    bar->setValue(bar->maximum());
+//    if(showListView)
+//    {
+//        QScrollBar* bar = ui->listView->verticalScrollBar();
+//        bar->setValue(bar->maximum());
+//    }
+//    else
+//    {
+        pFolder = new QFolder(this);
+        curPanel<<pFolder;
+        panelShow(curPanel);
+        pFolder->newfolder();
+    //    folderPath<<pFolder;
+    //    ftpClient.ftpMkdir(getCurPath()+);
+//    }
 }
 
 void FilesPanel::fileRefresh()

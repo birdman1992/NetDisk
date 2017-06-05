@@ -28,7 +28,7 @@ border-right:0px;
 border-bottom:0px;
 background: #FFFFFF;}</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="40">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -53,7 +53,7 @@ background: #FFFFFF;}</string>
       <bool>true</bool>
      </property>
      <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
+      <set>QAbstractItemView::EditKeyPressed</set>
      </property>
      <property name="selectionMode">
       <enum>QAbstractItemView::ExtendedSelection</enum>
@@ -69,6 +69,9 @@ background: #FFFFFF;}</string>
      </property>
      <attribute name="horizontalHeaderMinimumSectionSize">
       <number>10</number>
+     </attribute>
+     <attribute name="horizontalHeaderStretchLastSection">
+      <bool>true</bool>
      </attribute>
      <attribute name="verticalHeaderVisible">
       <bool>false</bool>
