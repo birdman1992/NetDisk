@@ -49,6 +49,7 @@ private:
     int colIndex_speed;
     int colIndex_state;
     int colIndex_progress;
+    int listState;
 
     QString sizeofbytes(quint64 fsize);
     void listUiInit();
@@ -57,6 +58,10 @@ private:
 
     int getUploadNum();
     void checkUpload();
+
+signals:
+    void taskClear();
+
 private slots:
     void progressCheck();
     void downloadFinish(DownloadInfo* info);

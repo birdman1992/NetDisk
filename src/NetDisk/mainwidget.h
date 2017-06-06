@@ -48,7 +48,6 @@ private slots:
     void on_wMin_clicked();
     void on_wClose_clicked();
     void on_wMax_toggled(bool checked);
-    void founctionListClicked(QListWidgetItem* item);
     void functionBtnClicked(QModelIndex index);
     void on_back_clicked();
     void on_forward_clicked();
@@ -73,6 +72,7 @@ private slots:
     void actLogout(bool);//注销
     void actQuit(bool);//退出
     void on_sliderbar_clicked(QModelIndex);
+    void resetSyncBtn();
 
     //菜单槽
     void menuOpenWebsite();

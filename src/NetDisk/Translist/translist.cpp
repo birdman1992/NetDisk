@@ -73,6 +73,7 @@ QString TransList::sizeofbytes(quint64 fsize)
 
 void TransList::listUiInit()
 {
+    listState = 0;
     downloadNum = 0;
     colIndex_state = 2;
     colIndex_speed = 3;
@@ -224,8 +225,19 @@ int TransList::getUploadNum()
 
 void TransList::progressCheck()
 {
+    qDebug()<<"listStateCheck"<<listState;
     checkDownload();
     checkUpload();
+    if(taskDownload.isEmpty()&&taskUpload.isEmpty())
+    {
+        if(listState)
+           emit taskClear();
+        listState = 0;
+    }
+    else
+    {
+        listState = 1;
+    }
 //    for(int i=0; i<taskList.count();)
 //    {
 //        if(taskList.at(i)->taskinfo().taskState == FINISHI_STATE)
@@ -273,6 +285,8 @@ void TransList::newTask(netTrans *trans)
 void TransList::newDownloadTask(netTrans *trans)
 {
     TaskRow* _row = new TaskRow();
+    listState = 1;
+    qDebug()<<"listState"<<listState;
     _row->trans = trans;
     _row->progress->setStyleSheet("QProgressBar {margin-top:10px;margin-bottom:10px;margin-right:36px; border: 0px solid grey;background-color: rgb(225, 230, 240);}\
                                   QProgressBar::chunk {background-color: rgb(194, 200, 204);}");

@@ -370,11 +370,6 @@ void MainWidget::on_wMax_toggled(bool checked)
     diskPanel->review();
 }
 
-void MainWidget::founctionListClicked(QListWidgetItem*)
-{
-
-}
-
 void MainWidget::functionBtnClicked(QModelIndex index)
 {
     int funcNum = index.row();
@@ -505,7 +500,7 @@ void MainWidget::diskInit()
     //传输列表
     transList = new TransList(this);
     syncPanel = new syncList(this);
-
+    connect(transList, SIGNAL(taskClear()), this, SLOT(resetSyncBtn()));
 
     //路径面板
     pathView = new PathView(this);
@@ -873,6 +868,11 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
 
     default:break;
     }
+}
+
+void MainWidget::resetSyncBtn()
+{
+    setSyncState(0);
 }
 
 void MainWidget::aheadPage(bool)
