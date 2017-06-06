@@ -411,7 +411,9 @@ int netWork::netFileUpload()
         if(pFile->isOpen())
             pFile->close();
         qDebug()<<"[netWork]:Upload finishi.";
-//        taskInfo.taskState = FINISHI_STATE;
+        taskMutex.lock();
+        taskInfo.taskState = FINISHI_STATE;
+        taskMutex.unlock();
 //        emit taskUpFinish(taskInfo);
         return 0;
     }
