@@ -91,7 +91,7 @@ void NetHttp::netUpload(QString fileName, double pId)
     fTrans = new netTrans;
     fTrans->netUpload(fileName, pId, token);
     fTrans->taskStart();
-    emit newUPloadTask(fTrans);
+    emit newUPloadTask(fTrans,false);
     //    emit newTask(fTrans);
 }
 
@@ -109,7 +109,7 @@ void NetHttp::netDownload(DownloadTaskInfo *info)
     fTrans->netDownload(*(info->info), info->path, token);
 //    fTrans->taskStart();
     fTrans->task = info;
-    emit newDownloadTask(fTrans);
+    emit newDownloadTask(fTrans,false);
 }
 
 void NetHttp::netDelete(double fId)

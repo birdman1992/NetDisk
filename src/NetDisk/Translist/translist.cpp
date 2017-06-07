@@ -43,7 +43,7 @@ TransList::TransList(QWidget *parent) :
 //    ui->transview->setItemDelegateForColumn(colIndex_progress,bar);
 
     connect(&tProgress, SIGNAL(timeout()), this, SLOT(progressCheck()));
-    tProgress.start(1000);
+//    tProgress.start(1000);
 }
 
 int TransList::download(DownloadInfo*)
@@ -73,7 +73,8 @@ QString TransList::sizeofbytes(quint64 fsize)
 
 void TransList::listUiInit()
 {
-    listState = 0;
+    totalTaskNum = 0;
+    curTaskNum = 0;
     downloadNum = 0;
     colIndex_state = 2;
     colIndex_speed = 3;
@@ -106,12 +107,16 @@ void TransList::listUiInit()
 void TransList::checkDownload()
 {
     downloadNum = getDownloadNum();
+
     for(int i=0; i<taskDownload.count(); i++)
     {
         if((taskDownload.at(i)->trans->taskinfo().taskState == NO_STATE))
         {
-            if(downloadNum <= netConf->getMaxTaskNum())
+            if(downloadNum < netConf->getMaxTaskNum())
+            {qDebug()<<"[taskstart]"<<downloadNum<<netConf->getMaxTaskNum();
                 taskDownload.at(i)->trans->taskStart();
+                downloadNum++;
+            }
             else
                 break;
         }
@@ -141,6 +146,8 @@ int TransList::getDownloadNum()
         else if(taskDownload.at(i)->trans->taskinfo().taskState == FINISHI_STATE)
         {
             ui->downloadTable->removeRow(i);
+            if(taskDownload.at(i)->isSync)
+                curSyncNum--;
             delete taskDownload.takeAt(i);
             i--;
         }
@@ -149,6 +156,8 @@ int TransList::getDownloadNum()
             if(ui->downloadTable->item(i, colIndex_state)->text() == "下载失败")
             {
                 ui->downloadTable->removeRow(i);
+                if(taskDownload.at(i)->isSync)
+                    curSyncNum--;
                 delete taskDownload.takeAt(i);
                 i--;
             }
@@ -166,6 +175,7 @@ int TransList::getDownloadNum()
 void TransList::checkUpload()
 {
     int uploadNum = getUploadNum();
+
     for(int i=0; i<taskUpload.count(); i++)
     {
         if((taskUpload.at(i)->trans->taskinfo().taskState == NO_STATE))
@@ -201,6 +211,8 @@ int TransList::getUploadNum()
         else if(taskUpload.at(i)->trans->taskinfo().taskState == FINISHI_STATE)
         {
             ui->uploadTable->removeRow(i);
+            if(taskUpload.at(i)->isSync)
+                curSyncNum--;
             delete taskUpload.takeAt(i);
             i--;
         }
@@ -209,6 +221,8 @@ int TransList::getUploadNum()
             if(ui->uploadTable->item(i, colIndex_state)->text() == "上传失败")
             {
                 ui->uploadTable->removeRow(i);
+                if(taskUpload.at(i)->isSync)
+                    curSyncNum--;
                 delete taskUpload.takeAt(i);
                 i--;
             }
@@ -225,19 +239,32 @@ int TransList::getUploadNum()
 
 void TransList::progressCheck()
 {
-    qDebug()<<"listStateCheck"<<listState;
+
+    curTaskNum = taskDownload.count() + taskUpload.count();
     checkDownload();
     checkUpload();
-    if(taskDownload.isEmpty()&&taskUpload.isEmpty())
-    {
-        if(listState)
-           emit taskClear();
-        listState = 0;
+
+//    if(totalTaskNum)
+//        emit taskProgress(100-100*curTaskNum/totalTaskNum);
+    if(totalSyncNum)
+        emit syncProgress(100-100*curSyncNum/totalSyncNum);
+
+    qDebug()<<"progressCheck"<<curSyncNum<<"/"<<totalSyncNum;
+    if(curTaskNum == 0 && totalTaskNum==0)
+    {qDebug()<<"stop";
+        emit taskClear();
+        tProgress.stop();
     }
-    else
+    if(curSyncNum == 0 && totalSyncNum!=0)
     {
-        listState = 1;
+        emit syncClear();
     }
+
+    if(curSyncNum == 0)
+        totalTaskNum = 0;
+
+    if(curTaskNum == 0)
+        totalTaskNum = 0;
 //    for(int i=0; i<taskList.count();)
 //    {
 //        if(taskList.at(i)->taskinfo().taskState == FINISHI_STATE)
@@ -282,11 +309,16 @@ void TransList::newTask(netTrans *trans)
 }
 
 //文件名 大小 状态 完成时间 进度
-void TransList::newDownloadTask(netTrans *trans)
+void TransList::newDownloadTask(netTrans *trans, bool isSync)
 {
     TaskRow* _row = new TaskRow();
-    listState = 1;
-    qDebug()<<"listState"<<listState;
+    totalTaskNum++;
+    if(isSync)
+    {
+        totalSyncNum++;
+        curSyncNum++;
+    }
+    _row->isSync = isSync;
     _row->trans = trans;
     _row->progress->setStyleSheet("QProgressBar {margin-top:10px;margin-bottom:10px;margin-right:36px; border: 0px solid grey;background-color: rgb(225, 230, 240);}\
                                   QProgressBar::chunk {background-color: rgb(194, 200, 204);}");
@@ -301,11 +333,21 @@ void TransList::newDownloadTask(netTrans *trans)
     ui->downloadTable->setItem(rows, 2, new QTableWidgetItem("等待中"));
     ui->downloadTable->setItem(rows, 3, new QTableWidgetItem("---"));
     ui->downloadTable->setCellWidget(rows, 4, _row->proCell);
+
+    if(!tProgress.isActive())
+        tProgress.start(1000);
 }
 
-void TransList::newUploadTask(netTrans *trans)
+void TransList::newUploadTask(netTrans *trans, bool isSync)
 {
     TaskRow* _row = new TaskRow();
+    totalTaskNum++;
+    if(isSync)
+    {
+        totalSyncNum++;
+        curSyncNum++;
+    }
+    _row->isSync = isSync;
     _row->trans = trans;
     _row->progress->setStyleSheet("QProgressBar {margin-top:10px;margin-bottom:10px;margin-right:36px; border: 0px solid grey;background-color: rgb(225, 230, 240);}\
                                   QProgressBar::chunk {background-color: rgb(194, 200, 204);}");
@@ -320,6 +362,9 @@ void TransList::newUploadTask(netTrans *trans)
     ui->uploadTable->setItem(rows, 2, new QTableWidgetItem("等待中"));
     ui->uploadTable->setItem(rows, 3, new QTableWidgetItem("---"));
     ui->uploadTable->setCellWidget(rows, 4, _row->proCell);
+
+    if(!tProgress.isActive())
+        tProgress.start(1000);
 }
 
 void TransList::setValue(int val)

@@ -33,6 +33,7 @@ netWork::netWork(QObject *parent) :
 
 netWork::~netWork()
 {
+
 }
 
 int netWork::netUpload(QString fileName, double pId, QString token, double fId)
@@ -742,7 +743,7 @@ void netWork::uploadRelpy()
 
 void netWork::replyError(QNetworkReply::NetworkError errorCode)
 {
-    qDebug()<<errorCode;
+    qDebug()<<"[replyError]"<<errorCode;
     taskMutex.lock();
     taskInfo.taskState = ERROR_STATE;
     taskMutex.unlock();

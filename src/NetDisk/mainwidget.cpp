@@ -79,10 +79,10 @@ void MainWidget::initSilidebar()
     QSize isize = QSize(81,81);
     ui->sliderbar->setIconSize(QSize(36,36));
     QListWidgetItem* item;
-    item = new QListWidgetItem(QIcon(":/imgs/slidebar/我的文件.png"),"我的文件");
-    item->setTextAlignment(Qt::AlignHCenter);
-    item->setSizeHint(isize);
-    ui->sliderbar->addItem(item);
+//    item = new QListWidgetItem(QIcon(":/imgs/slidebar/我的文件.png"),"我的文件");
+//    item->setTextAlignment(Qt::AlignHCenter);
+//    item->setSizeHint(isize);
+//    ui->sliderbar->addItem(item);
 
     item = new QListWidgetItem(QIcon(":/imgs/slidebar/文件同步.png"),"文件同步");
     item->setTextAlignment(Qt::AlignJustify);
@@ -152,6 +152,17 @@ void MainWidget::initTitleMenu()
     ui->menu->addItem("注销");
     ui->menu->addItem("退出");
     ui->menu->view()->setFixedWidth(150);
+}
+
+void MainWidget::initPanel()
+{
+    hidePanel();
+    ui->stackedPanel->setCurrentIndex(0);
+    syncPanel->show();
+    ui->frame_sync->show();
+    ui->searchBtn->setEnabled(false);
+    ui->searchFilter->setEnabled(false);
+    ui->search->setEnabled(false);
 }
 
 void MainWidget::setPanelState(int)
@@ -537,6 +548,8 @@ void MainWidget::diskInit()
     diskPanel = new FilesPanel(this);
     diskPanel->httpClient->netInit(transList);
 
+    initPanel();
+
     //文件同步时钟
     syncTimer = new QTimer(this);
     syncTimer->start(600000);//600s
@@ -551,10 +564,10 @@ void MainWidget::diskInit()
     connect(diskPanel, SIGNAL(pathChanged(QList<fileInfo*>)), pathView, SLOT(pathChange(QList<fileInfo*>)));
     connect(diskPanel, SIGNAL(historyEnable(bool,bool)), this, SLOT(historyEnabled(bool,bool)));
 //    connect(diskPanel, SIGNAL(newTask(netTrans*)), transList, SLOT(newTask(netTrans*)));
-    connect(diskPanel->httpClient, SIGNAL(newDownloadTask(netTrans*)), transList, SLOT(newDownloadTask(netTrans*)));
-    connect(diskPanel->diskSync, SIGNAL(newDownloadTask(netTrans*)), transList, SLOT(newDownloadTask(netTrans*)));
-    connect(diskPanel->httpClient, SIGNAL(newUPloadTask(netTrans*)), transList, SLOT(newUploadTask(netTrans*)));
-    connect(diskPanel->diskSync, SIGNAL(newUploadTask(netTrans*)), transList, SLOT(newUploadTask(netTrans*)));
+    connect(diskPanel->httpClient, SIGNAL(newDownloadTask(netTrans*,bool)), transList, SLOT(newDownloadTask(netTrans*,bool)));
+    connect(diskPanel->diskSync, SIGNAL(newDownloadTask(netTrans*,bool)), transList, SLOT(newDownloadTask(netTrans*,bool)));
+    connect(diskPanel->httpClient, SIGNAL(newUPloadTask(netTrans*,bool)), transList, SLOT(newUploadTask(netTrans*,bool)));
+    connect(diskPanel->diskSync, SIGNAL(newUploadTask(netTrans*,bool)), transList, SLOT(newUploadTask(netTrans*,bool)));
 
     connect(diskPanel, SIGNAL(isLoading(bool)), this, SLOT(isLoading(bool)));
     connect(diskPanel, SIGNAL(scrollValueChanged(int)), this, SLOT(scrollValueUpdate(int)));
@@ -570,6 +583,7 @@ void MainWidget::diskInit()
     connect(pathView, SIGNAL(cdRequest(int)), syncPanel, SLOT(cmdCd(int)));
     connect(ui->searchFilter,  SIGNAL(currentIndexChanged(int)), this, SLOT(searchTypeChanged(int)));
     connect(ui->sliderbar, SIGNAL(clicked(QModelIndex)), this, SLOT(on_sliderbar_clicked(QModelIndex)));
+    connect(transList, SIGNAL(syncProgress(int)), this, SLOT(syncProgress(int)));
 }
 
 void MainWidget::initSysTray()
@@ -748,13 +762,14 @@ void MainWidget::loginRst(bool isSucceed)
 {
     if(isSucceed)
     {
-        hidePanel();
+//        hidePanel();
         loginUi.close();
         this->show();
-        pageWidget->show();
-        ui->frame_function->show();
-        ui->sliderbar->setCurrentRow(0);
-        diskPanel->panelCd((fileInfo*)NULL);
+//        pageWidget->show();
+//        ui->frame_function->show();
+//        ui->sliderbar->setCurrentRow(0);
+//        diskPanel->panelCd((fileInfo*)NULL);
+        diskPanel->diskSync->loginSync();
         isLogin = true;
         setSysMenu();
     }
@@ -830,7 +845,7 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
 
     switch(index.row())
     {
-    case 0://我的文件
+    case 1://我的文件
         ui->stackedPanel->setCurrentIndex(0);
         scrollFolder->show();
         pageWidget->show();
@@ -845,14 +860,9 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
         ui->searchFilter->setEnabled(true);
         ui->search->setEnabled(true);
         break;
-    case 1://我的同步
+    case 0://我的同步
         ui->stackedPanel->setCurrentIndex(0);
         syncPanel->show();
-//        if(!syncHidden)
-//        {
-//            ui->frame_sync->show();
-//            ui->syncStart->setEnabled(true);
-//        }
         ui->frame_sync->show();
         ui->searchBtn->setEnabled(false);
         ui->searchFilter->setEnabled(false);
@@ -873,6 +883,28 @@ void MainWidget::on_sliderbar_clicked(QModelIndex index)
 void MainWidget::resetSyncBtn()
 {
     setSyncState(0);
+}
+
+void MainWidget::syncProgress(int val)
+{
+    ui->syncProgress->setValue(val);
+    if(val == 100)
+        ui->syncProgress->hide();
+    else if(ui->syncProgress->isHidden())
+        ui->syncProgress->show();
+}
+
+void MainWidget::syncClear()
+{
+    QString strLocal = QString("本地更新文件0个");
+    QString strHost = QString("云端更新文件0个");
+    ui->msg_local->setText(strLocal);
+    ui->msg_host->setText(strHost);
+//        ui->frame_sync->hide();
+    if(syncMsgState)//同步状态发生跳变
+        sysTray->showMessage(QString("文件同步"), "本地文件已和云端同步",QSystemTrayIcon::Information);
+    setSyncState(0);
+    diskPanel->diskSync->getTable()->isSyncing = false;
 }
 
 void MainWidget::aheadPage(bool)
