@@ -73,6 +73,8 @@ private slots:
     void actQuit(bool);//退出
     void on_sliderbar_clicked(QModelIndex);
     void resetSyncBtn();
+    void syncProgress(int);
+    void syncClear();//同步完成
 
     //菜单槽
     void menuOpenWebsite();
@@ -143,6 +145,7 @@ private:
     void initSilidebar();
     void initFunctionList();
     void initTitleMenu();
+    void initPanel();
 //    void setSyncState(bool isSyncing);
     void setPanelState(int state);
     void setFunctionState(bool hasSelectItem);

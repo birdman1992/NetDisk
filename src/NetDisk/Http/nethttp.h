@@ -317,8 +317,8 @@ signals:
     void listUpdate(QList<fileInfo*>);
     void updateRequest();
     void newTask(netTrans*);
-    void newDownloadTask(netTrans*);
-    void newUPloadTask(netTrans*);
+    void newDownloadTask(netTrans*,bool);
+    void newUPloadTask(netTrans*,bool);
     void loginStateChanged(bool);
     void pageChanged(bool isFirst,bool isLast,int pageNum,int totalPageNum);
     void syncUpdate(QList<syncInfo*>, QDateTime);

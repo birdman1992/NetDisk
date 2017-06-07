@@ -22,6 +22,7 @@ public:
     QWidget* proCell;
     QProgressBar* progress;
     netTrans* trans;
+    bool isSync;
 };
 
 class TransList : public QWidget
@@ -49,7 +50,10 @@ private:
     int colIndex_speed;
     int colIndex_state;
     int colIndex_progress;
-    int listState;
+    int totalTaskNum;//总任务数
+    int curTaskNum;//当前任务数
+    int totalSyncNum;//总同步数
+    int curSyncNum;//当前同步数
 
     QString sizeofbytes(quint64 fsize);
     void listUiInit();
@@ -61,6 +65,9 @@ private:
 
 signals:
     void taskClear();
+    void syncClear();
+    void taskProgress(int);
+    void syncProgress(int);
 
 private slots:
     void progressCheck();
@@ -68,8 +75,8 @@ private slots:
 
 public slots:
     void newTask(netTrans*);
-    void newDownloadTask(netTrans*);
-    void newUploadTask(netTrans*);
+    void newDownloadTask(netTrans*, bool isSync);
+    void newUploadTask(netTrans*, bool isSync);
     void setValue(int);
 };
 
