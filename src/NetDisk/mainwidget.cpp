@@ -43,7 +43,6 @@ MainWidget::MainWidget(QWidget *parent) :
 
     loginUi.show();
     loginUi.autoLogin();
-
 }
 
 MainWidget::~MainWidget()
@@ -206,6 +205,7 @@ void MainWidget::setSyncState(int state)//isSyncing = checked
                                      #syncStart:pressed{border-image: url(:/imgs/一键同步hover.png);color: rgb(255, 255, 255);}");
         break;
     case 1://同步中
+        ui->syncProgress->show();
         ui->syncStart->setStyleSheet("#syncStart{border-image: url(:/imgs/同步中.png);color: rgb(255, 255, 255);}\
                                      #syncStart:pressed{border-image: url(:/imgs/同步中hover.png);color: rgb(255, 255, 255);}");
         break;
@@ -242,6 +242,19 @@ void MainWidget::userinfoUpdate(UserInfo info)
 void MainWidget::funcStateEnable(bool enable)
 {
     setFunctionState(enable);
+}
+
+void MainWidget::transWaringTimeout()
+{
+    if(warningCount>2)
+        warningCount = 0;
+    warningCount++;
+    QString str = QString("同步中")+QString(warningCount, QChar('.'));
+//    qDebug()<<warningCount<<str;
+    if(syncState == 1)//同步中
+    {
+        ui->syncMsg->setText(str);
+    }
 }
 
 void MainWidget::hidePanel()
@@ -434,7 +447,7 @@ void MainWidget::getSyncNum(int upNum, int downNum)
     {
 //        ui->frame_sync->hide();
         if(syncMsgState)//同步状态发生跳变
-            sysTray->showMessage(QString("文件同步"), "本地文件已和云端同步",QSystemTrayIcon::Information);
+        sysTray->showMessage(QString("文件同步"), "本地文件已和云端同步",QSystemTrayIcon::Information);
         setSyncState(0);
 //        ui->syncStart->setEnabled(false);
         syncMsgState = false;
@@ -490,6 +503,7 @@ void MainWidget::diskInit()
     }
 
     isInited = true;
+    warningCount = 0;
 
     netConf->manager = new QNetworkAccessManager(this);
 
@@ -547,6 +561,7 @@ void MainWidget::diskInit()
 //    ui->frame_function->hide();
     diskPanel = new FilesPanel(this);
     diskPanel->httpClient->netInit(transList);
+    ui->syncProgress->hide();
 
     initPanel();
 
@@ -554,6 +569,9 @@ void MainWidget::diskInit()
     syncTimer = new QTimer(this);
     syncTimer->start(600000);//600s
     connect(syncTimer, SIGNAL(timeout()), diskPanel->diskSync, SLOT(loginSync()));
+    tick = new QTimer(this);
+    connect(tick, SIGNAL(timeout()), this, SLOT(transWaringTimeout()));
+    tick->start(500);
 
     initPageWidgets();
     scrollFolder->setWidget(diskPanel);
@@ -584,6 +602,7 @@ void MainWidget::diskInit()
     connect(ui->searchFilter,  SIGNAL(currentIndexChanged(int)), this, SLOT(searchTypeChanged(int)));
     connect(ui->sliderbar, SIGNAL(clicked(QModelIndex)), this, SLOT(on_sliderbar_clicked(QModelIndex)));
     connect(transList, SIGNAL(syncProgress(int)), this, SLOT(syncProgress(int)));
+    connect(transList, SIGNAL(syncClear()), this, SLOT(syncClear()));
 }
 
 void MainWidget::initSysTray()
@@ -888,16 +907,17 @@ void MainWidget::resetSyncBtn()
 void MainWidget::syncProgress(int val)
 {
     ui->syncProgress->setValue(val);
-    if(val == 100)
-        ui->syncProgress->hide();
-    else if(ui->syncProgress->isHidden())
-        ui->syncProgress->show();
+    qDebug()<<"[syncProgress]"<<val;
+//    if(val == 100)
+//        ui->syncProgress->hide();
+//    else if(ui->syncProgress->isHidden())
 }
 
 void MainWidget::syncClear()
 {
     QString strLocal = QString("本地更新文件0个");
     QString strHost = QString("云端更新文件0个");
+    ui->syncProgress->hide();
     ui->msg_local->setText(strLocal);
     ui->msg_host->setText(strHost);
 //        ui->frame_sync->hide();

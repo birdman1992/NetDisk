@@ -88,6 +88,7 @@ private slots:
 
     void on_syncStart_clicked();
 
+    void transWaringTimeout();
 public slots:
     void historyEnabled(bool backEnable, bool aheadEnable);
     void getSyncNum(int upNum, int downNum);
@@ -97,6 +98,7 @@ public slots:
     void setSyncState(int state);
     void userinfoUpdate(UserInfo);
     void funcStateEnable(bool);
+
 
 
 private:
@@ -114,6 +116,8 @@ private:
     QMenu* sysTrayMenu;
     QMenu* titleMenu;
     QTimer* syncTimer;
+    QTimer* tick;
+
     FilesPanel* diskPanel;
     PathView* pathView;
     TransList* transList;
@@ -129,6 +133,7 @@ private:
     QPoint dragPosition;
     int fType;
     int syncState;//0:无同步,1:同步中,2:可同步,3:自动同步,4:同步检查中
+    int warningCount;
     //系统托盘菜单项
     QAction* act_openPanel;//打开主面板
     QAction* act_openWebsite;//打开企业网盘网站

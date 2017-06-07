@@ -18,7 +18,10 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-//    qInstallMessageHandler(outputMessage); //注册MsgHandler回调函数
+    qInstallMessageHandler(outputMessage); //注册MsgHandler回调函数
+    QFile file(QCoreApplication::applicationDirPath()+"/"+"netdisk"+".log");
+    file.open(QIODevice::WriteOnly);
+    file.close();
     qDebug("Netdisk start");
     QFont font;
     font.setFamily("微软雅黑");
@@ -73,7 +76,7 @@ void outputMessage(QtMsgType type, const QMessageLogContext &context, const QStr
     QString current_date = QString("(%1)").arg(current_date_time);
     QString message = QString("%1 %2 %3 %4").arg(text).arg(context_info).arg(msg).arg(current_date);
 
-    QFile file(QCoreApplication::applicationDirPath()+"/"+QDateTime::currentDateTime().toString("yyyyMMdd")+".log");
+    QFile file(QCoreApplication::applicationDirPath()+"/"+"netdisk"+".log");
     file.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream text_stream(&file);
     text_stream << message << "\r\n";

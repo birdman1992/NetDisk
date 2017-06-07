@@ -35,6 +35,7 @@ public slots:
     void cmdCd(int);
     void syncUploadMsg(int);
     void syncDownloadMsg(int);
+    void syncMsg(int upNum, int downNum);
 
 private slots:
     void on_tableWidget_doubleClicked(const QModelIndex &index);

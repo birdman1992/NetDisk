@@ -54,8 +54,10 @@ syncList::~syncList()
 void syncList::initTable(syncTable *table)
 {
     checkTable = table;
-    connect(checkTable, SIGNAL(syncUploadChanged(int)), this, SLOT(syncUploadMsg(int)));
-    connect(checkTable, SIGNAL(syncDownloadChanged(int)), this, SLOT(syncDownloadMsg(int)));
+
+//    connect(checkTable, SIGNAL(syncUploadChanged(int)), this, SLOT(syncUploadMsg(int)));
+//    connect(checkTable, SIGNAL(syncDownloadChanged(int)), this, SLOT(syncDownloadMsg(int)));
+    connect(checkTable, SIGNAL(syncTaskChanged(int,int)), this, SLOT(syncMsg(int,int)));
 }
 
 void syncList::goAhead()
@@ -132,13 +134,22 @@ void syncList::cmdCd(int id)
 void syncList::syncUploadMsg(int num)
 {
     uploadNum = num;
+    emit syncNumChanged(uploadNum, -1);
     updateSyncMessage();
 }
 
 void syncList::syncDownloadMsg(int num)
 {
     downloadNum = num;
+    emit syncNumChanged(-1, downloadNum);
     updateSyncMessage();
+}
+
+void syncList::syncMsg(int upNum, int downNum)
+{
+    downloadNum = downNum;
+    uploadNum = upNum;
+    emit syncNumChanged(upNum, downNum);
 }
 
 void syncList::showList()
@@ -214,7 +225,7 @@ QString syncList::getFolderSize(quint64 fileSize)
 
 void syncList::updateSyncMessage()
 {
-    emit syncNumChanged(uploadNum, downloadNum);
+//    emit syncNumChanged(uploadNum, downloadNum);
     syncRefresh();
 }
 

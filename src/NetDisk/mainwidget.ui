@@ -1243,7 +1243,7 @@ border-bottom: 1px solid rgb(234, 234, 234);;
                  <property name="frameShadow">
                   <enum>QFrame::Raised</enum>
                  </property>
-                 <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,1,0,0,0,1">
+                 <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,1,0,0,0,0,1">
                   <property name="spacing">
                    <number>0</number>
                   </property>
@@ -1389,7 +1389,7 @@ border-bottom: 1px solid rgb(234, 234, 234);;
                     </property>
                     <property name="styleSheet">
                      <string notr="true">QProgressBar{
-font: 17px &quot;微软雅黑&quot;;
+font: 15px &quot;微软雅黑&quot;;
 margin-top:15px;margin-bottom:15px;margin-right:45px; border: 0px solid grey;background-color: rgb(225, 230, 240);}
 QProgressBar::chunk{
 background-color: rgb(194, 200, 204);
@@ -1402,6 +1402,22 @@ background-color: rgb(194, 200, 204);
                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                     </property>
                    </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_7">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>10</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
                   </item>
                   <item>
                    <widget class="QLabel" name="syncMsg">
@@ -1434,7 +1450,7 @@ background-color: rgb(194, 200, 204);
                      <enum>Qt::Horizontal</enum>
                     </property>
                     <property name="sizeType">
-                     <enum>QSizePolicy::Preferred</enum>
+                     <enum>QSizePolicy::Fixed</enum>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>

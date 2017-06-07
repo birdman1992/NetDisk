@@ -315,7 +315,7 @@ void NetSync::syncDownloadStart()
 //    while((taskNum < 3) && (taskNum<taskDownload.count()))
 //    {
 //        taskDownload.at(taskNum++)->taskStart();
-//    }
+    //    }
 }
 
 void NetSync::hideFile(QFile *file)
@@ -387,17 +387,20 @@ void NetSync::syncInfoRecv(QList<syncInfo *>sInfo, QDateTime sTime)
 
 void NetSync::syncHostPointSave(QDateTime sTime)
 {
+    qDebug()<<"[syncHostPointSave]";
     if(!syncT.list_task.isEmpty())
     {
         syncT.syncNextDir();
         return;
     }
-
+    int downNum;
+    int upNum;
     isSyncing = false;
     syncT.syncTime = sTime;
     syncLocalGet();
 
-    if(!(syncT.getDownloadTaskNum() || syncT.getUploadTaskNum()))
+//    if(!(syncT.getDownloadTaskNum() || syncT.getUploadTaskNum()))
+    if(!syncT.getTaskNum(downNum, upNum))
     {
         syncDateWrite(sTime);
         syncT.recvListClear();

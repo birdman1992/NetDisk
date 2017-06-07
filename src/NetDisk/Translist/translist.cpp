@@ -74,6 +74,8 @@ QString TransList::sizeofbytes(quint64 fsize)
 void TransList::listUiInit()
 {
     totalTaskNum = 0;
+    curSyncNum = 0;
+    totalSyncNum = 0;
     curTaskNum = 0;
     downloadNum = 0;
     colIndex_state = 2;
@@ -261,7 +263,7 @@ void TransList::progressCheck()
     }
 
     if(curSyncNum == 0)
-        totalTaskNum = 0;
+        totalSyncNum = 0;
 
     if(curTaskNum == 0)
         totalTaskNum = 0;

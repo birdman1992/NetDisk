@@ -88,6 +88,7 @@ public:
     void reportSyncNum();
     void creatSyncUploadList();
     void creatSyncDownloadList();
+    int getTaskNum(int &down, int &up);
     int getUploadTaskNum();
     int getDownloadTaskNum();
     void syncDir();
@@ -158,6 +159,7 @@ signals:
     void syncDownload();
     void syncUploadChanged(int uploadNum);
     void syncDownloadChanged(int downloadNum);
+    void syncTaskChanged(int uploadNum, int downloadNum);
     void needUpdateDate();
 };
 

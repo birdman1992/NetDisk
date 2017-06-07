@@ -1932,8 +1932,8 @@ void syncTable::updateFileDate(double id)
 
 void syncTable::reportSyncNum()
 {
-    emit syncUploadChanged(list_sync_upload.count());
-    emit syncDownloadChanged(list_sync_download.count());
+    emit syncUploadChanged(list_sync_upload.count());//syncList::syncUploadMsg
+    emit syncDownloadChanged(list_sync_download.count());//syncList::syncDownloadMsg
 }
 
 void syncTable::recvListClear()
@@ -2149,10 +2149,11 @@ void syncTable::creatSyncUploadList()
         list_sync_upload<<localInfo;
         localInfo = new syncInfo;
     }
-    qDebug()<<"up list count"<<list_sync_upload.count();
-    reportSyncNum();
+    qDebug()<<"creat up list count"<<list_sync_upload.count();
+    if(list_sync_upload.count()>0)
+        reportSyncNum();
 //    if(netConf->autoSyncDir())
-    emit syncUpload();
+    emit syncUpload();//NetSync::syncUploadStart()
 }
 
 void syncTable::creatSyncDownloadList()
@@ -2190,7 +2191,15 @@ void syncTable::creatSyncDownloadList()
         }
     }
     qDebug()<<"down list count"<<list_sync_download.count();
-    emit syncDownload();
+    emit syncDownload();//NetSync::syncDownloadStart()
+}
+
+int syncTable::getTaskNum(int &down, int &up)
+{
+    up = getUploadTaskNum();
+    down = getDownloadTaskNum();
+    emit syncTaskChanged(uploadTaskNum, downloadTaskNum);
+    return (up+down);
 }
 
 int syncTable::getUploadTaskNum()
@@ -2214,12 +2223,13 @@ int syncTable::getUploadTaskNum()
             continue;
         }
         getIdByName(localInfoReal->absoluteFilePath(),&isUpdated);
+//        qDebug()<<"isUpdated"<<isUpdated;
         if(!isUpdated)
             continue;
         uploadTaskNum++;
     }
     qDebug()<<"up list count"<<uploadTaskNum;
-    emit syncUploadChanged(uploadTaskNum);
+//    emit syncUploadChanged(uploadTaskNum);
     return uploadTaskNum;
 }
 
@@ -2262,7 +2272,7 @@ int syncTable::getDownloadTaskNum()
         }
     }
     qDebug()<<"down list count"<<downloadTaskNum;
-    emit syncDownloadChanged(downloadTaskNum);
+//    emit syncDownloadChanged(downloadTaskNum);//syncList::syncDownloadMsg
 //    if(netConf->autoSyncDir())
 //        emit syncDownload();
     return downloadTaskNum;

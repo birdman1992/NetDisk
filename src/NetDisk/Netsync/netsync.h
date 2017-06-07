@@ -36,7 +36,6 @@ public slots:
     void syncTaskUpload();
     void syncUploadStart();
     void syncDownloadStart();
-
 private:
     QDateTime syncDate;
     QTimer* syncTimer;
