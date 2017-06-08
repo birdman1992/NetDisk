@@ -824,7 +824,7 @@ void netWork::getServerAddr()
 
 void netWork::fileRecv()
 {
-    QByteArray qba = netReply->readAll();//qDebug()<<"download:"<<qba.size();
+    QByteArray qba = netReply->readAll();qDebug()<<"download:"<<qba.size();
 
     QJsonDocument parseDoc;
     QJsonParseError jError;

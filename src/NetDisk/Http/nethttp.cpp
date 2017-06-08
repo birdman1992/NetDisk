@@ -1495,7 +1495,7 @@ double syncTable::getIdByName(QString name, bool* isChanged)
     syncLocalInfo* info = NULL;
     int i = 0;
     double ret = 0;
-//    qDebug()<<"[getIdByName]"<<name;
+    qDebug()<<"[getIdByName]"<<name;
 
     for(i=0; i<list_local.count(); i++)
     {
@@ -1522,7 +1522,7 @@ double syncTable::getIdByName(QString name, bool* isChanged)
         {
             *isChanged = true;
             qDebug()<<fInfo.absoluteFilePath()<<"changed:";
-            qDebug()<<"[date]"<<"local"<<fInfo.lastModified().toString("yyyy-MM-dd hh:mm:ss")<<"host"<<info->lastDate.toString("yyyy-MM-dd hh:mm:ss");
+            qDebug()<<"[date]"<<"real"<<fInfo.lastModified().toString("yyyy-MM-dd hh:mm:ss")<<"savedate"<<info->lastDate.toString("yyyy-MM-dd hh:mm:ss");
         }
         else
         {
