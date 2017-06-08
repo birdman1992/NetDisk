@@ -1518,10 +1518,11 @@ double syncTable::getIdByName(QString name, bool* isChanged)
         QFileInfo fInfo = QFileInfo(name);
 //        qDebug()<<"[date]"<<fInfo.lastModified().toString("yyyy-MM-dd hh:mm:ss")<<info->lastDate.toString("yyyy-MM-dd hh:mm:ss");
 //        qDebug()<<info->syncPath;
-        if((fInfo.lastModified().toMSecsSinceEpoch()/1000) > (info->lastDate.toMSecsSinceEpoch()/1000)+1)
+        if((fInfo.lastModified().toMSecsSinceEpoch()/1000) > (info->lastDate.toMSecsSinceEpoch()/1000)+5)
         {
             *isChanged = true;
-//            qDebug()<<fInfo.absoluteFilePath()<<"changed";
+            qDebug()<<fInfo.absoluteFilePath()<<"changed:";
+            qDebug()<<"[date]"<<"local"<<fInfo.lastModified().toString("yyyy-MM-dd hh:mm:ss")<<"host"<<info->lastDate.toString("yyyy-MM-dd hh:mm:ss");
         }
         else
         {
@@ -2247,14 +2248,18 @@ int syncTable::getDownloadTaskNum()
     for(i=0; i<list_file.count(); i++)
     {
         sInfo = list_file.at(i);
-        if(getPathById(sInfo->ID).isEmpty())
+        if(getPathById(sInfo->ID).isEmpty())//文件id在服务器返回的同步列表里，但不在本地.sync缓存文件中
+        {
+            qDebug()<<sInfo->FILE_NAME<<sInfo->ID;
             downloadTaskNum++;
+            qDebug("++1");
+        }
     }
 
     for(i=0; i<list_local.count(); i++)
     {
         lInfo = list_local.at(i);
-        if((!lInfo->isDir)&&(!QFileInfo(lInfo->syncPath).isFile()))
+        if((!lInfo->isDir)&&(!QFileInfo(lInfo->syncPath).isFile()))//文件在.sync缓存中，但本地无此文件
         {
 //            sInfo = new syncInfo;
 //            sInfo->FILE_NAME = lInfo->fileName;
@@ -2263,8 +2268,9 @@ int syncTable::getDownloadTaskNum()
 //            sInfo->PARENT_ID = lInfo->parentId;
 //            addSyncDownloadInfo(sInfo);
             downloadTaskNum++;
+            qDebug("++2");
         }
-        else if((lInfo->isDir)&&(!QFileInfo(lInfo->syncPath).isDir()))
+        else if((lInfo->isDir)&&(!QFileInfo(lInfo->syncPath).isDir()))//目录在.sync缓存中，但本地无此文件夹
         {
             QDir dir;
             dir.mkdir(lInfo->syncPath);

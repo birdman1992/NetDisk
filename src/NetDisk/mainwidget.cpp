@@ -454,11 +454,11 @@ void MainWidget::getSyncNum(int upNum, int downNum)
     }
     else
     {
-            if(syncState == 2)//可同步
-            {
-                setSyncState(1);//变更为同步中
-            }
-            else if(syncState == 0 || syncState == 4)//无同步或查询同步中
+//            if(syncState == 2)//可同步
+//            {
+//                setSyncState(1);//变更为同步中
+//            }
+            if(syncState == 0 || syncState == 4)//无同步或查询同步中
             {
                 setSyncState(2);//变更为可同步状态
             }
@@ -562,6 +562,10 @@ void MainWidget::diskInit()
     diskPanel = new FilesPanel(this);
     diskPanel->httpClient->netInit(transList);
     ui->syncProgress->hide();
+    ui->warn->hide();
+    ui->search->hide();
+    ui->searchBtn->hide();
+    ui->searchFilter->hide();
 
     initPanel();
 

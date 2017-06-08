@@ -149,8 +149,20 @@ int TransList::getDownloadNum()
         {
             ui->downloadTable->removeRow(i);
             if(taskDownload.at(i)->isSync)
-                curSyncNum--;
-            delete taskDownload.takeAt(i);
+            {
+                if(taskDownload.at(i)->trans->taskinfo().waitForDelete)
+                {
+                    qDebug()<<"[down task delete]"<<taskDownload.at(i)->trans->taskinfo().taskId;
+                    curSyncNum--;
+                    delete taskDownload.takeAt(i);
+                }
+                else
+                {
+                    qDebug()<<"[down task delete]"<<"delete later";
+                }
+            }
+            else
+                delete taskDownload.takeAt(i);
             i--;
         }
         else if(taskDownload.at(i)->trans->taskinfo().taskState == ERROR_STATE)
@@ -159,8 +171,20 @@ int TransList::getDownloadNum()
             {
                 ui->downloadTable->removeRow(i);
                 if(taskDownload.at(i)->isSync)
-                    curSyncNum--;
-                delete taskDownload.takeAt(i);
+                {
+                    if(taskDownload.at(i)->trans->taskinfo().waitForDelete)
+                    {
+                        qDebug()<<"[down task delete]"<<taskDownload.at(i)->trans->taskinfo().taskId;
+                        curSyncNum--;
+                        delete taskDownload.takeAt(i);
+                    }
+                    else
+                    {
+                        qDebug()<<"[down task delete]"<<"delete later";
+                    }
+                }
+                else
+                    delete taskDownload.takeAt(i);
                 i--;
             }
             else
@@ -214,8 +238,19 @@ int TransList::getUploadNum()
         {
             ui->uploadTable->removeRow(i);
             if(taskUpload.at(i)->isSync)
-                curSyncNum--;
-            delete taskUpload.takeAt(i);
+            {
+                if(taskUpload.at(i)->trans->taskinfo().waitForDelete)
+                {qDebug()<<"[up task delete]"<<taskUpload.at(i)->trans->taskinfo().taskId;
+                    curSyncNum--;
+                    delete taskUpload.takeAt(i);
+                }
+                else
+                {
+                    qDebug()<<"[up task delete]"<<"delete later";
+                }
+            }
+            else
+                delete taskUpload.takeAt(i);
             i--;
         }
         else if(taskUpload.at(i)->trans->taskinfo().taskState == ERROR_STATE)
@@ -224,8 +259,20 @@ int TransList::getUploadNum()
             {
                 ui->uploadTable->removeRow(i);
                 if(taskUpload.at(i)->isSync)
-                    curSyncNum--;
-                delete taskUpload.takeAt(i);
+                {
+                    if(taskUpload.at(i)->trans->taskinfo().waitForDelete)
+                    {
+                        qDebug()<<"[up task delete]"<<taskUpload.at(i)->trans->taskinfo().taskId;
+                        curSyncNum--;
+                        delete taskUpload.takeAt(i);
+                    }
+                    else
+                    {
+                        qDebug()<<"[up task delete]"<<"delete later";
+                    }
+                }
+                else
+                    delete taskUpload.takeAt(i);
                 i--;
             }
             else
@@ -241,7 +288,7 @@ int TransList::getUploadNum()
 
 void TransList::progressCheck()
 {
-
+    qDebug()<<"[progressCheck]";
     curTaskNum = taskDownload.count() + taskUpload.count();
     checkDownload();
     checkUpload();
@@ -257,7 +304,7 @@ void TransList::progressCheck()
         emit taskClear();
         tProgress.stop();
     }
-    if(curSyncNum == 0 && totalSyncNum!=0)
+    if(curSyncNum == 0)
     {
         emit syncClear();
     }

@@ -42,6 +42,7 @@ public:
     QTime finishTime;
     double taskId;
     double parentId;
+    bool waitForDelete;//可以释放
 };
 
 class netWork : public QObject
@@ -58,6 +59,7 @@ public:
     void setTaskInfo(double parentId);
     void netPost(QNetworkRequest postRequest, QByteArray postData);
     void netPost(QNetworkRequest postRequest, QHttpMultiPart* postData);
+    void waitForDelete();
     ~netWork();
 
 
@@ -79,6 +81,7 @@ private:
     TaskInfo taskInfo;
     QByteArray sign;
     QMutex taskMutex;
+    int timeoutCount;//超时计数
 
     double filepId;//文件父目录ID
     double fileId;//文件ID
@@ -132,6 +135,7 @@ public:
     QString getTaskSpeed();
     int getTaskProgress();
     TaskInfo taskinfo();
+    void waitForDelete();
     DownloadTaskInfo* task;
     ~netTrans();
 public slots:

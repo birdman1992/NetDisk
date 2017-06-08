@@ -21,6 +21,7 @@ netWork::netWork(QObject *parent) :
     taskInfo.taskState = NO_STATE;
     taskInfo.taskSpeed = 0;
     taskInfo.curSize = 0;
+    taskInfo.waitForDelete = false;
 
     crlf = "\r\n";
     qsrand(QDateTime::currentDateTime().toTime_t());
@@ -195,6 +196,14 @@ QString netWork::getTaskSpeed()
     int num = 0;
     taskMutex.lock();
     quint64 speed = taskInfo.taskSpeed;
+    if(speed)
+        timeoutCount = 0;
+    else if(timeoutCount++>10)
+    {
+        taskInfo.taskState = ERROR_STATE;
+        taskInfo.waitForDelete = true;
+    }
+
     QStringList l;
     QString fTime;
     l<<"B/s"<<"KB/s"<<"MB/s"<<"GB/s";
@@ -245,6 +254,11 @@ void netWork::netPost(QNetworkRequest postRequest, QHttpMultiPart *postData)
     qDebug()<<"up post";
     netReply = managerUpload->post(postRequest, postData);
     connect(netReply, SIGNAL(finished()), this, SLOT(uploadRelpy()));
+}
+
+void netWork::waitForDelete()
+{
+    taskInfo.waitForDelete = true;
 }
 
 void netWork::md5Check()
@@ -746,6 +760,7 @@ void netWork::replyError(QNetworkReply::NetworkError errorCode)
     qDebug()<<"[replyError]"<<errorCode;
     taskMutex.lock();
     taskInfo.taskState = ERROR_STATE;
+    taskInfo.waitForDelete = true;
     taskMutex.unlock();
     if(pFile->isOpen())
     {
@@ -797,6 +812,7 @@ void netWork::getServerAddr()
                 {
                     taskMutex.lock();
                     taskInfo.taskState = ERROR_STATE;
+                    taskInfo.waitForDelete = true;
                     taskMutex.unlock();
                     return;
                 }
@@ -852,9 +868,10 @@ void netWork::fileRecvFinished()
     }
     else
         taskInfo.taskState = ERROR_STATE;
-    taskMutex.unlock();
-    emit taskFinish(taskInfo);
-    delete pFile;
+    qDebug("1");
+    taskMutex.unlock();    qDebug("2");
+    emit taskFinish(taskInfo);    qDebug("3");
+    delete pFile;    qDebug("4");
 }
 
 void netWork::getDownloadProgress(qint64 curBytes, qint64 totalBytes)
@@ -937,6 +954,11 @@ int netTrans::getTaskProgress()
 TaskInfo netTrans::taskinfo()
 {
     return work->taskinfo();
+}
+
+void netTrans::waitForDelete()
+{
+    work->waitForDelete();
 }
 
 netTrans::~netTrans()
