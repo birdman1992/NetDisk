@@ -198,10 +198,11 @@ QString netWork::getTaskSpeed()
     quint64 speed = taskInfo.taskSpeed;
     if(speed)
         timeoutCount = 0;
-    else if(timeoutCount++>10)
+    else if(timeoutCount++>20)
     {
         taskInfo.taskState = ERROR_STATE;
-        taskInfo.waitForDelete = true;
+//        taskInfo.waitForDelete = true;
+        emit taskFinish(taskInfo);
     }
 
     QStringList l;
@@ -762,6 +763,7 @@ void netWork::replyError(QNetworkReply::NetworkError errorCode)
     taskInfo.taskState = ERROR_STATE;
     taskInfo.waitForDelete = true;
     taskMutex.unlock();
+    pFile->remove();
     if(pFile->isOpen())
     {
         pFile->close();
@@ -824,7 +826,7 @@ void netWork::getServerAddr()
 
 void netWork::fileRecv()
 {
-    QByteArray qba = netReply->readAll();qDebug()<<"download:"<<qba.size();
+    QByteArray qba = netReply->readAll();//qDebug()<<"download:"<<qba.size();
 
     QJsonDocument parseDoc;
     QJsonParseError jError;

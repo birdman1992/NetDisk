@@ -435,13 +435,14 @@ void NetSync::syncTaskUpload()
 void NetSync::taskDownloadFinished(TaskInfo info)
 {
     qDebug()<<"[taskDownloadFinished]";
-    int i=0;qDebug("a");
-    netTrans* trans;qDebug("b");
-    QCryptographicHash ch(QCryptographicHash::Md5);qDebug("c");
-
+    int i=0;
+    netTrans* trans;
+    QCryptographicHash ch(QCryptographicHash::Md5);
     for(i=0; i<taskDownload.count(); i++)
     {
-        qDebug()<<"d"<<i;
+        qDebug()<<"d"<<i<<taskDownload.count();
+        qDebug()<<taskDownload.at(i)->taskinfo().taskId;qDebug()<<"E";
+        qDebug()<<info.taskId;
         if(taskDownload.at(i)->taskinfo().taskId == info.taskId)
         {qDebug()<<"find task"<<info.taskId;
             trans = taskDownload.takeAt(i);
